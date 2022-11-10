@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Contracts.Whitelist", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Contracts.NFT", "contract\AElf.Contracts.NFT\AElf.Contracts.NFT.csproj", "{57D062AC-F184-4A74-A3CD-F200E1F1600A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Contracts.Whitelist.Tests", "test\AElf.Contracts.Whitelist.Tests\AElf.Contracts.Whitelist.Tests.csproj", "{14132439-CA55-41F9-B9DF-DB3C799E1BEB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,10 @@ Global
 		{57D062AC-F184-4A74-A3CD-F200E1F1600A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57D062AC-F184-4A74-A3CD-F200E1F1600A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57D062AC-F184-4A74-A3CD-F200E1F1600A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14132439-CA55-41F9-B9DF-DB3C799E1BEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14132439-CA55-41F9-B9DF-DB3C799E1BEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14132439-CA55-41F9-B9DF-DB3C799E1BEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14132439-CA55-41F9-B9DF-DB3C799E1BEB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +85,7 @@ Global
 		{DCC207EA-842A-4B54-858B-295CAA8947D5} = {21D85A91-5BB8-4912-8107-49435A461AAC}
 		{459C75F9-019E-4403-B8B9-43D622C187BE} = {5C980166-C987-470D-AEE0-3858A170A903}
 		{57D062AC-F184-4A74-A3CD-F200E1F1600A} = {5C980166-C987-470D-AEE0-3858A170A903}
+		{14132439-CA55-41F9-B9DF-DB3C799E1BEB} = {DBC47323-E6A2-42A2-A624-CE2EE6139567}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D7426B41-E959-40E4-9ED8-ED8D9C50F133}
