@@ -1,8 +1,8 @@
-using AElf.Contracts.Whitelist;
 using AElf.Sdk.CSharp;
 using AElf.Sdk.CSharp.State;
 using AElf.Types;
 using Forest.Helpers;
+using Forest.Whitelist;
 
 namespace Forest.Managers;
 

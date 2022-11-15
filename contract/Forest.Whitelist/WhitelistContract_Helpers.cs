@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using AElf.Contracts.Whitelist.Extensions;
+using AElf;
 using AElf.Sdk.CSharp;
 using AElf.Types;
+using Forest.Whitelist.Extensions;
 
-namespace AElf.Contracts.Whitelist;
+namespace Forest.Whitelist;
 
 public partial class WhitelistContract
 {
@@ -155,7 +156,7 @@ public partial class WhitelistContract
                 Info = null
             };
         }).ToList();
-        return new ExtraInfoList() { Value = { extraInfo } };
+        return new ExtraInfoList() {Value = {extraInfo}};
     }
 
     /// <summary>
@@ -198,7 +199,7 @@ public partial class WhitelistContract
             managerList.Add(creator ?? Context.Sender);
         }
 
-        State.ManagerListMap[whitelistId] = new AddressList() { Value = { managerList } };
+        State.ManagerListMap[whitelistId] = new AddressList() {Value = {managerList}};
         return State.ManagerListMap[whitelistId];
     }
 
@@ -210,7 +211,7 @@ public partial class WhitelistContract
             managerList.Add(creator ?? Context.Sender);
         }
 
-        State.SubscribeManagerListMap[subscribeId] = new AddressList() { Value = { managerList } };
+        State.SubscribeManagerListMap[subscribeId] = new AddressList() {Value = {managerList}};
         return State.SubscribeManagerListMap[subscribeId];
     }
 
@@ -228,7 +229,6 @@ public partial class WhitelistContract
     {
         var whitelistInfo = GetWhitelist(whitelistId);
         whitelistInfo.Manager.Value.Add(addressList.Value);
-
     }
 
     private void SetSubscribeIdManager(Hash subscribeId, AddressList managerList)

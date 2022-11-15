@@ -4,7 +4,7 @@ using AElf.ContractTestBase;
 using AElf.Kernel.SmartContract.Application;
 using AElf.Types;
 
-namespace AElf.Contracts.Bridge;
+namespace Forest;
 
 public class MainChainDAppContractTestDeploymentListProvider : MainChainContractDeploymentListProvider,
     IContractDeploymentListProvider

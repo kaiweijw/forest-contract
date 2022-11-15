@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using AElf.Contracts.NFT;
-using AElf.Contracts.Whitelist;
 using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
 using AElf.Sdk.CSharp.State;
 using AElf.Types;
 using Forest.Helpers;
 using Forest.Managers;
+using Forest.Whitelist;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Services;

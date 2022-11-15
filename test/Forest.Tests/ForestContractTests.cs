@@ -1,10 +1,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AElf;
-using AElf.Contracts.Forest;
 using AElf.Contracts.MultiToken;
 using AElf.Contracts.NFT;
-using AElf.Contracts.Whitelist;
+using Forest.Whitelist;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
@@ -64,7 +63,7 @@ namespace Forest
                     {
                         new ExtraInfo()
                         {
-                            AddressList = new AElf.Contracts.Whitelist.AddressList
+                            AddressList = new Whitelist.AddressList
                             {
                                 Value = {DefaultAddress}
                             }

@@ -1,6 +1,7 @@
+using AElf;
 using AElf.Types;
 
-namespace AElf.Contracts.Whitelist.Extensions;
+namespace Forest.Whitelist.Extensions;
 
 public static class WhitelistExtensions
 {

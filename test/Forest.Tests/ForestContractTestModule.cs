@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
 using AElf.Boilerplate.TestBase;
-using AElf.Contracts.Forest;
-using AElf.Contracts.Whitelist;
 using AElf.Contracts.NFT;
 using AElf.ContractTestBase;
 using AElf.ContractTestBase.ContractTestKit;
 using AElf.Kernel.SmartContract.Application;
+using Forest.Whitelist;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;
 using Volo.Abp.Modularity;

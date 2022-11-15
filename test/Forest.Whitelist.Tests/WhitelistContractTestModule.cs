@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using AElf.Boilerplate.TestBase;
-using AElf.Contracts.Forest;
 using AElf.ContractTestBase;
 using AElf.ContractTestBase.ContractTestKit;
 using AElf.Kernel.SmartContract.Application;
@@ -9,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;
 using Volo.Abp.Modularity;
 
-namespace AElf.Contracts.Whitelist;
+namespace Forest.Whitelist;
 
 [DependsOn(typeof(MainChainDAppContractTestModule))]
 public class WhitelistContractTestModule : MainChainDAppContractTestModule

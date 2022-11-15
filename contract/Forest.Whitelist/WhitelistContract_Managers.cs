@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using AElf.Contracts.Whitelist.Extensions;
 using AElf.Sdk.CSharp;
 using AElf.Types;
+using Forest.Whitelist.Extensions;
 using Google.Protobuf.WellKnownTypes;
 
-namespace AElf.Contracts.Whitelist;
+namespace Forest.Whitelist;
 
 public partial class WhitelistContract
 {
@@ -110,7 +110,7 @@ public partial class WhitelistContract
                     Id = id
                 };
             }).ToList();
-            whitelistInfo.ExtraInfoIdList = new ExtraInfoIdList() { Value = { extraInfoIdList } };
+            whitelistInfo.ExtraInfoIdList = new ExtraInfoIdList() {Value = {extraInfoIdList}};
             Context.Fire(new WhitelistAddressInfoAdded()
             {
                 WhitelistId = whitelistHash,
@@ -210,6 +210,7 @@ public partial class WhitelistContract
             whitelist.ExtraInfoIdList.Value.Remove(extraInfoId);
             break;
         }
+
         Context.Fire(new TagInfoRemoved()
         {
             ProjectId = input.ProjectId,
@@ -235,8 +236,10 @@ public partial class WhitelistContract
                 {
                     throw new AssertionException($"Duplicate address.{address}");
                 }
+
                 toAddAddressList.Value.Add(address);
             }
+
             AssertExtraInfoDuplicate(whitelistInfo.WhitelistId, infoId);
             var targetExtraInfoId = whitelistInfo.ExtraInfoIdList.Value.SingleOrDefault(i => i.Id == infoId.Id);
             if (targetExtraInfoId != null)
@@ -322,7 +325,7 @@ public partial class WhitelistContract
             Context.Fire(new WhitelistAddressInfoRemoved()
             {
                 WhitelistId = whitelistInfo.WhitelistId,
-                ExtraInfoIdList = new ExtraInfoIdList { Value = { toRemove } }
+                ExtraInfoIdList = new ExtraInfoIdList {Value = {toRemove}}
             });
             return new Empty();
         }
@@ -377,7 +380,7 @@ public partial class WhitelistContract
             WhitelistId = whitelistInfo.WhitelistId,
             ExtraInfoIdList = new ExtraInfoIdList
             {
-                Value = { extraInfoIdList }
+                Value = {extraInfoIdList}
             }
         });
         return new Empty();
@@ -396,7 +399,7 @@ public partial class WhitelistContract
                 Id = State.AddressTagInfoIdMap[whitelistInfo.WhitelistId][address] ?? null,
                 AddressList = new AddressList
                 {
-                    Value = { address }
+                    Value = {address}
                 }
             });
         }
@@ -490,7 +493,7 @@ public partial class WhitelistContract
                 extraInfoAddressAfter = new ExtraInfoId()
                 {
                     Id = input.ExtraInfoList.Id,
-                    AddressList = new AddressList() { Value = { address } }
+                    AddressList = new AddressList() {Value = {address}}
                 };
                 whitelistInfo.ExtraInfoIdList.Value.Add(extraInfoAddressAfter);
                 //Add address to the new tagIdInfo map.
@@ -511,7 +514,6 @@ public partial class WhitelistContract
 
             State.AddressTagInfoIdMap[whitelistInfo.WhitelistId][address] = input.ExtraInfoList.Id;
             State.TagInfoIdAddressListMap[whitelistInfo.WhitelistId][tagIdBefore].Value.Remove(address);
-
         }
 
         Context.Fire(new ExtraInfoUpdated()
@@ -627,6 +629,7 @@ public partial class WhitelistContract
         {
             throw new AssertionException($"No extraInfo.{whitelist.WhitelistId}");
         }
+
         if (whitelist.StrategyType != StrategyType.Basic)
         {
             var idList = State.ManagerTagInfoMap[input.ProjectId][input.WhitelistId].Clone();
@@ -642,6 +645,7 @@ public partial class WhitelistContract
                 State.TagInfoMap.Remove(id);
                 State.TagInfoIdAddressListMap[input.WhitelistId].Remove(id);
             }
+
             foreach (var addresses in addressList)
             {
                 foreach (var address in addresses.Value)
@@ -650,6 +654,7 @@ public partial class WhitelistContract
                 }
             }
         }
+
         whitelist.ExtraInfoIdList.Value.Clear();
         Context.Fire(new WhitelistReset
         {

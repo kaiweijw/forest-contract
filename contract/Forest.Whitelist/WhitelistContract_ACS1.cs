@@ -1,7 +1,7 @@
 using AElf.Standards.ACS1;
 using Google.Protobuf.WellKnownTypes;
 
-namespace AElf.Contracts.Whitelist;
+namespace Forest.Whitelist;
 
 public partial class WhitelistContract
 {

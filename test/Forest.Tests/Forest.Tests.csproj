@@ -94,7 +94,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\contract\AElf.Contracts.NFT\AElf.Contracts.NFT.csproj" />
-        <ProjectReference Include="..\..\contract\AElf.Contracts.Whitelist\AElf.Contracts.Whitelist.csproj" />
+        <ProjectReference Include="..\..\contract\Forest.Whitelist\Forest.Whitelist.csproj" />
         <ProjectReference Include="..\..\contract\Forest\Forest.csproj" />
         <ProjectReference Include="..\..\src\AElf.Boilerplate.TestBase\AElf.Boilerplate.TestBase.csproj" />
     </ItemGroup>

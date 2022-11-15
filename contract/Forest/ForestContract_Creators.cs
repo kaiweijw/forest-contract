@@ -19,7 +19,7 @@ public partial class ForestContract
 
         // 0% - 10%
         Assert(0 <= input.Royalty && input.Royalty <= 1000, "Royalty should be between 0% to 10%.");
-        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue { Value = input.Symbol });
+        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = input.Symbol});
         Assert(!string.IsNullOrEmpty(nftProtocolInfo.Symbol), "NFT Protocol not found.");
         if (input.TokenId == 0)
         {
@@ -52,7 +52,7 @@ public partial class ForestContract
     {
         AssertContractInitialized();
 
-        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue { Value = input.Symbol });
+        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = input.Symbol});
         Assert(nftProtocolInfo.Creator != null, "NFT Protocol not found.");
         Assert(nftProtocolInfo.Creator == Context.Sender, "Only NFT Protocol Creator can set token white list.");
         State.TokenWhiteListMap[input.Symbol] = input.TokenWhiteList;
@@ -79,11 +79,11 @@ public partial class ForestContract
 
         Assert(input.StakingAmount >= 0, "Invalid staking amount.");
         Assert(input.DepositRate >= 0, "Invalid deposit rate.");
-        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue { Value = input.Symbol });
+        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = input.Symbol});
         Assert(!string.IsNullOrEmpty(nftProtocolInfo.Symbol), "NFT Protocol not found.");
         Assert(nftProtocolInfo.Creator == Context.Sender, "Only NFT Protocol Creator can set customize info.");
         Assert(!nftProtocolInfo.IsTokenIdReuse, "Not support customize.");
-        var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput { Symbol = input.Price.Symbol });
+        var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput {Symbol = input.Price.Symbol});
         Assert(!string.IsNullOrEmpty(tokenInfo.Symbol), "Invalid staking token symbol.");
         if (input.StakingAmount > 0)
         {
@@ -115,7 +115,7 @@ public partial class ForestContract
         AssertContractInitialized();
 
         Assert(input.StakingAmount > 0, "Invalid staking amount.");
-        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue { Value = input.Symbol });
+        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = input.Symbol});
         Assert(!string.IsNullOrEmpty(nftProtocolInfo.Symbol), "NFT Protocol not found.");
         Assert(nftProtocolInfo.Creator == Context.Sender, "Only NFT Protocol Creator can stake for requests.");
         var customizeInfo = State.CustomizeInfoMap[input.Symbol];
@@ -144,7 +144,7 @@ public partial class ForestContract
         AssertContractInitialized();
 
         Assert(input.WithdrawAmount > 0, "Invalid withdraw amount.");
-        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue { Value = input.Symbol });
+        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = input.Symbol});
         Assert(nftProtocolInfo.Creator == Context.Sender, "NFT symbol does not exist.");
         var customizeInfo = State.CustomizeInfoMap[input.Symbol];
         Assert(input.WithdrawAmount <= customizeInfo.StakingAmount, "Insufficient staking amount.");
@@ -174,7 +174,7 @@ public partial class ForestContract
         var requestInfo = State.RequestInfoMap[input.Symbol][input.TokenId];
         if (requestInfo == null) throw new AssertionException("Request not exists.");
 
-        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue { Value = input.Symbol });
+        var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = input.Symbol});
         Assert(nftProtocolInfo.Creator == Context.Sender, "Only NFT Protocol Creator can handle request.");
 
         var nftVirtualAddressFrom = CalculateTokenHash(input.Symbol, input.TokenId);

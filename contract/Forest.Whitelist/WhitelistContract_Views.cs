@@ -1,10 +1,10 @@
 using System.Linq;
-using AElf.Contracts.Whitelist.Extensions;
 using AElf.Sdk.CSharp;
 using AElf.Types;
+using Forest.Whitelist.Extensions;
 using Google.Protobuf.WellKnownTypes;
 
-namespace AElf.Contracts.Whitelist;
+namespace Forest.Whitelist;
 
 public partial class WhitelistContract
 {
@@ -155,7 +155,7 @@ public partial class WhitelistContract
     {
         var whitelistIdList = State.ManagerListMap[input.WhitelistId] ?? new AddressList();
         var ifExist = whitelistIdList.Value.Contains(input.Manager);
-        return new BoolValue() { Value = ifExist };
+        return new BoolValue { Value = ifExist };
     }
 
     public override BoolValue GetTagInfoFromWhitelist(GetTagInfoFromWhitelistInput input)
@@ -165,7 +165,7 @@ public partial class WhitelistContract
         var tagId = whitelist.WhitelistId.CalculateExtraInfoId(whitelist.ProjectId, input.TagInfo.TagName);
         var tagIdList = State.ManagerTagInfoMap[whitelist.ProjectId][whitelist.WhitelistId] ?? new HashList();
         var ifExist = tagIdList.Value.Contains(tagId);
-        return new BoolValue() { Value = ifExist };
+        return new BoolValue { Value = ifExist };
     }
 
 
@@ -182,8 +182,8 @@ public partial class WhitelistContract
         {
             var addressList = State.TagInfoIdAddressListMap[subscribeInfo.WhitelistId][input.ExtraInfoId.Id];
             return input.ExtraInfoId.AddressList.Value.Any(address => !addressList.Value.Contains(address))
-                ? new BoolValue() { Value = false }
-                : new BoolValue() { Value = true };
+                ? new BoolValue { Value = false }
+                : new BoolValue { Value = true };
         }
     }
 

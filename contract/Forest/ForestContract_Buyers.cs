@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
 using AElf.Contracts.NFT;
-using AElf.Contracts.Whitelist;
 using AElf.CSharp.Core;
 using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Forest.Services;
+using Forest.Whitelist;
 using Google.Protobuf.WellKnownTypes;
 using GetAllowanceInput = AElf.Contracts.MultiToken.GetAllowanceInput;
 using GetBalanceInput = AElf.Contracts.MultiToken.GetBalanceInput;
@@ -230,7 +230,7 @@ public partial class ForestContract
                 {
                     Value = { new ExtraInfoId
                     {
-                        AddressList = new AElf.Contracts.Whitelist.AddressList {Value = {Context.Sender}},
+                        AddressList = new Whitelist.AddressList {Value = {Context.Sender}},
                         Id = extraInfoId
                     } }
                 }
@@ -863,7 +863,7 @@ public partial class ForestContract
                 {
                     Value = { new ExtraInfoId
                     {
-                        AddressList = new AElf.Contracts.Whitelist.AddressList{Value = { Context.Sender }}
+                        AddressList = new Whitelist.AddressList{Value = { Context.Sender }}
                     } }
                 }
             });

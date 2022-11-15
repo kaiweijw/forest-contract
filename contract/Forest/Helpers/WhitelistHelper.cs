@@ -1,6 +1,6 @@
 using AElf;
-using AElf.Contracts.Whitelist;
 using AElf.Types;
+using Forest.Whitelist;
 using Google.Protobuf;
 
 namespace Forest.Helpers;

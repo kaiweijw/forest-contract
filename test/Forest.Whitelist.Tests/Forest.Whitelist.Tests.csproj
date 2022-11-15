@@ -2,8 +2,9 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <RootNamespace>AElf.Contracts.Whitelist</RootNamespace>
+        <RootNamespace>Forest.Whitelist</RootNamespace>
         <IsPackable>false</IsPackable>
+        <AssemblyName>Forest.Whitelist.Tests</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -58,7 +59,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\contract\AElf.Contracts.Whitelist\AElf.Contracts.Whitelist.csproj" />
+        <ProjectReference Include="..\..\contract\Forest.Whitelist\Forest.Whitelist.csproj" />
         <ProjectReference Include="..\..\src\AElf.Boilerplate.TestBase\AElf.Boilerplate.TestBase.csproj" />
     </ItemGroup>
 

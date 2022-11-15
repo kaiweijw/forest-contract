@@ -1,13 +1,13 @@
 using System.Linq;
 using System.Threading.Tasks;
+using AElf;
 using AElf.Types;
-using Forest;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
 
-namespace AElf.Contracts.Whitelist
+namespace Forest.Whitelist
 {
     public partial class WhitelistContractTests : WhitelistContractTestBase
     {

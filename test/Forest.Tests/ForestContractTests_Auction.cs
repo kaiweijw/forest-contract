@@ -1,7 +1,5 @@
 using System.Linq;
 using System.Threading.Tasks;
-using AElf.Contracts.Forest;
-using AElf.Contracts.MultiToken;
 using AElf.Contracts.NFT;
 using Shouldly;
 using Xunit;

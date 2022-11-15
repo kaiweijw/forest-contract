@@ -4,7 +4,7 @@ using AElf.Kernel.SmartContract.Application;
 using AElf.Types;
 using Volo.Abp.DependencyInjection;
 
-namespace AElf.Contracts.Forest;
+namespace Forest;
 
 public class NFTContractInitializationProvider : IContractInitializationProvider, ISingletonDependency
 {

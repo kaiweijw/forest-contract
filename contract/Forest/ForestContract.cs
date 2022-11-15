@@ -43,6 +43,7 @@ namespace Forest
             {
                 input.Value.Add(Context.Variables.NativeSymbol);
             }
+
             State.GlobalTokenWhiteList.Value = input;
             Context.Fire(new GlobalTokenWhiteListChanged
             {
@@ -54,13 +55,13 @@ namespace Forest
         public override Empty SetWhitelistContract(Address input)
         {
             AssertSenderIsAdmin();
-            State.WhitelistContract.Value= input;
+            State.WhitelistContract.Value = input;
             return new Empty();
         }
 
         private void AssertWhitelistContractInitialized()
         {
-            Assert(State.WhitelistContract.Value != null,"Whitelist Contract not initialized.");
+            Assert(State.WhitelistContract.Value != null, "Whitelist Contract not initialized.");
         }
 
         private void AssertSenderIsAdmin()

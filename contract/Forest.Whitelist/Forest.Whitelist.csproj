@@ -2,9 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <PackageId>AElf.Contracts.Whitelist</PackageId>
+        <RootNamespace>Forest.Whitelist</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Description>WhiteList Contract.</Description>
+        <AssemblyName>Forest.Whitelist</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

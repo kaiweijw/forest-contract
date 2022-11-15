@@ -3,7 +3,7 @@ using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
-namespace AElf.Contracts.Whitelist;
+namespace Forest.Whitelist;
 
 public partial class WhitelistContract
 {
@@ -75,7 +75,7 @@ public partial class WhitelistContract
             {
                 SubscribeId = consumedList.SubscribeId,
                 WhitelistId = subscribeInfo.WhitelistId,
-                ExtraInfoIdList = new ExtraInfoIdList { Value = { extraInfoId } }
+                ExtraInfoIdList = new ExtraInfoIdList {Value = {extraInfoId}}
             });
         }
         else
@@ -93,7 +93,7 @@ public partial class WhitelistContract
             {
                 SubscribeId = consumedList.SubscribeId,
                 WhitelistId = subscribeInfo.WhitelistId,
-                ExtraInfoIdList = new ExtraInfoIdList { Value = { extraInfoId } }
+                ExtraInfoIdList = new ExtraInfoIdList {Value = {extraInfoId}}
             });
         }
 

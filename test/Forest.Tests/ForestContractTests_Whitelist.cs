@@ -3,10 +3,10 @@ using System.Threading.Tasks;
 using AElf;
 using AElf.Contracts.MultiToken;
 using AElf.Contracts.NFT;
-using AElf.Contracts.Whitelist;
 using AElf.CSharp.Core.Extension;
 using AElf.Kernel;
 using AElf.Types;
+using Forest.Whitelist;
 using Google.Protobuf;
 using Shouldly;
 using Xunit;
@@ -1835,7 +1835,7 @@ public partial class ForestContractTests
                 {
                     new ExtraInfo()
                     {
-                        AddressList = new AElf.Contracts.Whitelist.AddressList
+                        AddressList = new Whitelist.AddressList
                         {
                             Value = {User1Address, User2Address}
                         }

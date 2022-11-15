@@ -1,7 +1,7 @@
 using AElf.Sdk.CSharp.State;
 using AElf.Types;
 
-namespace AElf.Contracts.Whitelist;
+namespace Forest.Whitelist;
 
 public class WhitelistContractState : ContractState
 {

@@ -21,7 +21,7 @@ namespace Forest
         /// Symbol -> Token Id -> Owner -> List NFT Info List
         /// </summary>
         public MappedState<string, long, Address, ListedNFTInfoList> ListedNFTInfoListMap { get; set; }
-        
+
         /// <summary>
         /// Project Id -> Whitelist Id
         /// </summary>
