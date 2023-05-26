@@ -6,12 +6,12 @@ public partial class ForestContract
 {
     public override ListedNFTInfoList GetListedNFTInfoList(GetListedNFTInfoListInput input)
         {
-            return State.ListedNFTInfoListMap[input.Symbol][input.TokenId][input.Owner];
+            return State.ListedNFTInfoListMap[input.Symbol][input.Owner];
         }
 
         public override GetWhitelistIdOutput GetWhitelistId(GetWhitelistIdInput input)
         {
-            var projectId = CalculateProjectId(input.Symbol, input.TokenId,input.Owner);
+            var projectId = CalculateProjectId(input.Symbol, input.Owner);
             Assert(State.WhitelistIdMap[projectId] != null, $"Whitelist id not found.Project id:{projectId}");
             var whitelistId = State.WhitelistIdMap[projectId];
             return new GetWhitelistIdOutput
@@ -53,7 +53,7 @@ public partial class ForestContract
 
         public override AddressList GetBidAddressList(GetAddressListInput input)
         {
-            return State.BidAddressListMap[input.Symbol][input.TokenId];
+            return State.BidAddressListMap[input.Symbol];
         }
 
         public override Bid GetBid(GetBidInput input)
@@ -88,12 +88,12 @@ public partial class ForestContract
 
         public override RequestInfo GetRequestInfo(GetRequestInfoInput input)
         {
-            return State.RequestInfoMap[input.Symbol][input.TokenId];
+            return State.RequestInfoMap[input.Symbol];
         }
 
         public override EnglishAuctionInfo GetEnglishAuctionInfo(GetEnglishAuctionInfoInput input)
         {
-            return State.EnglishAuctionInfoMap[input.Symbol][input.TokenId];
+            return State.EnglishAuctionInfoMap[input.Symbol];
         }
 
         public override DutchAuctionInfo GetDutchAuctionInfo(GetDutchAuctionInfoInput input)

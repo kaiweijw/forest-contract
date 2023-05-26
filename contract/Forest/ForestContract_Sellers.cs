@@ -20,8 +20,8 @@ public partial class ForestContract
             Assert(input.Quantity > 0, "Incorrect quantity.");
             var duration = AdjustListDuration(input.Duration);
             var whitelists = input.Whitelists;
-            var requestInfo = State.RequestInfoMap[input.Symbol][input.TokenId];
-            var projectId = CalculateProjectId(input.Symbol, input.TokenId,Context.Sender);
+            var requestInfo = State.RequestInfoMap[input.Symbol];
+            var projectId = CalculateProjectId(input.Symbol,Context.Sender);
             var whitelistId = new Hash();
             var whitelistManager = GetWhitelistManager();
             if (input.IsWhitelistAvailable)
@@ -43,7 +43,7 @@ public partial class ForestContract
                             Creator = Context.Self,
                             ExtraInfoList = extraInfoList,
                             IsCloneable = true,
-                            Remark = $"{input.Symbol}{input.TokenId}",
+                            Remark = $"{input.Symbol}",
                             ManagerList = new Whitelist.AddressList
                             {
                                 Value = {Context.Sender}
@@ -73,23 +73,14 @@ public partial class ForestContract
             Assert(GetTokenWhiteList(input.Symbol).Value.Contains(input.Price.Symbol),
                 $"{input.Price.Symbol} is not in token white list.");
 
-            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][input.TokenId][Context.Sender] ??
+            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ??
                                     new ListedNFTInfoList();
             ListedNFTInfo listedNftInfo;
-            if (input.IsMergeToPreviousListedInfo)
-            {
-                listedNftInfo = listedNftInfoList.Value.FirstOrDefault(i =>
-                    i.Price.Symbol == input.Price.Symbol && i.Price.Amount == input.Price.Amount &&
-                    i.Owner == Context.Sender);
-            }
-            else
-            {
-                listedNftInfo = listedNftInfoList.Value.FirstOrDefault(i =>
-                    i.Price.Symbol == input.Price.Symbol && i.Price.Amount == input.Price.Amount &&
-                    i.Owner == Context.Sender && i.Duration.StartTime == input.Duration.StartTime &&
-                    i.Duration.PublicTime == input.Duration.PublicTime &&
-                    i.Duration.DurationHours == input.Duration.DurationHours);
-            }
+            listedNftInfo = listedNftInfoList.Value.FirstOrDefault(i =>
+                i.Price.Symbol == input.Price.Symbol && i.Price.Amount == input.Price.Amount &&
+                i.Owner == Context.Sender && i.Duration.StartTime == input.Duration.StartTime &&
+                i.Duration.PublicTime == input.Duration.PublicTime &&
+                i.Duration.DurationHours == input.Duration.DurationHours);
 
             bool isMergedToPreviousListedInfo;
             if (listedNftInfo == null)
@@ -101,7 +92,6 @@ public partial class ForestContract
                     Price = input.Price,
                     Quantity = input.Quantity,
                     Symbol = input.Symbol,
-                    TokenId = input.TokenId,
                     Duration = duration,
                 };
                 listedNftInfoList.Value.Add(listedNftInfo);
@@ -109,7 +99,6 @@ public partial class ForestContract
                 Context.Fire(new ListedNFTAdded
                 {
                     Symbol = input.Symbol,
-                    TokenId = input.TokenId,
                     Duration = duration,
                     Owner = Context.Sender,
                     Price = input.Price,
@@ -126,7 +115,6 @@ public partial class ForestContract
                 Context.Fire(new ListedNFTChanged
                 {
                     Symbol = input.Symbol,
-                    TokenId = input.TokenId,
                     Duration = duration,
                     Owner = Context.Sender,
                     Price = input.Price,
@@ -136,14 +124,10 @@ public partial class ForestContract
                 });
             }
 
-            State.ListedNFTInfoListMap[input.Symbol][input.TokenId][Context.Sender] = listedNftInfoList;
+            State.ListedNFTInfoListMap[input.Symbol][Context.Sender] = listedNftInfoList;
 
             var totalQuantity = listedNftInfoList.Value.Where(i => i.Owner == Context.Sender).Sum(i => i.Quantity);
-            CheckSenderNFTBalanceAndAllowance(input.Symbol, input.TokenId, totalQuantity);
-
-            ClearBids(input.Symbol, input.TokenId);
-            State.EnglishAuctionInfoMap[input.Symbol].Remove(input.TokenId);
-            State.DutchAuctionInfoMap[input.Symbol].Remove(input.TokenId);
+            CheckSenderNFTBalanceAndAllowance(input.Symbol, totalQuantity);
 
             Context.Fire(new FixedPriceNFTListed
             {
@@ -151,7 +135,6 @@ public partial class ForestContract
                 Price = listedNftInfo.Price,
                 Quantity = input.Quantity,
                 Symbol = listedNftInfo.Symbol,
-                TokenId = listedNftInfo.TokenId,
                 Duration = listedNftInfo.Duration,
                 IsMergedToPreviousListedInfo = isMergedToPreviousListedInfo,
                 WhitelistId = whitelistId
@@ -180,7 +163,7 @@ public partial class ForestContract
                 throw new AssertionException("This NFT cannot be listed with auction for now.");
             }
 
-            CheckSenderNFTBalanceAndAllowance(input.Symbol, input.TokenId, 1);
+            CheckSenderNFTBalanceAndAllowance(input.Symbol, 1);
 
             Assert(GetTokenWhiteList(input.Symbol).Value.Contains(input.PurchaseSymbol),
                 $"{input.PurchaseSymbol} is not in token white list.");
@@ -188,9 +171,7 @@ public partial class ForestContract
                 string.IsNullOrEmpty(State.NFTContract.GetNFTProtocolInfo
                     .Call(new StringValue {Value = input.PurchaseSymbol}).Symbol),
                 $"Token {input.PurchaseSymbol} not support purchase for auction.");
-
-            ClearBids(input.Symbol, input.TokenId);
-
+            
             var duration = AdjustListDuration(input.Duration);
 
             var englishAuctionInfo = new EnglishAuctionInfo
@@ -203,9 +184,9 @@ public partial class ForestContract
                 Owner = Context.Sender,
                 EarnestMoney = input.EarnestMoney
             };
-            State.EnglishAuctionInfoMap[input.Symbol][input.TokenId] = englishAuctionInfo;
+            State.EnglishAuctionInfoMap[input.Symbol] = englishAuctionInfo;
 
-            State.ListedNFTInfoListMap[input.Symbol][input.TokenId][Context.Sender] = new ListedNFTInfoList
+            State.ListedNFTInfoListMap[input.Symbol][Context.Sender] = new ListedNFTInfoList
             {
                 Value =
                 {
@@ -270,7 +251,7 @@ public partial class ForestContract
                 throw new AssertionException("This NFT cannot be listed with auction for now.");
             }
 
-            CheckSenderNFTBalanceAndAllowance(input.Symbol, input.TokenId, 1);
+            CheckSenderNFTBalanceAndAllowance(input.Symbol, 1);
 
             Assert(GetTokenWhiteList(input.Symbol).Value.Contains(input.PurchaseSymbol),
                 $"{input.PurchaseSymbol} is not in token white list.");
@@ -293,7 +274,7 @@ public partial class ForestContract
             };
             State.DutchAuctionInfoMap[input.Symbol][input.TokenId] = dutchAuctionInfo;
 
-            State.ListedNFTInfoListMap[input.Symbol][input.TokenId][Context.Sender] = new ListedNFTInfoList
+            State.ListedNFTInfoListMap[input.Symbol][Context.Sender] = new ListedNFTInfoList
             {
                 Value =
                 {
@@ -313,9 +294,6 @@ public partial class ForestContract
                     }
                 }
             };
-
-            ClearBids(input.Symbol, input.TokenId);
-            State.EnglishAuctionInfoMap[input.Symbol].Remove(input.TokenId);
 
             Context.Fire(new DutchAuctionNFTListed
             {
@@ -347,8 +325,8 @@ public partial class ForestContract
 
         public override Empty Delist(DelistInput input)
         {
-            CheckSenderNFTBalanceAndAllowance(input.Symbol, input.TokenId, input.Quantity);
-            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][input.TokenId][Context.Sender];
+            CheckSenderNFTBalanceAndAllowance(input.Symbol, input.Quantity);
+            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
             if (listedNftInfoList == null || listedNftInfoList.Value.All(i => i.ListType == ListType.NotListed))
             {
                 throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
@@ -363,20 +341,20 @@ public partial class ForestContract
                 throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
             }
 
-            var requestInfo = State.RequestInfoMap[input.Symbol][input.TokenId];
+            var requestInfo = State.RequestInfoMap[input.Symbol];
             if (requestInfo != null)
             {
                 requestInfo.ListTime = null;
-                State.RequestInfoMap[input.Symbol][input.TokenId] = requestInfo;
+                State.RequestInfoMap[input.Symbol] = requestInfo;
             }
 
-            var projectId = CalculateProjectId(input.Symbol, input.TokenId, Context.Sender);
+            var projectId = CalculateProjectId(input.Symbol, Context.Sender);
             var whitelistId = State.WhitelistIdMap[projectId];
             
             switch (listedNftInfo.ListType)
             {
                 case ListType.FixedPrice when input.Quantity >= listedNftInfo.Quantity:
-                    State.ListedNFTInfoListMap[input.Symbol][input.TokenId][Context.Sender].Value.Remove(listedNftInfo);
+                    State.ListedNFTInfoListMap[input.Symbol][Context.Sender].Value.Remove(listedNftInfo);
                     // if (State.WhitelistIdMap[input.Symbol][input.TokenId][Context.Sender] != null)
                     // {
                     //     var whitelistId = State.WhitelistIdMap[projectId];
@@ -392,7 +370,7 @@ public partial class ForestContract
                     break;
                 case ListType.FixedPrice:
                     listedNftInfo.Quantity = listedNftInfo.Quantity.Sub(input.Quantity);
-                    State.ListedNFTInfoListMap[input.Symbol][input.TokenId][Context.Sender] = listedNftInfoList;
+                    State.ListedNFTInfoListMap[input.Symbol][Context.Sender] = listedNftInfoList;
                     Context.Fire(new ListedNFTChanged
                     {
                         Symbol = listedNftInfo.Symbol,
@@ -405,16 +383,14 @@ public partial class ForestContract
                     });
                     break;
                 case ListType.EnglishAuction:
-                    var englishAuctionInfo = State.EnglishAuctionInfoMap[input.Symbol][input.TokenId];
-                    var bidAddressList = State.BidAddressListMap[input.Symbol][input.TokenId];
+                    var englishAuctionInfo = State.EnglishAuctionInfoMap[input.Symbol];
+                    var bidAddressList = State.BidAddressListMap[input.Symbol];
                     if (bidAddressList != null && bidAddressList.Value.Any())
                     {
                         // Charge service fee if anyone placed a bid.
                         ChargeSenderServiceFee(englishAuctionInfo.PurchaseSymbol, englishAuctionInfo.StartingPrice);
                     }
-                    ClearBids(englishAuctionInfo.Symbol, englishAuctionInfo.TokenId);
-                    State.ListedNFTInfoListMap[input.Symbol][input.TokenId][Context.Sender].Value.Remove(listedNftInfo);
-                    State.EnglishAuctionInfoMap[input.Symbol].Remove(input.TokenId);
+                    State.ListedNFTInfoListMap[input.Symbol][Context.Sender].Value.Remove(listedNftInfo);
                     Context.Fire(new ListedNFTRemoved
                     {
                         Symbol = listedNftInfo.Symbol,
@@ -425,7 +401,7 @@ public partial class ForestContract
                     break;
                 case ListType.DutchAuction:
                     var dutchAuctionInfo = State.DutchAuctionInfoMap[input.Symbol][input.TokenId];
-                    State.ListedNFTInfoListMap[input.Symbol][input.TokenId][Context.Sender].Value.Remove(listedNftInfo);
+                    State.ListedNFTInfoListMap[input.Symbol][Context.Sender].Value.Remove(listedNftInfo);
                     State.DutchAuctionInfoMap[input.Symbol].Remove(input.TokenId);
                     ChargeSenderServiceFee(dutchAuctionInfo.PurchaseSymbol, dutchAuctionInfo.StartingPrice);
                     Context.Fire(new ListedNFTRemoved
@@ -482,7 +458,7 @@ public partial class ForestContract
                 throw new AssertionException("Incorrect price.");
             }
 
-            CheckSenderNFTBalanceAndAllowance(input.Symbol, input.TokenId, input.Quantity);
+            CheckSenderNFTBalanceAndAllowance(input.Symbol, input.Quantity);
 
             var balance = State.NFTContract.GetBalance.Call(new GetBalanceInput
             {
@@ -492,7 +468,7 @@ public partial class ForestContract
             });
             Assert(balance.Balance >= input.Quantity, "Insufficient NFT balance.");
 
-            var requestInfo = State.RequestInfoMap[input.Symbol][input.TokenId];
+            var requestInfo = State.RequestInfoMap[input.Symbol];
             if (requestInfo != null)
             {
                 Assert(Context.CurrentBlockTime > requestInfo.WhiteListDueTime, "Due time not passed.");
@@ -520,14 +496,14 @@ public partial class ForestContract
 
                 Assert(price.TokenId == 0, "Do not support use NFT to purchase auction.");
 
-                var auctionInfo = State.EnglishAuctionInfoMap[input.Symbol][input.TokenId];
+                var auctionInfo = State.EnglishAuctionInfoMap[input.Symbol];
 
                 totalAmount = price.Amount;
 
                 // Transfer earnest money back to the bidder at first.
                 if (auctionInfo.EarnestMoney > 0)
                 {
-                    State.TokenContract.Transfer.VirtualSend(CalculateTokenHash(input.Symbol, input.TokenId),
+                    State.TokenContract.Transfer.VirtualSend(CalculateTokenHash(input.Symbol),
                         new TransferInput
                         {
                             To = bid.From,
@@ -551,9 +527,7 @@ public partial class ForestContract
 
                 auctionInfo.DealPrice = input.Price.Amount;
                 auctionInfo.DealTo = input.OfferFrom;
-                State.EnglishAuctionInfoMap[input.Symbol][input.TokenId] = auctionInfo;
-
-                ClearBids(input.Symbol, input.TokenId, input.OfferFrom);
+                State.EnglishAuctionInfoMap[input.Symbol] = auctionInfo;
             }
             else
             {
@@ -588,7 +562,7 @@ public partial class ForestContract
                 totalAmount = price.Amount.Mul(input.Quantity);
             }
 
-            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][input.TokenId][Context.Sender];
+            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
             if (listedNftInfoList != null && listedNftInfoList.Value.Any())
             {
                 var firstListedNftInfo = listedNftInfoList.Value.First();
@@ -608,7 +582,7 @@ public partial class ForestContract
                 }
                 else
                 {
-                    State.ListedNFTInfoListMap[input.Symbol][input.TokenId].Remove(Context.Sender);
+                    // State.ListedNFTInfoListMap[input.Symbol][input.TokenId].Remove(Context.Sender);
                     Context.Fire(new ListedNFTRemoved
                     {
                         Symbol = firstListedNftInfo.Symbol,

@@ -171,13 +171,13 @@ public partial class ForestContract
     {
         AssertContractInitialized();
 
-        var requestInfo = State.RequestInfoMap[input.Symbol][input.TokenId];
+        var requestInfo = State.RequestInfoMap[input.Symbol];
         if (requestInfo == null) throw new AssertionException("Request not exists.");
 
         var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = input.Symbol});
         Assert(nftProtocolInfo.Creator == Context.Sender, "Only NFT Protocol Creator can handle request.");
 
-        var nftVirtualAddressFrom = CalculateTokenHash(input.Symbol, input.TokenId);
+        var nftVirtualAddressFrom = CalculateTokenHash(input.Symbol);
         var nftVirtualAddress = Context.ConvertVirtualAddressToContractAddress(nftVirtualAddressFrom);
         var nftVirtualAddressBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput
         {
@@ -193,7 +193,7 @@ public partial class ForestContract
                 (requestInfo.ExpireTime - Context.CurrentBlockTime).Seconds.Div(3600));
             requestInfo.WhiteListDueTime = requestInfo.ConfirmTime.AddHours(requestInfo.WorkHours)
                 .AddHours(requestInfo.WhiteListHours);
-            State.RequestInfoMap[input.Symbol][input.TokenId] = requestInfo;
+            State.RequestInfoMap[input.Symbol] = requestInfo;
 
             var transferAmount = nftVirtualAddressBalance.Mul(DefaultDepositConfirmRate).Div(FeeDenominator);
             var serviceFee = transferAmount.Mul(State.ServiceFeeRate.Value).Div(FeeDenominator);
@@ -226,7 +226,7 @@ public partial class ForestContract
         }
         else
         {
-            MaybeRemoveRequest(input.Symbol, input.TokenId);
+            // MaybeRemoveRequest(input.Symbol, input.TokenId);
             if (nftVirtualAddressBalance > 0)
                 State.TokenContract.Transfer.VirtualSend(nftVirtualAddressFrom, new TransferInput
                 {
@@ -250,7 +250,7 @@ public partial class ForestContract
     {
         AssertContractInitialized();
 
-        var requestInfo = State.RequestInfoMap[input.Symbol][input.TokenId];
+        var requestInfo = State.RequestInfoMap[input.Symbol];
         if (requestInfo == null) throw new AssertionException("Request info does not exist.");
 
         MaybeReceiveRemainDeposit(requestInfo);

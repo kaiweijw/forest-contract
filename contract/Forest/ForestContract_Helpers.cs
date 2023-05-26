@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using AElf;
+using AElf.Contracts.MultiToken;
 using AElf.Contracts.NFT;
 using AElf.CSharp.Core;
 using AElf.CSharp.Core.Extension;
@@ -9,6 +10,7 @@ using AElf.Types;
 using Forest.Whitelist;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using GetAllowanceInput = AElf.Contracts.NFT.GetAllowanceInput;
 using TransferFromInput = AElf.Contracts.MultiToken.TransferFromInput;
 using TransferInput = AElf.Contracts.MultiToken.TransferInput;
 
@@ -16,19 +18,17 @@ namespace Forest;
 
 public partial class ForestContract
 {
-    private void CheckSenderNFTBalanceAndAllowance(string symbol, long tokenId, long quantity)
+    private void CheckSenderNFTBalanceAndAllowance(string symbol, long quantity)
         {
-            var balance = State.NFTContract.GetBalance.Call(new GetBalanceInput
+            var balance = State.TokenContract.GetBalance.Call(new AElf.Contracts.MultiToken.GetBalanceInput()
             {
                 Symbol = symbol,
-                TokenId = tokenId,
                 Owner = Context.Sender
             }).Balance;
             Assert(balance >= quantity, $"Check sender NFT balance failed. {balance} / {quantity}");
-            var allowance = State.NFTContract.GetAllowance.Call(new GetAllowanceInput
+            var allowance = State.TokenContract.GetAllowance.Call(new  AElf.Contracts.MultiToken.GetAllowanceInput()//GetAllowanceInput
             {
                 Symbol = symbol,
-                TokenId = tokenId,
                 Owner = Context.Sender,
                 Spender = Context.Self
             }).Allowance;
@@ -54,9 +54,9 @@ public partial class ForestContract
 
         private void PayRemainDepositInCustomizeCase(PerformDealInput performDealInput)
         {
-            var requestInfo = State.RequestInfoMap[performDealInput.NFTSymbol][performDealInput.NFTTokenId];
+            var requestInfo = State.RequestInfoMap[performDealInput.NFTSymbol];
             if (requestInfo == null) return;
-            var nftVirtualAddressFrom = CalculateTokenHash(performDealInput.NFTSymbol, performDealInput.NFTTokenId);
+            var nftVirtualAddressFrom = CalculateTokenHash(performDealInput.NFTSymbol);
             var nftVirtualAddress = Context.ConvertVirtualAddressToContractAddress(nftVirtualAddressFrom);
             var balanceOfNftVirtualAddress = State.TokenContract.GetBalance.Call(new AElf.Contracts.MultiToken.GetBalanceInput
             {
@@ -231,7 +231,7 @@ public partial class ForestContract
                 throw new AssertionException("Cannot request new item for this protocol.");
             }
 
-            Assert(State.RequestInfoMap[symbol][tokenId] == null, "Request already existed.");
+            Assert(State.RequestInfoMap[symbol] == null, "Request already existed.");
 
             var nftVirtualAddress = CalculateNFTVirtuaAddress(symbol, tokenId);
             var priceSymbol = customizeInfo.Price.Symbol;
@@ -262,7 +262,7 @@ public partial class ForestContract
             }
 
             var defaultExpireTime = Context.CurrentBlockTime.AddDays(DefaultExpireDays);
-            State.RequestInfoMap[symbol][tokenId] = new RequestInfo
+            State.RequestInfoMap[symbol] = new RequestInfo
             {
                 Symbol = symbol,
                 TokenId = tokenId,
@@ -291,7 +291,7 @@ public partial class ForestContract
 
         private bool CanBeListedWithAuction(string symbol, long tokenId, out RequestInfo requestInfo)
         {
-            requestInfo = State.RequestInfoMap[symbol][tokenId];
+            requestInfo = State.RequestInfoMap[symbol];
 
             var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = symbol});
             if (nftProtocolInfo.IsTokenIdReuse)
@@ -329,14 +329,14 @@ public partial class ForestContract
             return true;
         }
 
-        private Hash CalculateTokenHash(string symbol, long tokenId = 0)
+        private Hash CalculateTokenHash(string symbol)
         {
-            return HashHelper.ComputeFrom($"{symbol}{tokenId}");
+            return HashHelper.ComputeFrom($"{symbol}");
         }
 
         private Address CalculateNFTVirtuaAddress(string symbol, long tokenId = 0)
         {
-            return Context.ConvertVirtualAddressToContractAddress(CalculateTokenHash(symbol, tokenId));
+            return Context.ConvertVirtualAddressToContractAddress(CalculateTokenHash(symbol));
         }
 
         private ListDuration AdjustListDuration(ListDuration duration)
@@ -378,7 +378,7 @@ public partial class ForestContract
             {
                 throw new AssertionException("Incorrect white list address price list.");
             }
-            var projectId = CalculateProjectId(input.Symbol, input.TokenId, Context.Sender);
+            var projectId = CalculateProjectId(input.Symbol, Context.Sender);
             var whitelistId = State.WhitelistIdMap[projectId];
             //TODO:Whether to adjust whitelist info to be correct.
             Assert(whitelistInfo.Whitelists.Count == 1 &&
@@ -492,84 +492,21 @@ public partial class ForestContract
                 }
             }
             requestInfo.ListTime = Context.CurrentBlockTime;
-            State.RequestInfoMap[input.Symbol][input.TokenId] = requestInfo;
+            State.RequestInfoMap[input.Symbol] = requestInfo;
         }
 
-        private void ClearBids(string symbol, long tokenId, Address except = null)
-        {
-            var bidAddressList = State.BidAddressListMap[symbol][tokenId];
-            var auctionInfo = State.EnglishAuctionInfoMap[symbol][tokenId];
-
-            if (bidAddressList == null || !bidAddressList.Value.Any() || auctionInfo == null) return;
-
-            if (except != null)
-            {
-                bidAddressList.Value.Remove(except);
-            }
-
-            var transferredEarnestMoney = 0L;
-            foreach (var bidAddress in bidAddressList.Value)
-            {
-                if (auctionInfo.EarnestMoney > 0)
-                {
-                    var earnestMoneyReceiver = State.BidMap[symbol][tokenId] == null ? auctionInfo.Owner : bidAddress;
-                    State.TokenContract.Transfer.VirtualSend(CalculateTokenHash(symbol, tokenId),
-                        new TransferInput
-                        {
-                            To = earnestMoneyReceiver,
-                            Symbol = auctionInfo.PurchaseSymbol,
-                            Amount = auctionInfo.EarnestMoney
-                        });
-                    transferredEarnestMoney = transferredEarnestMoney.Add(auctionInfo.EarnestMoney);
-                }
-
-                State.BidMap[symbol][tokenId].Remove(bidAddress);
-
-                Context.Fire(new BidCanceled
-                {
-                    Symbol = symbol,
-                    TokenId = tokenId,
-                    BidFrom = bidAddress,
-                    BidTo = Context.Sender,
-                });
-            }
-
-            State.BidAddressListMap[symbol].Remove(tokenId);
-
-            var virtualAddressBalance = State.TokenContract.GetBalance.Call(new AElf.Contracts.MultiToken.GetBalanceInput
-            {
-                Owner = CalculateNFTVirtuaAddress(symbol, tokenId),
-                Symbol = auctionInfo.PurchaseSymbol
-            }).Balance;
-            var remainAmount = virtualAddressBalance.Sub(transferredEarnestMoney);
-            if (except != null)
-            {
-                remainAmount = remainAmount.Sub(auctionInfo.EarnestMoney.Mul(except.Value.Length));
-            }
-            if (remainAmount > 0)
-            {
-                State.TokenContract.Transfer.VirtualSend(CalculateTokenHash(symbol, tokenId),
-                    new TransferInput
-                    {
-                        To = auctionInfo.Owner,
-                        Symbol = auctionInfo.PurchaseSymbol,
-                        Amount = remainAmount
-                    });
-            }
-        }
-
-        private void MaybeRemoveRequest(string symbol, long tokenId)
-        {
-            State.RequestInfoMap[symbol].Remove(tokenId);
-            if (State.CustomizeInfoMap[symbol] != null && State.CustomizeInfoMap[symbol].ReservedTokenIds != null &&
-                State.CustomizeInfoMap[symbol].ReservedTokenIds.Any())
-            {
-                if (State.CustomizeInfoMap[symbol].ReservedTokenIds.Contains(tokenId))
-                {
-                    State.CustomizeInfoMap[symbol].ReservedTokenIds.Remove(tokenId);
-                }
-            }
-        }
+        // private void MaybeRemoveRequest(string symbol, long tokenId)
+        // {
+        //     State.RequestInfoMap[symbol].Remove(tokenId);
+        //     if (State.CustomizeInfoMap[symbol] != null && State.CustomizeInfoMap[symbol].ReservedTokenIds != null &&
+        //         State.CustomizeInfoMap[symbol].ReservedTokenIds.Any())
+        //     {
+        //         if (State.CustomizeInfoMap[symbol].ReservedTokenIds.Contains(tokenId))
+        //         {
+        //             State.CustomizeInfoMap[symbol].ReservedTokenIds.Remove(tokenId);
+        //         }
+        //     }
+        // }
 
         private bool IsListedNftTimedOut(ListedNFTInfo listedNftInfo)
         {
@@ -588,9 +525,9 @@ public partial class ForestContract
             };
         }
 
-        private Hash CalculateProjectId(string symbol, long tokenId,Address sender)
+        private Hash CalculateProjectId(string symbol,Address sender)
         {
-            return HashHelper.ComputeFrom($"{symbol}{tokenId}{sender}");
+            return HashHelper.ComputeFrom($"{symbol}{sender}");
         }
 
         private ExtraInfoList ConvertToExtraInfo(WhitelistInfoList input)

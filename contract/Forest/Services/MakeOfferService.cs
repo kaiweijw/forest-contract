@@ -17,13 +17,13 @@ internal class MakeOfferService
     private readonly NFTContractContainer.NFTContractReferenceState _nftContract;
     private readonly WhitelistContractContainer.WhitelistContractReferenceState _whitelistContract;
     private readonly MappedState<Hash, Hash> _whitelistIdMap;
-    private readonly MappedState<string, long, Address, ListedNFTInfoList> _listedNFTInfoListMap;
+    private readonly MappedState<string, Address, ListedNFTInfoList> _listedNFTInfoListMap;
     private readonly WhitelistManager _whitelistManager;
     private readonly CSharpSmartContractContext _context;
 
     public MakeOfferService(NFTContractContainer.NFTContractReferenceState nftContract,
         MappedState<Hash, Hash> whitelistIdMap,
-        MappedState<string, long, Address, ListedNFTInfoList> listedNFTInfoListMap,
+        MappedState<string, Address, ListedNFTInfoList> listedNFTInfoListMap,
         WhitelistManager whitelistManager,
         CSharpSmartContractContext context)
     {
@@ -71,7 +71,7 @@ internal class MakeOfferService
         }
 
         var listedNftInfoList =
-            _listedNFTInfoListMap[makeOfferInput.Symbol][makeOfferInput.TokenId][
+            _listedNFTInfoListMap[makeOfferInput.Symbol][
                 makeOfferInput.OfferTo ?? nftInfo.Creator];
 
         if (listedNftInfoList == null || listedNftInfoList.Value.All(i => i.ListType == ListType.NotListed))

@@ -20,7 +20,7 @@ namespace Forest
         /// <summary>
         /// Symbol -> Token Id -> Owner -> List NFT Info List
         /// </summary>
-        public MappedState<string, long, Address, ListedNFTInfoList> ListedNFTInfoListMap { get; set; }
+        public MappedState<string, Address, ListedNFTInfoList> ListedNFTInfoListMap { get; set; }
 
         /// <summary>
         /// Project Id -> Whitelist Id
@@ -39,7 +39,7 @@ namespace Forest
 
         public MappedState<string, long, Address, Bid> BidMap { get; set; }
 
-        public MappedState<string, long, AddressList> BidAddressListMap { get; set; }
+        public MappedState<string, AddressList> BidAddressListMap { get; set; }
 
         /// <summary>
         /// Symbol -> Token Id -> Royalty
@@ -51,9 +51,9 @@ namespace Forest
         public MappedState<string, StringList> TokenWhiteListMap { get; set; }
 
         public MappedState<string, CustomizeInfo> CustomizeInfoMap { get; set; }
-        public MappedState<string, long, RequestInfo> RequestInfoMap { get; set; }
+        public MappedState<string, RequestInfo> RequestInfoMap { get; set; }
 
-        public MappedState<string, long, EnglishAuctionInfo> EnglishAuctionInfoMap { get; set; }
+        public MappedState<string, EnglishAuctionInfo> EnglishAuctionInfoMap { get; set; }
         public MappedState<string, long, DutchAuctionInfo> DutchAuctionInfoMap { get; set; }
     }
 }
