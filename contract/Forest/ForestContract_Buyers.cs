@@ -262,7 +262,7 @@ public partial class ForestContract
             {
                 AssertSenderIsAdmin();
 
-                offerList = State.OfferListMap[input.Symbol][input.TokenId][input.OfferFrom];
+                offerList = State.OfferListMap[input.Symbol][input.OfferFrom];
 
                 if (offerList != null)
                 {
@@ -285,7 +285,7 @@ public partial class ForestContract
                         }
                     }
 
-                    State.OfferListMap[input.Symbol][input.TokenId][input.OfferFrom] = newOfferList;
+                    State.OfferListMap[input.Symbol][input.OfferFrom] = newOfferList;
                 }
 
                 if (requestInfo != null && !requestInfo.IsConfirmed &&
@@ -319,13 +319,12 @@ public partial class ForestContract
                     });
                 }
 
-                var bid = State.BidMap[input.Symbol][input.TokenId][input.OfferFrom];
+                var bid = State.BidMap[input.Symbol][input.OfferFrom];
 
                 if (bid != null)
                 {
                     if (bid.ExpireTime < Context.CurrentBlockTime)
                     {
-                        State.BidMap[input.Symbol][input.TokenId].Remove(input.OfferFrom);
                         var auctionInfo = State.EnglishAuctionInfoMap[input.Symbol];
                         if (auctionInfo != null && auctionInfo.EarnestMoney > 0)
                         {
@@ -357,7 +356,7 @@ public partial class ForestContract
                 return new Empty();
             }
 
-            offerList = State.OfferListMap[input.Symbol][input.TokenId][Context.Sender];
+            offerList = State.OfferListMap[input.Symbol][Context.Sender];
 
             // Check Request Map first.
             if (requestInfo != null)
@@ -372,7 +371,7 @@ public partial class ForestContract
                     OfferTo = offerList.Value.FirstOrDefault()?.To,
                     ExpireTime = offerList.Value.FirstOrDefault()?.ExpireTime
                 });
-                State.OfferListMap[input.Symbol][input.TokenId].Remove(Context.Sender);
+                State.OfferListMap[input.Symbol].Remove(Context.Sender);
                 return new Empty();
             }
 
@@ -384,12 +383,12 @@ public partial class ForestContract
             if (nftInfo.Creator == null)
             {
                 // This nft does not exist.
-                State.OfferListMap[input.Symbol][input.TokenId].Remove(Context.Sender);
+                State.OfferListMap[input.Symbol].Remove(Context.Sender);
             }
 
             if (input.IsCancelBid)
             {
-                var bid = State.BidMap[input.Symbol][input.TokenId][Context.Sender];
+                var bid = State.BidMap[input.Symbol][Context.Sender];
                 if (bid != null)
                 {
                     var auctionInfo = State.EnglishAuctionInfoMap[input.Symbol];
@@ -408,9 +407,7 @@ public partial class ForestContract
                                 });
                         }
                     }
-
-                    State.BidMap[input.Symbol][input.TokenId].Remove(Context.Sender);
-
+                    
                     var bidAddressList = State.BidAddressListMap[input.Symbol];
                     if (bidAddressList != null && bidAddressList.Value.Contains(Context.Sender))
                     {
@@ -461,7 +458,7 @@ public partial class ForestContract
                 newOfferList.Value.Add(offerList.Value);
             }
 
-            State.OfferListMap[input.Symbol][input.TokenId][Context.Sender] = newOfferList;
+            State.OfferListMap[input.Symbol][Context.Sender] = newOfferList;
 
             return new Empty();
         }
@@ -564,7 +561,7 @@ public partial class ForestContract
         /// <param name="input"></param>
         private void PerformMakeOffer(MakeOfferInput input)
         {
-            var offerList = State.OfferListMap[input.Symbol][input.TokenId][Context.Sender] ?? new OfferList();
+            var offerList = State.OfferListMap[input.Symbol][Context.Sender] ?? new OfferList();
             var expireTime = input.ExpireTime ?? Context.CurrentBlockTime.AddDays(DefaultExpireDays);
             var maybeSameOffer = offerList.Value.SingleOrDefault(o =>
                 o.Price.Symbol == input.Price.Symbol && o.Price.Amount == input.Price.Amount &&
@@ -605,7 +602,7 @@ public partial class ForestContract
                 });
             }
 
-            State.OfferListMap[input.Symbol][input.TokenId][Context.Sender] = offerList;
+            State.OfferListMap[input.Symbol][Context.Sender] = offerList;
 
             var addressList = State.OfferAddressListMap[input.Symbol][input.TokenId] ?? new AddressList();
 
@@ -692,7 +689,7 @@ public partial class ForestContract
                 ChargeEarnestMoney(input.Symbol, input.TokenId, auctionInfo.PurchaseSymbol, auctionInfo.EarnestMoney);
             }
 
-            State.BidMap[input.Symbol][input.TokenId][Context.Sender] = bid;
+            State.BidMap[input.Symbol][Context.Sender] = bid;
 
             var remainAmount = input.Price.Amount.Sub(auctionInfo.EarnestMoney);
             Assert(

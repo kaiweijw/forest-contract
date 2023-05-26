@@ -35,9 +35,9 @@ namespace Forest
         /// <summary>
         /// Symbol -> Token Id -> Offer Maker -> Offer List
         /// </summary>
-        public MappedState<string, long, Address, OfferList> OfferListMap { get; set; }
+        public MappedState<string, Address, OfferList> OfferListMap { get; set; }
 
-        public MappedState<string, long, Address, Bid> BidMap { get; set; }
+        public MappedState<string, Address, Bid> BidMap { get; set; }
 
         public MappedState<string, AddressList> BidAddressListMap { get; set; }
 

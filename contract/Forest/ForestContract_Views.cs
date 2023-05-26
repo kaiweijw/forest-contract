@@ -30,7 +30,7 @@ public partial class ForestContract
         {
             if (input.Address != null)
             {
-                return State.OfferListMap[input.Symbol][input.TokenId][input.Address];
+                return State.OfferListMap[input.Symbol][input.Address];
             }
 
             var addressList = GetOfferAddressList(new GetAddressListInput
@@ -41,7 +41,7 @@ public partial class ForestContract
             var allOfferList = new OfferList();
             foreach (var address in addressList.Value)
             {
-                var offerList = State.OfferListMap[input.Symbol][input.TokenId][address];
+                var offerList = State.OfferListMap[input.Symbol][address];
                 if (offerList != null)
                 {
                     allOfferList.Value.Add(offerList.Value);
@@ -58,7 +58,7 @@ public partial class ForestContract
 
         public override Bid GetBid(GetBidInput input)
         {
-            return State.BidMap[input.Symbol][input.TokenId][input.Address];
+            return State.BidMap[input.Symbol][input.Address];
         }
 
         public override BidList GetBidList(GetBidListInput input)
@@ -71,7 +71,7 @@ public partial class ForestContract
             var allBidList = new BidList();
             foreach (var address in addressList.Value)
             {
-                var bid = State.BidMap[input.Symbol][input.TokenId][address];
+                var bid = State.BidMap[input.Symbol][address];
                 if (bid != null)
                 {
                     allBidList.Value.Add(bid);

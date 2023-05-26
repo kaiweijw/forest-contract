@@ -18,24 +18,7 @@ namespace Forest;
 
 public partial class ForestContract
 {
-    private void CheckSenderNFTBalanceAndAllowance(string symbol, long quantity)
-        {
-            var balance = State.TokenContract.GetBalance.Call(new AElf.Contracts.MultiToken.GetBalanceInput()
-            {
-                Symbol = symbol,
-                Owner = Context.Sender
-            }).Balance;
-            Assert(balance >= quantity, $"Check sender NFT balance failed. {balance} / {quantity}");
-            var allowance = State.TokenContract.GetAllowance.Call(new  AElf.Contracts.MultiToken.GetAllowanceInput()//GetAllowanceInput
-            {
-                Symbol = symbol,
-                Owner = Context.Sender,
-                Spender = Context.Self
-            }).Allowance;
-            Assert(allowance >= quantity, $"Check sender NFT allowance failed. {allowance} / {quantity}");
-        }
-
-        private bool CheckAllowanceAndBalanceIsEnough(Address owner, string symbol, long enoughAmount)
+    private bool CheckAllowanceAndBalanceIsEnough(Address owner, string symbol, long enoughAmount)
         {
             var balance = State.TokenContract.GetBalance.Call(new AElf.Contracts.MultiToken.GetBalanceInput
             {
@@ -91,7 +74,7 @@ public partial class ForestContract
         {
             Assert(performDealInput.NFTFrom != performDealInput.NFTTo, "NFT From address cannot be NFT To address.");
             PayRemainDepositInCustomizeCase(performDealInput);
-            if (performDealInput.PurchaseTokenId == 0)
+            if (performDealInput.PurchaseTokenId == 0)  // todo
             {
                 var serviceFee = performDealInput.PurchaseAmount.Mul(State.ServiceFeeRate.Value).Div(FeeDenominator);
                 var royalty = GetRoyalty(new GetRoyaltyInput
