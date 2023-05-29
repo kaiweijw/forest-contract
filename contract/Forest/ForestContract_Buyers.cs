@@ -66,7 +66,6 @@ public partial class ForestContract
                     }
                     if (TryDealWithFixedPriceWhitelist(input,price,whitelistId))
                     {
-                        // MaybeRemoveRequest(input.Symbol, input.TokenId);
                         minStartList[0].Quantity = minStartList[0].Quantity.Sub(1);
                         if (minStartList[0].Quantity == 0)
                         {
@@ -375,9 +374,7 @@ public partial class ForestContract
                     Amount = balanceOfNftVirtualAddress
                 });
             }
-
-            // MaybeRemoveRequest(input.Symbol, input.TokenId);
-
+            
             Context.Fire(new NFTRequestCancelled
             {
                 Symbol = input.Symbol,
@@ -658,58 +655,5 @@ public partial class ForestContract
                     Amount = balance
                 });
             }
-
-            // MaybeRemoveRequest(requestInfo.Symbol, requestInfo.TokenId);
-        }
-
-        public override Empty MintBadge(MintBadgeInput input)
-        {
-            var protocol = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = input.Symbol});
-            Assert(!string.IsNullOrWhiteSpace(protocol.Symbol), $"Protocol {input.Symbol} not found.");
-            Assert(protocol.NftType.ToUpper() == NFTType.Badges.ToString().ToUpper(),
-                "This method is only for badges.");
-            var nftInfo = State.NFTContract.GetNFTInfo.Call(new GetNFTInfoInput
-            {
-                Symbol = input.Symbol,
-                TokenId = input.TokenId
-            });
-            Assert(nftInfo.TokenId > 0, "Badge not found.");
-            Assert(nftInfo.Metadata.Value.ContainsKey(BadgeMintWhitelistIdMetadataKey),
-                $"Metadata {BadgeMintWhitelistIdMetadataKey} not found.");
-            var whitelistIdHex = nftInfo.Metadata.Value[BadgeMintWhitelistIdMetadataKey];
-            Assert(!string.IsNullOrWhiteSpace(whitelistIdHex),$"No whitelist.{whitelistIdHex}");
-            var whitelistId = Hash.LoadFromHex(whitelistIdHex);
-            //Whether NFT Market Contract is the manager.
-            var isManager = State.WhitelistContract.GetManagerExistFromWhitelist.Call(new GetManagerExistFromWhitelistInput
-            {
-                WhitelistId = whitelistId,
-                Manager = Context.Self
-            });
-            Assert(isManager.Value == true,"NFT Market Contract does not in the manager list.");
-            // Is Context.Sender in whitelist
-            var ifExist = State.WhitelistContract.GetAddressFromWhitelist.Call(new GetAddressFromWhitelistInput
-            {
-                WhitelistId = whitelistId,
-                Address = Context.Sender
-            });
-            Assert(ifExist.Value,$"No permission.{Context.Sender}");
-            State.NFTContract.Mint.Send(new MintInput
-            {
-                Symbol = input.Symbol,
-                Owner = Context.Sender,
-                Quantity = 1
-            });
-            State.WhitelistContract.RemoveAddressInfoListFromWhitelist.Send(new RemoveAddressInfoListFromWhitelistInput
-            {
-                WhitelistId = whitelistId,
-                ExtraInfoIdList = new ExtraInfoIdList
-                {
-                    Value = { new ExtraInfoId
-                    {
-                        AddressList = new Whitelist.AddressList{Value = { Context.Sender }}
-                    } }
-                }
-            });
-            return new Empty();
         }
 }
