@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using AElf.Contracts.MultiToken;
 using AElf.Contracts.NFT;
 using AElf.CSharp.Core;
 using AElf.CSharp.Core.Extension;
@@ -28,19 +29,17 @@ public partial class ForestContract
         public override Empty MakeOffer(MakeOfferInput input)
         {
             AssertContractInitialized();
-            
-            var nftInfo = State.NFTContract.GetNFTInfo.Call(new GetNFTInfoInput
+            var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
             {
                 Symbol = input.Symbol,
-                TokenId = input.TokenId
             });
-            
+
             var makeOfferService = GetMakeOfferService();
             makeOfferService.ValidateOffer(input);
 
-            if (nftInfo.Quantity != 0 && input.OfferTo == null)
+            if (nftInfo.Supply != 0 && input.OfferTo == null)
             {
-                input.OfferTo = nftInfo.Creator;
+                input.OfferTo = nftInfo.Issuer;
             }
 
             var listedNftInfoList =
@@ -75,7 +74,6 @@ public partial class ForestContract
                             Context.Fire(new ListedNFTRemoved
                             {
                                 Symbol = minStartList[0].Symbol,
-                                TokenId = minStartList[0].TokenId,
                                 Duration = minStartList[0].Duration,
                                 Owner = minStartList[0].Owner,
                                 Price = minStartList[0].Price
@@ -86,7 +84,6 @@ public partial class ForestContract
                             Context.Fire(new ListedNFTChanged
                             {
                                 Symbol = minStartList[0].Symbol,
-                                TokenId = minStartList[0].TokenId,
                                 Duration = minStartList[0].Duration,
                                 Owner = minStartList[0].Owner,
                                 PreviousDuration = minStartList[0].Duration,
@@ -108,13 +105,13 @@ public partial class ForestContract
             switch(dealStatus)
             {
                 case DealStatus.NFTNotMined:
-                    PerformRequestNewItem(input.Symbol, input.TokenId, input.Price, input.ExpireTime);
+                    PerformRequestNewItem(input.Symbol, input.Price, input.ExpireTime);
                     return new Empty();
                 case DealStatus.NotDeal:
                     PerformMakeOffer(input);
                     return new Empty();
             }
-            Assert(nftInfo.Quantity > 0, "NFT does not exist.");
+            Assert(nftInfo.Supply > 0, "NFT does not exist.");
 
             if (listedNftInfoList.Value.All(i => i.ListType != ListType.FixedPrice))
             {
@@ -123,22 +120,6 @@ public partial class ForestContract
                 {
                     PerformMakeOffer(input);
                 }
-                else
-                {
-                    if (auctionInfo.ListType == ListType.EnglishAuction)
-                    {
-                        TryPlaceBidForEnglishAuction(input);
-                    }
-
-                    if (auctionInfo.ListType == ListType.DutchAuction)
-                    {
-                        if (PerformMakeOfferToDutchAuction(input))
-                        {
-                            listedNftInfoList.Value.Remove(auctionInfo);
-                        }
-                    }
-                }
-
                 State.ListedNFTInfoListMap[input.Symbol][input.OfferTo] = listedNftInfoList;
 
                 return new Empty();
@@ -176,7 +157,6 @@ public partial class ForestContract
                     Context.Fire(new ListedNFTChanged
                     {
                         Symbol = listedNftInfo.Symbol,
-                        TokenId = listedNftInfo.TokenId,
                         Duration = listedNftInfo.Duration,
                         Owner = listedNftInfo.Owner,
                         PreviousDuration = listedNftInfo.Duration,
@@ -195,7 +175,6 @@ public partial class ForestContract
                     Context.Fire(new ListedNFTRemoved
                     {
                         Symbol = info.Symbol,
-                        TokenId = info.TokenId,
                         Duration = info.Duration,
                         Owner = info.Owner,
                         Price = info.Price
@@ -241,7 +220,6 @@ public partial class ForestContract
                 NFTFrom = input.OfferTo,
                 NFTTo = Context.Sender,
                 NFTSymbol = input.Symbol,
-                NFTTokenId = input.TokenId,
                 NFTQuantity = 1,
                 PurchaseSymbol = price.Symbol,
                 PurchaseAmount = totalAmount,
@@ -255,7 +233,6 @@ public partial class ForestContract
 
             OfferList offerList;
             var newOfferList = new OfferList();
-            var requestInfo = State.RequestInfoMap[input.Symbol];
 
             // Admin can remove expired offer.
             if (input.OfferFrom != null && input.OfferFrom != Context.Sender)
@@ -277,7 +254,6 @@ public partial class ForestContract
                             Context.Fire(new OfferRemoved
                             {
                                 Symbol = input.Symbol,
-                                TokenId = input.TokenId,
                                 OfferFrom = offer.From,
                                 OfferTo = offer.To,
                                 ExpireTime = offer.ExpireTime
@@ -287,141 +263,21 @@ public partial class ForestContract
 
                     State.OfferListMap[input.Symbol][input.OfferFrom] = newOfferList;
                 }
-
-                if (requestInfo != null && !requestInfo.IsConfirmed &&
-                    requestInfo.ExpireTime > Context.CurrentBlockTime)
-                {
-                    // MaybeRemoveRequest(input.Symbol, input.TokenId);
-                    var protocolVirtualAddressFrom = CalculateTokenHash(input.Symbol);
-                    var protocolVirtualAddress =
-                        Context.ConvertVirtualAddressToContractAddress(protocolVirtualAddressFrom);
-                    var balanceOfNftProtocolVirtualAddress = State.TokenContract.GetBalance.Call(new GetBalanceInput
-                    {
-                        Symbol = requestInfo.Price.Symbol,
-                        Owner = protocolVirtualAddress
-                    }).Balance;
-
-                    if (balanceOfNftProtocolVirtualAddress > 0)
-                    {
-                        State.TokenContract.Transfer.VirtualSend(protocolVirtualAddressFrom, new TransferInput
-                        {
-                            To = requestInfo.Requester,
-                            Symbol = requestInfo.Price.Symbol,
-                            Amount = balanceOfNftProtocolVirtualAddress
-                        });
-                    }
-
-                    Context.Fire(new NFTRequestCancelled
-                    {
-                        Symbol = input.Symbol,
-                        TokenId = input.TokenId,
-                        Requester = Context.Sender
-                    });
-                }
-
-                var bid = State.BidMap[input.Symbol][input.OfferFrom];
-
-                if (bid != null)
-                {
-                    if (bid.ExpireTime < Context.CurrentBlockTime)
-                    {
-                        var auctionInfo = State.EnglishAuctionInfoMap[input.Symbol];
-                        if (auctionInfo != null && auctionInfo.EarnestMoney > 0)
-                        {
-                            State.TokenContract.Transfer.VirtualSend(CalculateTokenHash(input.Symbol),
-                                new TransferInput
-                                {
-                                    To = bid.From,
-                                    Symbol = auctionInfo.PurchaseSymbol,
-                                    Amount = auctionInfo.EarnestMoney
-                                });
-                        }
-
-                        var bidAddressList = State.BidAddressListMap[input.Symbol];
-                        if (bidAddressList != null && bidAddressList.Value.Contains(Context.Sender))
-                        {
-                            State.BidAddressListMap[input.Symbol].Value.Remove(Context.Sender);
-                        }
-
-                        Context.Fire(new BidCanceled
-                        {
-                            Symbol = input.Symbol,
-                            TokenId = input.TokenId,
-                            BidFrom = bid.From,
-                            BidTo = bid.To
-                        });
-                    }
-                }
-
                 return new Empty();
             }
+
+            //owner can remove select offer.
 
             offerList = State.OfferListMap[input.Symbol][Context.Sender];
 
-            // Check Request Map first.
-            if (requestInfo != null)
-            {
-                PerformCancelRequest(input, requestInfo);
-                // Only one request for each token id.
-                Context.Fire(new OfferRemoved
-                {
-                    Symbol = input.Symbol,
-                    TokenId = input.TokenId,
-                    OfferFrom = Context.Sender,
-                    OfferTo = offerList.Value.FirstOrDefault()?.To,
-                    ExpireTime = offerList.Value.FirstOrDefault()?.ExpireTime
-                });
-                State.OfferListMap[input.Symbol].Remove(Context.Sender);
-                return new Empty();
-            }
-
-            var nftInfo = State.NFTContract.GetNFTInfo.Call(new GetNFTInfoInput
+            var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
             {
                 Symbol = input.Symbol,
-                TokenId = input.TokenId
             });
-            if (nftInfo.Creator == null)
+            if (nftInfo.Issuer == null)
             {
                 // This nft does not exist.
                 State.OfferListMap[input.Symbol].Remove(Context.Sender);
-            }
-
-            if (input.IsCancelBid)
-            {
-                var bid = State.BidMap[input.Symbol][Context.Sender];
-                if (bid != null)
-                {
-                    var auctionInfo = State.EnglishAuctionInfoMap[input.Symbol];
-                    var finishTime = auctionInfo.Duration.StartTime.AddHours(auctionInfo.Duration.DurationHours);
-                    if (auctionInfo.DealTo != null || Context.CurrentBlockTime >= finishTime ||
-                        Context.CurrentBlockTime >= bid.ExpireTime)
-                    {
-                        if (auctionInfo.EarnestMoney > 0)
-                        {
-                            State.TokenContract.Transfer.VirtualSend(CalculateTokenHash(input.Symbol),
-                                new TransferInput
-                                {
-                                    To = Context.Sender,
-                                    Symbol = auctionInfo.PurchaseSymbol,
-                                    Amount = auctionInfo.EarnestMoney
-                                });
-                        }
-                    }
-                    
-                    var bidAddressList = State.BidAddressListMap[input.Symbol];
-                    if (bidAddressList != null && bidAddressList.Value.Contains(Context.Sender))
-                    {
-                        State.BidAddressListMap[input.Symbol].Value.Remove(Context.Sender);
-                    }
-
-                    Context.Fire(new BidCanceled
-                    {
-                        Symbol = input.Symbol,
-                        TokenId = input.TokenId,
-                        BidFrom = Context.Sender,
-                        BidTo = bid.To
-                    });
-                }
             }
 
             if (input.IndexList != null && input.IndexList.Value.Any())
@@ -437,7 +293,6 @@ public partial class ForestContract
                         Context.Fire(new OfferRemoved
                         {
                             Symbol = input.Symbol,
-                            TokenId = input.TokenId,
                             OfferFrom = Context.Sender,
                             OfferTo = offerList.Value[i].To,
                             ExpireTime = offerList.Value[i].ExpireTime
@@ -448,7 +303,6 @@ public partial class ForestContract
                 Context.Fire(new OfferCanceled
                 {
                     Symbol = input.Symbol,
-                    TokenId = input.TokenId,
                     OfferFrom = Context.Sender,
                     IndexList = input.IndexList
                 });
@@ -466,7 +320,7 @@ public partial class ForestContract
         private void PerformCancelRequest(CancelOfferInput input, RequestInfo requestInfo)
         {
             Assert(requestInfo.Requester == Context.Sender, "No permission.");
-            var virtualAddress = CalculateNFTVirtuaAddress(input.Symbol, input.TokenId);
+            var virtualAddress = CalculateNFTVirtuaAddress(input.Symbol);
             var balanceOfNftVirtualAddress = State.TokenContract.GetBalance.Call(new GetBalanceInput
             {
                 Symbol = requestInfo.Price.Symbol,
@@ -503,8 +357,10 @@ public partial class ForestContract
                 }
                 else
                 {
-                    depositReceiver = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = input.Symbol})
-                        .Creator;
+                    depositReceiver = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+                    {
+                        Symbol = input.Symbol,
+                    }).Issuer;
                 }
             }
 
@@ -525,7 +381,6 @@ public partial class ForestContract
             Context.Fire(new NFTRequestCancelled
             {
                 Symbol = input.Symbol,
-                TokenId = input.TokenId,
                 Requester = Context.Sender
             });
         }
@@ -545,7 +400,6 @@ public partial class ForestContract
                 NFTFrom = input.OfferTo,
                 NFTTo = Context.Sender,
                 NFTSymbol = input.Symbol,
-                NFTTokenId = input.TokenId,
                 NFTQuantity = actualQuantity,
                 PurchaseSymbol = usePrice.Symbol,
                 PurchaseAmount = totalAmount,
@@ -579,7 +433,6 @@ public partial class ForestContract
                 Context.Fire(new OfferAdded
                 {
                     Symbol = input.Symbol,
-                    TokenId = input.TokenId,
                     OfferFrom = Context.Sender,
                     OfferTo = input.OfferTo,
                     ExpireTime = expireTime,
@@ -593,7 +446,6 @@ public partial class ForestContract
                 Context.Fire(new OfferChanged
                 {
                     Symbol = input.Symbol,
-                    TokenId = input.TokenId,
                     OfferFrom = Context.Sender,
                     OfferTo = input.OfferTo,
                     Price = input.Price,
@@ -604,18 +456,17 @@ public partial class ForestContract
 
             State.OfferListMap[input.Symbol][Context.Sender] = offerList;
 
-            var addressList = State.OfferAddressListMap[input.Symbol][input.TokenId] ?? new AddressList();
+            var addressList = State.OfferAddressListMap[input.Symbol] ?? new AddressList();
 
             if (!addressList.Value.Contains(Context.Sender))
             {
                 addressList.Value.Add(Context.Sender);
-                State.OfferAddressListMap[input.Symbol][input.TokenId] = addressList;
+                State.OfferAddressListMap[input.Symbol] = addressList;
             }
 
             Context.Fire(new OfferMade
             {
                 Symbol = input.Symbol,
-                TokenId = input.TokenId,
                 OfferFrom = Context.Sender,
                 OfferTo = input.OfferTo,
                 ExpireTime = expireTime,
@@ -629,7 +480,7 @@ public partial class ForestContract
             var auctionInfo = State.EnglishAuctionInfoMap[input.Symbol];
             if (auctionInfo == null)
             {
-                throw new AssertionException($"Auction info of {input.Symbol}-{input.TokenId} not found.");
+                throw new AssertionException($"Auction info of {input.Symbol} not found.");
             }
 
             var duration = auctionInfo.Duration;
@@ -642,7 +493,6 @@ public partial class ForestContract
             Assert(Context.CurrentBlockTime <= duration.StartTime.AddHours(duration.DurationHours),
                 "Auction already finished.");
             Assert(input.Price.Symbol == auctionInfo.PurchaseSymbol, "Incorrect symbol.");
-            Assert(input.Price.TokenId == 0, "Do not support use NFT to purchase auction.");
 
             if (input.Price.Amount < auctionInfo.StartingPrice)
             {
@@ -653,7 +503,6 @@ public partial class ForestContract
             var bidList = GetBidList(new GetBidListInput
             {
                 Symbol = input.Symbol,
-                TokenId = input.TokenId
             });
             var sortedBitList = new BidList
             {
@@ -686,7 +535,7 @@ public partial class ForestContract
                 bidAddressList.Value.Add(Context.Sender);
                 State.BidAddressListMap[input.Symbol] = bidAddressList;
                 // Charge earnest if the Sender is the first time to place a bid.
-                ChargeEarnestMoney(input.Symbol, input.TokenId, auctionInfo.PurchaseSymbol, auctionInfo.EarnestMoney);
+                ChargeEarnestMoney(input.Symbol, auctionInfo.PurchaseSymbol, auctionInfo.EarnestMoney);
             }
 
             State.BidMap[input.Symbol][Context.Sender] = bid;
@@ -711,7 +560,6 @@ public partial class ForestContract
             Context.Fire(new BidPlaced
             {
                 Symbol = input.Symbol,
-                TokenId = input.TokenId,
                 Price = bid.Price,
                 ExpireTime = bid.ExpireTime,
                 OfferFrom = bid.From,
@@ -719,11 +567,11 @@ public partial class ForestContract
             });
         }
 
-        private void ChargeEarnestMoney(string nftSymbol, long nftTokenId, string purchaseSymbol, long earnestMoney)
+        private void ChargeEarnestMoney(string nftSymbol, string purchaseSymbol, long earnestMoney)
         {
             if (earnestMoney > 0)
             {
-                var virtualAddress = CalculateNFTVirtuaAddress(nftSymbol, nftTokenId);
+                var virtualAddress = CalculateNFTVirtuaAddress(nftSymbol);
                 State.TokenContract.TransferFrom.Send(new TransferFromInput
                 {
                     From = Context.Sender,
@@ -736,10 +584,10 @@ public partial class ForestContract
 
         private bool PerformMakeOfferToDutchAuction(MakeOfferInput input)
         {
-            var auctionInfo = State.DutchAuctionInfoMap[input.Symbol][input.TokenId];
+            var auctionInfo = State.DutchAuctionInfoMap[input.Symbol];
             if (auctionInfo == null)
             {
-                throw new AssertionException($"Auction info of {input.Symbol}-{input.TokenId} not found.");
+                throw new AssertionException($"Auction info of {input.Symbol} not found.");
             }
 
             var duration = auctionInfo.Duration;
@@ -766,7 +614,6 @@ public partial class ForestContract
                 NFTTo = Context.Sender,
                 NFTQuantity = 1,
                 NFTSymbol = input.Symbol,
-                NFTTokenId = input.TokenId,
                 PurchaseSymbol = input.Price.Symbol,
                 PurchaseAmount = input.Price.Amount,
                 PurchaseTokenId = 0
@@ -849,7 +696,6 @@ public partial class ForestContract
             State.NFTContract.Mint.Send(new MintInput
             {
                 Symbol = input.Symbol,
-                TokenId = input.TokenId,
                 Owner = Context.Sender,
                 Quantity = 1
             });

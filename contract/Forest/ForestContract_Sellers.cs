@@ -204,7 +204,6 @@ public partial class ForestContract
                 }
             };
 
-            State.DutchAuctionInfoMap[input.Symbol].Remove(input.TokenId);
 
             Context.Fire(new EnglishAuctionNFTListed
             {
@@ -267,7 +266,7 @@ public partial class ForestContract
                 EndingPrice = input.EndingPrice,
                 Owner = Context.Sender
             };
-            State.DutchAuctionInfoMap[input.Symbol][input.TokenId] = dutchAuctionInfo;
+            State.DutchAuctionInfoMap[input.Symbol] = dutchAuctionInfo;
 
             State.ListedNFTInfoListMap[input.Symbol][Context.Sender] = new ListedNFTInfoList
             {
@@ -394,9 +393,8 @@ public partial class ForestContract
                     });
                     break;
                 case ListType.DutchAuction:
-                    var dutchAuctionInfo = State.DutchAuctionInfoMap[input.Symbol][input.TokenId];
+                    var dutchAuctionInfo = State.DutchAuctionInfoMap[input.Symbol];
                     State.ListedNFTInfoListMap[input.Symbol][Context.Sender].Value.Remove(listedNftInfo);
-                    State.DutchAuctionInfoMap[input.Symbol].Remove(input.TokenId);
                     ChargeSenderServiceFee(dutchAuctionInfo.PurchaseSymbol, dutchAuctionInfo.StartingPrice);
                     Context.Fire(new ListedNFTRemoved
                     {

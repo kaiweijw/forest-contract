@@ -30,7 +30,7 @@ namespace Forest
         /// <summary>
         /// Symbol -> Token Id -> Offer Address List
         /// </summary>
-        public MappedState<string, long, AddressList> OfferAddressListMap { get; set; }
+        public MappedState<string, AddressList> OfferAddressListMap { get; set; }
 
         /// <summary>
         /// Symbol -> Token Id -> Offer Maker -> Offer List
@@ -54,6 +54,6 @@ namespace Forest
         public MappedState<string, RequestInfo> RequestInfoMap { get; set; }
 
         public MappedState<string, EnglishAuctionInfo> EnglishAuctionInfoMap { get; set; }
-        public MappedState<string, long, DutchAuctionInfo> DutchAuctionInfoMap { get; set; }
+        public MappedState<string, DutchAuctionInfo> DutchAuctionInfoMap { get; set; }
     }
 }

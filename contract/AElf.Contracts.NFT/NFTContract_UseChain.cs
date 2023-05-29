@@ -28,7 +28,6 @@ public partial class NFTContract
             To = input.To,
             Amount = input.Amount,
             Symbol = input.Symbol,
-            TokenId = input.TokenId,
             Memo = input.Memo
         });
         return new Empty();
@@ -392,8 +391,6 @@ public partial class NFTContract
         var tokenId = input.TokenId == 0 ? protocolInfo.Issued.Add(1) : input.TokenId;
         var tokenHash = CalculateTokenHash(input.Symbol, tokenId);
         var nftInfo = State.NftInfoMap[tokenHash];
-        if (!protocolInfo.IsTokenIdReuse || isTokenIdMustBeUnique)
-            Assert(nftInfo == null, $"Token id {tokenId} already exists. Please assign a different token id.");
 
         var minterList = GetMinterList(tokenInfo);
         Assert(minterList.Value.Contains(Context.Sender), "No permission to mint.");

@@ -206,7 +206,7 @@ public partial class ForestContract
             return tokenWhiteList;
         }
 
-        private void PerformRequestNewItem(string symbol, long tokenId, Price price, Timestamp expireTime)
+        private void PerformRequestNewItem(string symbol, Price price, Timestamp expireTime)
         {
             var customizeInfo = State.CustomizeInfoMap[symbol];
             if (customizeInfo?.Price == null || customizeInfo.Price.Amount == 0)
@@ -216,7 +216,7 @@ public partial class ForestContract
 
             Assert(State.RequestInfoMap[symbol] == null, "Request already existed.");
 
-            var nftVirtualAddress = CalculateNFTVirtuaAddress(symbol, tokenId);
+            var nftVirtualAddress = CalculateNFTVirtuaAddress(symbol);
             var priceSymbol = customizeInfo.Price.Symbol;
             var priceAmount = price.Amount == 0
                 ? customizeInfo.Price.Amount
@@ -248,7 +248,6 @@ public partial class ForestContract
             State.RequestInfoMap[symbol] = new RequestInfo
             {
                 Symbol = symbol,
-                TokenId = tokenId,
                 DepositRate = customizeInfo.DepositRate,
                 Price = new Price
                 {
@@ -261,14 +260,12 @@ public partial class ForestContract
                 ExpireTime = expireTime ?? defaultExpireTime
             };
 
-            customizeInfo.ReservedTokenIds.Add(tokenId);
             State.CustomizeInfoMap[symbol] = customizeInfo;
 
             Context.Fire(new NewNFTRequested
             {
                 Symbol = symbol,
                 Requester = Context.Sender,
-                TokenId = tokenId
             });
         }
 
@@ -317,7 +314,7 @@ public partial class ForestContract
             return HashHelper.ComputeFrom($"{symbol}");
         }
 
-        private Address CalculateNFTVirtuaAddress(string symbol, long tokenId = 0)
+        private Address CalculateNFTVirtuaAddress(string symbol)
         {
             return Context.ConvertVirtualAddressToContractAddress(CalculateTokenHash(symbol));
         }

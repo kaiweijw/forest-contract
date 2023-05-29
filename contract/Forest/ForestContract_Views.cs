@@ -23,7 +23,7 @@ public partial class ForestContract
 
         public override AddressList GetOfferAddressList(GetAddressListInput input)
         {
-            return State.OfferAddressListMap[input.Symbol][input.TokenId];
+            return State.OfferAddressListMap[input.Symbol];
         }
 
         public override OfferList GetOfferList(GetOfferListInput input)
@@ -66,7 +66,6 @@ public partial class ForestContract
             var addressList = GetBidAddressList(new GetAddressListInput
             {
                 Symbol = input.Symbol,
-                TokenId = input.TokenId
             }) ?? new AddressList();
             var allBidList = new BidList();
             foreach (var address in addressList.Value)
@@ -98,7 +97,7 @@ public partial class ForestContract
 
         public override DutchAuctionInfo GetDutchAuctionInfo(GetDutchAuctionInfoInput input)
         {
-            return State.DutchAuctionInfoMap[input.Symbol][input.TokenId];
+            return State.DutchAuctionInfoMap[input.Symbol];
         }
 
         public override StringList GetTokenWhiteList(StringValue input)
