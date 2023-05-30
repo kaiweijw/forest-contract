@@ -39,18 +39,6 @@ public partial class MarketNFTContract : MarketNFTContractContainer.MarketNFTCon
             Amount = input.Amount,
             Memo = input.Memo,
         });
-        // var createReceived = new CreateReceived
-        // {
-        //     Symbol = input.Symbol,
-        //     TokenName = input.TokenName,
-        //     TotalSupply = input.TotalSupply,
-        //     Decimals = input.Decimals,
-        //     Issuer = input.Issuer,
-        //     IsBurnable = input.IsBurnable,
-        //     // LockWhiteList = { input.LockWhiteList },
-        //     IssueChainId = input.IssueChainId
-        // };
-        // Context.Fire(createReceived);
         return new Empty();
     }
 }
