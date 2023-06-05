@@ -1,12 +1,10 @@
 using System.Linq;
 using AElf;
-using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Forest.Whitelist;
 using Google.Protobuf.WellKnownTypes;
-using GetBalanceInput = AElf.Contracts.NFT.GetBalanceInput;
 
 namespace Forest;
 
@@ -20,45 +18,37 @@ public partial class ForestContract
             Assert(input.Quantity > 0, "Incorrect quantity.");
             var duration = AdjustListDuration(input.Duration);
             var whitelists = input.Whitelists;
-            var requestInfo = State.RequestInfoMap[input.Symbol];
             var projectId = CalculateProjectId(input.Symbol,Context.Sender);
             var whitelistId = new Hash();
             var whitelistManager = GetWhitelistManager();
             if (input.IsWhitelistAvailable)
             {
-                if (requestInfo != null)
+                var extraInfoList = ConvertToExtraInfo(whitelists);
+                //Listed for the first time, create whitelist.
+                if (State.WhitelistIdMap[projectId] == null)
                 {
-                    DealRequestInfoInWhitelist(input, duration, requestInfo);
+                    whitelistManager.CreateWhitelist(new CreateWhitelistInput
+                    {
+                        ProjectId = projectId,
+                        StrategyType = StrategyType.Price,
+                        Creator = Context.Self,
+                        ExtraInfoList = extraInfoList,
+                        IsCloneable = true,
+                        Remark = $"{input.Symbol}",
+                        ManagerList = new Whitelist.AddressList
+                        {
+                            Value = {Context.Sender}
+                        }
+                    });
+                    whitelistId =
+                        Context.GenerateId(State.WhitelistContract.Value,
+                            ByteArrayHelper.ConcatArrays(Context.Self.ToByteArray(), projectId.ToByteArray()));
+                    State.WhitelistIdMap[projectId] = whitelistId;
                 }
                 else
                 {
-                    var extraInfoList = ConvertToExtraInfo(whitelists);
-                    //Listed for the first time, create whitelist.
-                    if (State.WhitelistIdMap[projectId] == null)
-                    {
-                        whitelistManager.CreateWhitelist(new CreateWhitelistInput
-                        {
-                            ProjectId = projectId,
-                            StrategyType = StrategyType.Price,
-                            Creator = Context.Self,
-                            ExtraInfoList = extraInfoList,
-                            IsCloneable = true,
-                            Remark = $"{input.Symbol}",
-                            ManagerList = new Whitelist.AddressList
-                            {
-                                Value = {Context.Sender}
-                            }
-                        });
-                        whitelistId =
-                            Context.GenerateId(State.WhitelistContract.Value,
-                                ByteArrayHelper.ConcatArrays(Context.Self.ToByteArray(), projectId.ToByteArray()));
-                        State.WhitelistIdMap[projectId] = whitelistId;
-                    }
-                    else
-                    {
-                        //Add address list to the existing whitelist.
-                        whitelistId = ExistWhitelist(projectId,whitelists,extraInfoList);
-                    }
+                    //Add address list to the existing whitelist.
+                    whitelistId = ExistWhitelist(projectId,whitelists,extraInfoList);
                 }
             }
             else
@@ -148,175 +138,6 @@ public partial class ForestContract
         //     return base.ListForFree(input);
         // }
         
-        public override Empty ListWithEnglishAuction(ListWithEnglishAuctionInput input)
-        {
-            AssertContractInitialized();
-            Assert(input.StartingPrice > 0, "Incorrect listing price.");
-            Assert(input.EarnestMoney <= input.StartingPrice, "Earnest money too high.");
-            if (CanBeListedWithAuction(input.Symbol, input.TokenId, out var requestInfo))
-            {
-                MaybeReceiveRemainDeposit(requestInfo);
-            }
-            else
-            {
-                throw new AssertionException("This NFT cannot be listed with auction for now.");
-            }
-            
-            Assert(GetTokenWhiteList(input.Symbol).Value.Contains(input.PurchaseSymbol),
-                $"{input.PurchaseSymbol} is not in token white list.");
-            Assert(
-                string.IsNullOrEmpty(State.NFTContract.GetNFTProtocolInfo
-                    .Call(new StringValue {Value = input.PurchaseSymbol}).Symbol),
-                $"Token {input.PurchaseSymbol} not support purchase for auction.");
-            
-            var duration = AdjustListDuration(input.Duration);
-
-            var englishAuctionInfo = new EnglishAuctionInfo
-            {
-                Symbol = input.Symbol,
-                TokenId = input.TokenId,
-                Duration = duration,
-                PurchaseSymbol = input.PurchaseSymbol,
-                StartingPrice = input.StartingPrice,
-                Owner = Context.Sender,
-                EarnestMoney = input.EarnestMoney
-            };
-            State.EnglishAuctionInfoMap[input.Symbol] = englishAuctionInfo;
-
-            State.ListedNFTInfoListMap[input.Symbol][Context.Sender] = new ListedNFTInfoList
-            {
-                Value =
-                {
-                    new ListedNFTInfo
-                    {
-                        Symbol = input.Symbol,
-                        TokenId = input.TokenId,
-                        Duration = duration,
-                        ListType = ListType.EnglishAuction,
-                        Owner = Context.Sender,
-                        Price = new Price
-                        {
-                            Symbol = input.PurchaseSymbol,
-                            Amount = input.StartingPrice
-                        },
-                        Quantity = 1
-                    }
-                }
-            };
-
-
-            Context.Fire(new EnglishAuctionNFTListed
-            {
-                Owner = englishAuctionInfo.Owner,
-                Symbol = englishAuctionInfo.Symbol,
-                PurchaseSymbol = englishAuctionInfo.PurchaseSymbol,
-                StartingPrice = englishAuctionInfo.StartingPrice,
-                TokenId = englishAuctionInfo.TokenId,
-                Duration = englishAuctionInfo.Duration,
-                EarnestMoney = englishAuctionInfo.EarnestMoney
-            });
-
-            Context.Fire(new ListedNFTAdded
-            {
-                Symbol = input.Symbol,
-                TokenId = input.TokenId,
-                Duration = englishAuctionInfo.Duration,
-                Owner = englishAuctionInfo.Owner,
-                Price = new Price
-                {
-                    Symbol = englishAuctionInfo.PurchaseSymbol,
-                    Amount = englishAuctionInfo.StartingPrice
-                },
-                Quantity = 1
-            });
-
-            return new Empty();
-        }
-
-        public override Empty ListWithDutchAuction(ListWithDutchAuctionInput input)
-        {
-            AssertContractInitialized();
-            Assert(input.StartingPrice > 0 && input.EndingPrice > 0 && input.StartingPrice > input.EndingPrice,
-                "Incorrect listing price.");
-            if (CanBeListedWithAuction(input.Symbol, input.TokenId, out var requestInfo))
-            {
-                MaybeReceiveRemainDeposit(requestInfo);
-            }
-            else
-            {
-                throw new AssertionException("This NFT cannot be listed with auction for now.");
-            }
-            
-            Assert(GetTokenWhiteList(input.Symbol).Value.Contains(input.PurchaseSymbol),
-                $"{input.PurchaseSymbol} is not in token white list.");
-            Assert(
-                string.IsNullOrEmpty(State.NFTContract.GetNFTProtocolInfo
-                    .Call(new StringValue {Value = input.PurchaseSymbol}).Symbol),
-                $"Token {input.PurchaseSymbol} not support purchase for auction.");
-
-            var duration = AdjustListDuration(input.Duration);
-
-            var dutchAuctionInfo = new DutchAuctionInfo
-            {
-                Symbol = input.Symbol,
-                TokenId = input.TokenId,
-                Duration = duration,
-                PurchaseSymbol = input.PurchaseSymbol,
-                StartingPrice = input.StartingPrice,
-                EndingPrice = input.EndingPrice,
-                Owner = Context.Sender
-            };
-            State.DutchAuctionInfoMap[input.Symbol] = dutchAuctionInfo;
-
-            State.ListedNFTInfoListMap[input.Symbol][Context.Sender] = new ListedNFTInfoList
-            {
-                Value =
-                {
-                    new ListedNFTInfo
-                    {
-                        Symbol = input.Symbol,
-                        TokenId = input.TokenId,
-                        Duration = duration,
-                        ListType = ListType.DutchAuction,
-                        Owner = Context.Sender,
-                        Price = new Price
-                        {
-                            Symbol = input.PurchaseSymbol,
-                            Amount = input.StartingPrice
-                        },
-                        Quantity = 1
-                    }
-                }
-            };
-
-            Context.Fire(new DutchAuctionNFTListed
-            {
-                Owner = dutchAuctionInfo.Owner,
-                PurchaseSymbol = dutchAuctionInfo.PurchaseSymbol,
-                StartingPrice = dutchAuctionInfo.StartingPrice,
-                EndingPrice = dutchAuctionInfo.EndingPrice,
-                Symbol = dutchAuctionInfo.Symbol,
-                TokenId = dutchAuctionInfo.TokenId,
-                Duration = dutchAuctionInfo.Duration
-            });
-
-            Context.Fire(new ListedNFTAdded
-            {
-                Symbol = input.Symbol,
-                TokenId = input.TokenId,
-                Duration = dutchAuctionInfo.Duration,
-                Owner = dutchAuctionInfo.Owner,
-                Price = new Price
-                {
-                    Symbol = dutchAuctionInfo.PurchaseSymbol,
-                    Amount = dutchAuctionInfo.StartingPrice
-                },
-                Quantity = 1
-            });
-
-            return new Empty();
-        }
-
         public override Empty Delist(DelistInput input)
         {
             var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
@@ -334,13 +155,6 @@ public partial class ForestContract
                 throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
             }
 
-            var requestInfo = State.RequestInfoMap[input.Symbol];
-            if (requestInfo != null)
-            {
-                requestInfo.ListTime = null;
-                State.RequestInfoMap[input.Symbol] = requestInfo;
-            }
-
             var projectId = CalculateProjectId(input.Symbol, Context.Sender);
             var whitelistId = State.WhitelistIdMap[projectId];
             
@@ -356,7 +170,6 @@ public partial class ForestContract
                     Context.Fire(new ListedNFTRemoved
                     {
                         Symbol = listedNftInfo.Symbol,
-                        TokenId = listedNftInfo.TokenId,
                         Duration = listedNftInfo.Duration,
                         Owner = listedNftInfo.Owner
                     });
@@ -367,7 +180,6 @@ public partial class ForestContract
                     Context.Fire(new ListedNFTChanged
                     {
                         Symbol = listedNftInfo.Symbol,
-                        TokenId = listedNftInfo.TokenId,
                         Duration = listedNftInfo.Duration,
                         Owner = listedNftInfo.Owner,
                         Price = listedNftInfo.Price,
@@ -375,61 +187,16 @@ public partial class ForestContract
                         WhitelistId = whitelistId
                     });
                     break;
-                case ListType.EnglishAuction:
-                    var englishAuctionInfo = State.EnglishAuctionInfoMap[input.Symbol];
-                    var bidAddressList = State.BidAddressListMap[input.Symbol];
-                    if (bidAddressList != null && bidAddressList.Value.Any())
-                    {
-                        // Charge service fee if anyone placed a bid.
-                        ChargeSenderServiceFee(englishAuctionInfo.PurchaseSymbol, englishAuctionInfo.StartingPrice);
-                    }
-                    State.ListedNFTInfoListMap[input.Symbol][Context.Sender].Value.Remove(listedNftInfo);
-                    Context.Fire(new ListedNFTRemoved
-                    {
-                        Symbol = listedNftInfo.Symbol,
-                        TokenId = listedNftInfo.TokenId,
-                        Duration = listedNftInfo.Duration,
-                        Owner = listedNftInfo.Owner
-                    });
-                    break;
-                case ListType.DutchAuction:
-                    var dutchAuctionInfo = State.DutchAuctionInfoMap[input.Symbol];
-                    State.ListedNFTInfoListMap[input.Symbol][Context.Sender].Value.Remove(listedNftInfo);
-                    ChargeSenderServiceFee(dutchAuctionInfo.PurchaseSymbol, dutchAuctionInfo.StartingPrice);
-                    Context.Fire(new ListedNFTRemoved
-                    {
-                        Symbol = listedNftInfo.Symbol,
-                        TokenId = listedNftInfo.TokenId,
-                        Duration = listedNftInfo.Duration,
-                        Owner = listedNftInfo.Owner
-                    });
-                    break;
             }
 
             Context.Fire(new NFTDelisted
             {
                 Symbol = input.Symbol,
-                TokenId = input.TokenId,
                 Owner = Context.Sender,
                 Quantity = input.Quantity
             });
 
             return new Empty();
-        }
-
-        private void ChargeSenderServiceFee(string symbol, long baseAmount)
-        {
-            var amount = baseAmount.Mul(State.ServiceFeeRate.Value).Div(FeeDenominator);
-            if (amount > 0)
-            {
-                State.TokenContract.TransferFrom.Send(new TransferFromInput
-                {
-                    Symbol = symbol,
-                    Amount = amount,
-                    From = Context.Sender,
-                    To = State.ServiceFeeReceiver.Value ?? State.Admin.Value
-                });
-            }
         }
 
         /// <summary>
@@ -460,7 +227,6 @@ public partial class ForestContract
                 .FirstOrDefault(o =>
                     o.From == input.OfferFrom && o.Price.Symbol == input.Price.Symbol &&
                     o.Price.Amount == input.Price.Amount && o.ExpireTime >= Context.CurrentBlockTime);
-            var bid = State.BidMap[input.Symbol][input.OfferFrom];
             Price price;
             long totalAmount;
             if (offer == null)
@@ -517,12 +283,11 @@ public partial class ForestContract
             PerformDeal(new PerformDealInput
             {
                 NFTFrom = Context.Sender,
-                NFTTo = offer?.From ?? bid.From,
+                NFTTo = offer?.From,
                 NFTSymbol = input.Symbol,
                 NFTQuantity = input.Quantity,
                 PurchaseSymbol = price.Symbol,
                 PurchaseAmount = totalAmount,
-                PurchaseTokenId = price.TokenId
             });
             return new Empty();
         }

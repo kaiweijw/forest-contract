@@ -37,23 +37,13 @@ namespace Forest
         /// </summary>
         public MappedState<string, Address, OfferList> OfferListMap { get; set; }
 
-        public MappedState<string, Address, Bid> BidMap { get; set; }
-
-        public MappedState<string, AddressList> BidAddressListMap { get; set; }
-
         /// <summary>
         /// Symbol -> Token Id -> Royalty
         /// </summary>
         public MappedState<string, int> RoyaltyMap { get; set; }
 
         public MappedState<string, Address> RoyaltyFeeReceiverMap { get; set; }
-        public MappedState<string, long, CertainNFTRoyaltyInfo> CertainNFTRoyaltyMap { get; set; }
+        public MappedState<string, CertainNFTRoyaltyInfo> CertainNFTRoyaltyMap { get; set; }
         public MappedState<string, StringList> TokenWhiteListMap { get; set; }
-
-        public MappedState<string, CustomizeInfo> CustomizeInfoMap { get; set; }
-        public MappedState<string, RequestInfo> RequestInfoMap { get; set; }
-
-        public MappedState<string, EnglishAuctionInfo> EnglishAuctionInfoMap { get; set; }
-        public MappedState<string, DutchAuctionInfo> DutchAuctionInfoMap { get; set; }
     }
 }

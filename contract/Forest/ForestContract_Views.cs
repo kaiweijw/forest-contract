@@ -36,7 +36,6 @@ public partial class ForestContract
             var addressList = GetOfferAddressList(new GetAddressListInput
             {
                 Symbol = input.Symbol,
-                TokenId = input.TokenId
             }) ?? new AddressList();
             var allOfferList = new OfferList();
             foreach (var address in addressList.Value)
@@ -51,55 +50,6 @@ public partial class ForestContract
             return allOfferList;
         }
 
-        public override AddressList GetBidAddressList(GetAddressListInput input)
-        {
-            return State.BidAddressListMap[input.Symbol];
-        }
-
-        public override Bid GetBid(GetBidInput input)
-        {
-            return State.BidMap[input.Symbol][input.Address];
-        }
-
-        public override BidList GetBidList(GetBidListInput input)
-        {
-            var addressList = GetBidAddressList(new GetAddressListInput
-            {
-                Symbol = input.Symbol,
-            }) ?? new AddressList();
-            var allBidList = new BidList();
-            foreach (var address in addressList.Value)
-            {
-                var bid = State.BidMap[input.Symbol][address];
-                if (bid != null)
-                {
-                    allBidList.Value.Add(bid);
-                }
-            }
-
-            return allBidList;
-        }
-
-        public override CustomizeInfo GetCustomizeInfo(StringValue input)
-        {
-            return State.CustomizeInfoMap[input.Value];
-        }
-
-        public override RequestInfo GetRequestInfo(GetRequestInfoInput input)
-        {
-            return State.RequestInfoMap[input.Symbol];
-        }
-
-        public override EnglishAuctionInfo GetEnglishAuctionInfo(GetEnglishAuctionInfoInput input)
-        {
-            return State.EnglishAuctionInfoMap[input.Symbol];
-        }
-
-        public override DutchAuctionInfo GetDutchAuctionInfo(GetDutchAuctionInfoInput input)
-        {
-            return State.DutchAuctionInfoMap[input.Symbol];
-        }
-
         public override StringList GetTokenWhiteList(StringValue input)
         {
             return GetTokenWhiteList(input.Value);
@@ -110,36 +60,18 @@ public partial class ForestContract
             return State.GlobalTokenWhiteList.Value;
         }
 
-        public override Price GetStakingTokens(StringValue input)
-        {
-            var customizeInfo = State.CustomizeInfoMap[input.Value];
-            if (customizeInfo == null)
-            {
-                return new Price();
-            }
-
-            return new Price
-            {
-                Symbol = customizeInfo.Price.Symbol,
-                Amount = customizeInfo.StakingAmount
-            };
-        }
-
         public override RoyaltyInfo GetRoyalty(GetRoyaltyInput input)
         {
             var royaltyInfo = new RoyaltyInfo
             {
                 Royalty = State.RoyaltyMap[input.Symbol]
             };
-
-            if (input.TokenId != 0)
+            
+            var certainNftRoyalty = State.CertainNFTRoyaltyMap[input.Symbol] ??
+                                    new CertainNFTRoyaltyInfo();
+            if (certainNftRoyalty.IsManuallySet)
             {
-                var certainNftRoyalty = State.CertainNFTRoyaltyMap[input.Symbol][input.TokenId] ??
-                                        new CertainNFTRoyaltyInfo();
-                if (certainNftRoyalty.IsManuallySet)
-                {
-                    royaltyInfo.Royalty = certainNftRoyalty.Royalty;
-                }
+                royaltyInfo.Royalty = certainNftRoyalty.Royalty;
             }
 
             if (State.RoyaltyFeeReceiverMap[input.Symbol] != null)

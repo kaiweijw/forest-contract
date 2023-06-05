@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AElf.Contracts.MultiToken;
 using AElf.Contracts.NFT;
+using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
 using AElf.Sdk.CSharp.State;
@@ -23,14 +24,13 @@ internal class MakeOfferService
     private readonly WhitelistManager _whitelistManager;
     private readonly CSharpSmartContractContext _context;
 
-    public MakeOfferService(NFTContractContainer.NFTContractReferenceState nftContract,
+    public MakeOfferService(
         TokenContractContainer.TokenContractReferenceState tokenContract,
         MappedState<Hash, Hash> whitelistIdMap,
         MappedState<string, Address, ListedNFTInfoList> listedNFTInfoListMap,
         WhitelistManager whitelistManager,
         CSharpSmartContractContext context)
     {
-        _nftContract = nftContract;
         _tokenContract = tokenContract;
         _whitelistIdMap = whitelistIdMap;
         _listedNFTInfoListMap = listedNFTInfoListMap;
@@ -49,7 +49,7 @@ internal class MakeOfferService
     public bool IsSenderInWhitelist(MakeOfferInput makeOfferInput,out Hash whitelistId)
     {
         var projectId =
-            WhitelistHelper.CalculateProjectId(makeOfferInput.Symbol, makeOfferInput.TokenId, makeOfferInput.OfferTo);
+            WhitelistHelper.CalculateProjectId(makeOfferInput.Symbol, makeOfferInput.OfferTo);
         whitelistId = _whitelistIdMap[projectId];
         return whitelistId != null && _whitelistManager.IsAddressInWhitelist(_context.Sender, whitelistId);
     }

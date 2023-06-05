@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using AElf.Contracts.MultiToken;
-using AElf.Contracts.NFT;
 using AElf.CSharp.Core;
 using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
@@ -9,10 +8,6 @@ using AElf.Types;
 using Forest.Services;
 using Forest.Whitelist;
 using Google.Protobuf.WellKnownTypes;
-using GetAllowanceInput = AElf.Contracts.MultiToken.GetAllowanceInput;
-using GetBalanceInput = AElf.Contracts.MultiToken.GetBalanceInput;
-using TransferFromInput = AElf.Contracts.MultiToken.TransferFromInput;
-using TransferInput = AElf.Contracts.MultiToken.TransferInput;
 
 
 namespace Forest;
@@ -103,9 +98,6 @@ public partial class ForestContract
             var dealStatus = makeOfferService.GetDealStatus(input, out var affordableNftInfoList);
             switch(dealStatus)
             {
-                case DealStatus.NFTNotMined:
-                    PerformRequestNewItem(input.Symbol, input.Price, input.ExpireTime);
-                    return new Empty();
                 case DealStatus.NotDeal:
                     PerformMakeOffer(input);
                     return new Empty();
@@ -222,7 +214,6 @@ public partial class ForestContract
                 NFTQuantity = 1,
                 PurchaseSymbol = price.Symbol,
                 PurchaseAmount = totalAmount,
-                PurchaseTokenId = input.Price.TokenId
             });
             return true;
         }
@@ -315,72 +306,7 @@ public partial class ForestContract
 
             return new Empty();
         }
-
-        private void PerformCancelRequest(CancelOfferInput input, RequestInfo requestInfo)
-        {
-            Assert(requestInfo.Requester == Context.Sender, "No permission.");
-            var virtualAddress = CalculateNFTVirtuaAddress(input.Symbol);
-            var balanceOfNftVirtualAddress = State.TokenContract.GetBalance.Call(new GetBalanceInput
-            {
-                Symbol = requestInfo.Price.Symbol,
-                Owner = virtualAddress
-            }).Balance;
-
-            var depositReceiver = requestInfo.Requester;
-
-            if (requestInfo.IsConfirmed)
-            {
-                if (requestInfo.ConfirmTime.AddHours(requestInfo.WorkHours) < Context.CurrentBlockTime)
-                {
-                    // Creator missed the deadline.
-
-                    var protocolVirtualAddressFrom = CalculateTokenHash(input.Symbol);
-                    var protocolVirtualAddress =
-                        Context.ConvertVirtualAddressToContractAddress(protocolVirtualAddressFrom);
-                    var balanceOfNftProtocolVirtualAddress = State.TokenContract.GetBalance.Call(new GetBalanceInput
-                    {
-                        Symbol = requestInfo.Price.Symbol,
-                        Owner = protocolVirtualAddress
-                    }).Balance;
-                    var deposit = balanceOfNftVirtualAddress.Mul(FeeDenominator).Div(DefaultDepositConfirmRate)
-                        .Sub(balanceOfNftVirtualAddress);
-                    if (balanceOfNftProtocolVirtualAddress > 0)
-                    {
-                        State.TokenContract.Transfer.VirtualSend(protocolVirtualAddressFrom, new TransferInput
-                        {
-                            To = requestInfo.Requester,
-                            Symbol = requestInfo.Price.Symbol,
-                            Amount = Math.Min(balanceOfNftProtocolVirtualAddress, deposit)
-                        });
-                    }
-                }
-                else
-                {
-                    depositReceiver = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
-                    {
-                        Symbol = input.Symbol,
-                    }).Issuer;
-                }
-            }
-
-            var virtualAddressFrom = CalculateTokenHash(input.Symbol);
-
-            if (balanceOfNftVirtualAddress > 0)
-            {
-                State.TokenContract.Transfer.VirtualSend(virtualAddressFrom, new TransferInput
-                {
-                    To = depositReceiver,
-                    Symbol = requestInfo.Price.Symbol,
-                    Amount = balanceOfNftVirtualAddress
-                });
-            }
-            
-            Context.Fire(new NFTRequestCancelled
-            {
-                Symbol = input.Symbol,
-                Requester = Context.Sender
-            });
-        }
+        
 
         /// <summary>
         /// Sender is buyer.
@@ -400,9 +326,7 @@ public partial class ForestContract
                 NFTQuantity = actualQuantity,
                 PurchaseSymbol = usePrice.Symbol,
                 PurchaseAmount = totalAmount,
-                PurchaseTokenId = input.Price.TokenId
             });
-
             return true;
         }
 
@@ -470,190 +394,5 @@ public partial class ForestContract
                 Price = input.Price,
                 Quantity = input.Quantity
             });
-        }
-
-        private void TryPlaceBidForEnglishAuction(MakeOfferInput input)
-        {
-            var auctionInfo = State.EnglishAuctionInfoMap[input.Symbol];
-            if (auctionInfo == null)
-            {
-                throw new AssertionException($"Auction info of {input.Symbol} not found.");
-            }
-
-            var duration = auctionInfo.Duration;
-            if (Context.CurrentBlockTime < duration.StartTime)
-            {
-                PerformMakeOffer(input);
-                return;
-            }
-
-            Assert(Context.CurrentBlockTime <= duration.StartTime.AddHours(duration.DurationHours),
-                "Auction already finished.");
-            Assert(input.Price.Symbol == auctionInfo.PurchaseSymbol, "Incorrect symbol.");
-
-            if (input.Price.Amount < auctionInfo.StartingPrice)
-            {
-                PerformMakeOffer(input);
-                return;
-            }
-
-            var bidList = GetBidList(new GetBidListInput
-            {
-                Symbol = input.Symbol,
-            });
-            var sortedBitList = new BidList
-            {
-                Value =
-                {
-                    bidList.Value.OrderByDescending(o => o.Price.Amount)
-                }
-            };
-            if (sortedBitList.Value.Any() && input.Price.Amount <= sortedBitList.Value.First().Price.Amount)
-            {
-                PerformMakeOffer(input);
-                return;
-            }
-
-            var bid = new Bid
-            {
-                From = Context.Sender,
-                To = input.OfferTo,
-                Price = new Price
-                {
-                    Symbol = input.Price.Symbol,
-                    Amount = input.Price.Amount
-                },
-                ExpireTime = input.ExpireTime ?? Context.CurrentBlockTime.AddDays(DefaultExpireDays)
-            };
-
-            var bidAddressList = State.BidAddressListMap[input.Symbol] ?? new AddressList();
-            if (!bidAddressList.Value.Contains(Context.Sender))
-            {
-                bidAddressList.Value.Add(Context.Sender);
-                State.BidAddressListMap[input.Symbol] = bidAddressList;
-                // Charge earnest if the Sender is the first time to place a bid.
-                ChargeEarnestMoney(input.Symbol, auctionInfo.PurchaseSymbol, auctionInfo.EarnestMoney);
-            }
-
-            State.BidMap[input.Symbol][Context.Sender] = bid;
-
-            var remainAmount = input.Price.Amount.Sub(auctionInfo.EarnestMoney);
-            Assert(
-                State.TokenContract.GetBalance.Call(new GetBalanceInput
-                {
-                    Symbol = auctionInfo.PurchaseSymbol,
-                    Owner = Context.Sender
-                }).Balance >= remainAmount,
-                "Insufficient balance to bid.");
-            Assert(
-                State.TokenContract.GetAllowance.Call(new GetAllowanceInput
-                {
-                    Symbol = auctionInfo.PurchaseSymbol,
-                    Owner = Context.Sender,
-                    Spender = Context.Self
-                }).Allowance >= remainAmount,
-                "Insufficient allowance to bid.");
-
-            Context.Fire(new BidPlaced
-            {
-                Symbol = input.Symbol,
-                Price = bid.Price,
-                ExpireTime = bid.ExpireTime,
-                OfferFrom = bid.From,
-                OfferTo = input.OfferTo
-            });
-        }
-
-        private void ChargeEarnestMoney(string nftSymbol, string purchaseSymbol, long earnestMoney)
-        {
-            if (earnestMoney > 0)
-            {
-                var virtualAddress = CalculateNFTVirtuaAddress(nftSymbol);
-                State.TokenContract.TransferFrom.Send(new TransferFromInput
-                {
-                    From = Context.Sender,
-                    To = virtualAddress,
-                    Symbol = purchaseSymbol,
-                    Amount = earnestMoney
-                });
-            }
-        }
-
-        private bool PerformMakeOfferToDutchAuction(MakeOfferInput input)
-        {
-            var auctionInfo = State.DutchAuctionInfoMap[input.Symbol];
-            if (auctionInfo == null)
-            {
-                throw new AssertionException($"Auction info of {input.Symbol} not found.");
-            }
-
-            var duration = auctionInfo.Duration;
-            if (Context.CurrentBlockTime < duration.StartTime)
-            {
-                PerformMakeOffer(input);
-                return false;
-            }
-
-            Assert(Context.CurrentBlockTime <= duration.StartTime.AddHours(duration.DurationHours),
-                "Auction already finished.");
-            Assert(input.Price.Symbol == auctionInfo.PurchaseSymbol, "Incorrect symbol");
-            var currentBiddingPrice = CalculateCurrentBiddingPrice(auctionInfo.StartingPrice, auctionInfo.EndingPrice,
-                auctionInfo.Duration);
-            if (input.Price.Amount < currentBiddingPrice)
-            {
-                PerformMakeOffer(input);
-                return false;
-            }
-
-            PerformDeal(new PerformDealInput
-            {
-                NFTFrom = auctionInfo.Owner,
-                NFTTo = Context.Sender,
-                NFTQuantity = 1,
-                NFTSymbol = input.Symbol,
-                PurchaseSymbol = input.Price.Symbol,
-                PurchaseAmount = input.Price.Amount,
-                PurchaseTokenId = 0
-            });
-            return true;
-        }
-
-        private long CalculateCurrentBiddingPrice(long startingPrice, long endingPrice, ListDuration duration)
-        {
-            var passedSeconds = (Context.CurrentBlockTime - duration.StartTime).Seconds;
-            var durationSeconds = duration.DurationHours.Mul(3600);
-            if (passedSeconds == 0)
-            {
-                return startingPrice;
-            }
-
-            var diffPrice = endingPrice.Sub(startingPrice);
-            return Math.Max(startingPrice.Sub(diffPrice.Mul(durationSeconds).Div(passedSeconds)), endingPrice);
-        }
-
-        private void MaybeReceiveRemainDeposit(RequestInfo requestInfo)
-        {
-            if (requestInfo == null) return;
-            Assert(Context.CurrentBlockTime > requestInfo.WhiteListDueTime, "Due time not passed.");
-            var nftProtocolInfo =
-                State.NFTContract.GetNFTProtocolInfo.Call((new StringValue {Value = requestInfo.Symbol}));
-            Assert(nftProtocolInfo.Creator == Context.Sender, "Only NFT Protocol Creator can claim remain deposit.");
-
-            var nftVirtualAddressFrom = CalculateTokenHash(requestInfo.Symbol);
-            var nftVirtualAddress = Context.ConvertVirtualAddressToContractAddress(nftVirtualAddressFrom);
-            var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
-            {
-                Symbol = requestInfo.Price.Symbol,
-                Owner = nftVirtualAddress
-            }).Balance;
-            if (balance > 0)
-            {
-                State.TokenContract.Transfer.VirtualSend(nftVirtualAddressFrom, new TransferInput
-                {
-                    To = nftProtocolInfo.Creator,
-                    Symbol = requestInfo.Price.Symbol,
-                    Amount = balance
-                });
-            }
         }
 }
