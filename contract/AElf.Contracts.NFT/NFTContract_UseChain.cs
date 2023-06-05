@@ -20,7 +20,7 @@ public partial class NFTContract
 
     public override Empty Transfer(TransferInput input)
     {
-        var tokenHash = CalculateTokenHash(input.Symbol, input.TokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         DoTransfer(tokenHash, Context.Sender, input.To, input.Amount);
         Context.Fire(new Transferred
         {
@@ -55,7 +55,7 @@ public partial class NFTContract
 
     public override Empty TransferFrom(TransferFromInput input)
     {
-        var tokenHash = CalculateTokenHash(input.Symbol, input.TokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         var operatorList = State.OperatorMap[input.Symbol][input.From];
         var isOperator = operatorList?.Value.Contains(Context.Sender) ?? false;
         if (!isOperator)
@@ -80,7 +80,7 @@ public partial class NFTContract
 
     public override Empty Burn(BurnInput input)
     {
-        var tokenHash = CalculateTokenHash(input.Symbol, input.TokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         var nftInfo = GetNFTInfoByTokenHash(tokenHash);
         var nftProtocolInfo = State.NftProtocolMap[input.Symbol];
         Assert(nftProtocolInfo.IsBurnable,
@@ -198,7 +198,7 @@ public partial class NFTContract
 
         var receiver = input.Owner ?? Context.Sender;
 
-        var tokenHash = CalculateTokenHash(input.Symbol, input.TokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         var assembledNfts = State.AssembledNftsMap[tokenHash].Clone();
         if (assembledNfts != null)
         {
@@ -254,7 +254,7 @@ public partial class NFTContract
 
     public override Empty Recast(RecastInput input)
     {
-        var tokenHash = CalculateTokenHash(input.Symbol, input.TokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         var minterList = State.MinterListMap[input.Symbol] ?? new MinterList();
         Assert(minterList.Value.Contains(Context.Sender), "No permission.");
         var nftInfo = GetNFTInfoByTokenHash(tokenHash);
@@ -293,7 +293,7 @@ public partial class NFTContract
 
     public override Empty Approve(ApproveInput input)
     {
-        var tokenHash = CalculateTokenHash(input.Symbol, input.TokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         State.AllowanceMap[tokenHash][Context.Sender][input.Spender] = input.Amount;
         Context.Fire(new Approved
         {
@@ -308,7 +308,7 @@ public partial class NFTContract
 
     public override Empty UnApprove(UnApproveInput input)
     {
-        var tokenHash = CalculateTokenHash(input.Symbol, input.TokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         var oldAllowance = State.AllowanceMap[tokenHash][Context.Sender][input.Spender];
         var currentAllowance = oldAllowance.Sub(input.Amount);
         if (currentAllowance <= 0) currentAllowance = 0;
@@ -321,14 +321,13 @@ public partial class NFTContract
             Spender = input.Spender,
             Symbol = input.Symbol,
             CurrentAllowance = currentAllowance,
-            TokenId = input.TokenId
         });
         return new Empty();
     }
 
-    private Hash CalculateTokenHash(string symbol, long tokenId)
+    private Hash CalculateTokenHash(string symbol)
     {
-        return HashHelper.ComputeFrom($"{symbol}{tokenId}");
+        return HashHelper.ComputeFrom($"{symbol}");
     }
 
     public override Empty AddMinters(AddMintersInput input)
@@ -388,8 +387,7 @@ public partial class NFTContract
         var protocolInfo = State.NftProtocolMap[input.Symbol];
         if (protocolInfo == null) throw new AssertionException($"Invalid NFT Token symbol: {input.Symbol}");
 
-        var tokenId = input.TokenId == 0 ? protocolInfo.Issued.Add(1) : input.TokenId;
-        var tokenHash = CalculateTokenHash(input.Symbol, tokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         var nftInfo = State.NftInfoMap[tokenHash];
 
         var minterList = GetMinterList(tokenInfo);
@@ -415,7 +413,6 @@ public partial class NFTContract
             {
                 Symbol = input.Symbol,
                 Uri = input.Uri ?? string.Empty,
-                TokenId = tokenId,
                 Metadata = nftMetadata,
                 Minters = { Context.Sender },
                 Quantity = quantity,
@@ -441,7 +438,6 @@ public partial class NFTContract
         {
             Symbol = input.Symbol,
             ProtocolName = protocolInfo.ProtocolName,
-            TokenId = tokenId,
             Metadata = nftMetadata,
             Owner = owner,
             Minter = Context.Sender,

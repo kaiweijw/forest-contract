@@ -13,7 +13,7 @@ public partial class NFTContract
 
     public override NFTInfo GetNFTInfo(GetNFTInfoInput input)
     {
-        var tokenHash = CalculateTokenHash(input.Symbol, input.TokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         return GetNFTInfoByTokenHash(tokenHash);
     }
 
@@ -31,7 +31,7 @@ public partial class NFTContract
 
     public override GetBalanceOutput GetBalance(GetBalanceInput input)
     {
-        var tokenHash = CalculateTokenHash(input.Symbol, input.TokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         var balance = State.BalanceMap[tokenHash][input.Owner];
         return new GetBalanceOutput
         {
@@ -53,7 +53,7 @@ public partial class NFTContract
 
     public override GetAllowanceOutput GetAllowance(GetAllowanceInput input)
     {
-        var tokenHash = CalculateTokenHash(input.Symbol, input.TokenId);
+        var tokenHash = CalculateTokenHash(input.Symbol);
         return new GetAllowanceOutput
         {
             Owner = input.Owner,
@@ -81,7 +81,7 @@ public partial class NFTContract
 
     public override Hash CalculateTokenHash(CalculateTokenHashInput input)
     {
-        return CalculateTokenHash(input.Symbol, input.TokenId);
+        return CalculateTokenHash(input.Symbol);
     }
 
     public override NFTTypes GetNFTTypes(Empty input)
