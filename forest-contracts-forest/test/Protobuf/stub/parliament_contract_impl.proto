@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package ParliamentImpl;
+
+import "Protobuf/stub/acs1.proto";
+import "Protobuf/stub/acs3.proto";
+import "Protobuf/stub/parliament_contract.proto";
+
+option csharp_namespace = "AElf.Contracts.Parliament";
+
+service ParliamentContractImpl {
+    
+    option (aelf.csharp_state) = "AElf.Contracts.Parliament.ParliamentState";
+    option (aelf.base) = "Protobuf/stub/acs3.proto";
+    option (aelf.base) = "Protobuf/stub/acs1.proto";
+    option (aelf.base) = "Protobuf/stub/parliament_contract.proto";
+}
