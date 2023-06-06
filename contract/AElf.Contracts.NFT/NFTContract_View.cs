@@ -21,11 +21,11 @@ public partial class NFTContract
     {
         var nftInfo = State.NftInfoMap[input];
         if (nftInfo == null) return new NFTInfo();
-        var nftProtocolInfo = State.NftCollectionMap[nftInfo.Symbol];
-        nftInfo.CollectionName = nftProtocolInfo.CollectionName;
-        nftInfo.Creator = nftProtocolInfo.Creator;
-        nftInfo.BaseUri = nftProtocolInfo.BaseUri;
-        nftInfo.NftType = nftProtocolInfo.NftType;
+        var nftCollectionInfo = State.NftCollectionMap[nftInfo.Symbol];
+        nftInfo.CollectionName = nftCollectionInfo.CollectionName;
+        nftInfo.Creator = nftCollectionInfo.Creator;
+        nftInfo.BaseUri = nftCollectionInfo.BaseUri;
+        nftInfo.NftType = nftCollectionInfo.NftType;
         return nftInfo;
     }
 

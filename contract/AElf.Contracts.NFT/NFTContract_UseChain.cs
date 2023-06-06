@@ -84,7 +84,7 @@ public partial class NFTContract
         var nftInfo = GetNFTInfoByTokenHash(tokenHash);
         var nftCollectionInfo = State.NftCollectionMap[input.Symbol];
         Assert(nftCollectionInfo.IsBurnable,
-            $"NFT Protocol {nftCollectionInfo.CollectionName} of symbol {nftCollectionInfo.Symbol} is not burnable.");
+            $"NFT Collection {nftCollectionInfo.CollectionName} of symbol {nftCollectionInfo.Symbol} is not burnable.");
         var minterList = State.MinterListMap[input.Symbol] ?? new MinterList();
         Assert(
             State.BalanceMap[tokenHash][Context.Sender] >= input.Amount &&
@@ -332,9 +332,9 @@ public partial class NFTContract
 
     public override Empty AddMinters(AddMintersInput input)
     {
-        var protocolInfo = State.NftCollectionMap[input.Symbol];
-        Assert(Context.Sender == protocolInfo.Creator, "No permission.");
-        var minterList = State.MinterListMap[protocolInfo.Symbol] ?? new MinterList();
+        var collectionInfo = State.NftCollectionMap[input.Symbol];
+        Assert(Context.Sender == collectionInfo.Creator, "No permission.");
+        var minterList = State.MinterListMap[collectionInfo.Symbol] ?? new MinterList();
 
         foreach (var minter in input.MinterList.Value)
             if (!minterList.Value.Contains(minter))
@@ -352,9 +352,9 @@ public partial class NFTContract
 
     public override Empty RemoveMinters(RemoveMintersInput input)
     {
-        var protocolInfo = State.NftCollectionMap[input.Symbol];
-        Assert(Context.Sender == protocolInfo.Creator, "No permission.");
-        var minterList = State.MinterListMap[protocolInfo.Symbol];
+        var collectionInfo = State.NftCollectionMap[input.Symbol];
+        Assert(Context.Sender == collectionInfo.Creator, "No permission.");
+        var minterList = State.MinterListMap[collectionInfo.Symbol];
 
         foreach (var minter in input.MinterList.Value)
             if (minterList.Value.Contains(minter))
@@ -384,8 +384,8 @@ public partial class NFTContract
         {
             Symbol = input.Symbol
         });
-        var protocolInfo = State.NftCollectionMap[input.Symbol];
-        if (protocolInfo == null) throw new AssertionException($"Invalid NFT Token symbol: {input.Symbol}");
+        var collectionInfo = State.NftCollectionMap[input.Symbol];
+        if (collectionInfo == null) throw new AssertionException($"Invalid NFT Token symbol: {input.Symbol}");
 
         var tokenHash = CalculateTokenHash(input.Symbol);
         var nftInfo = State.NftInfoMap[tokenHash];
@@ -395,13 +395,13 @@ public partial class NFTContract
         Assert(tokenInfo.IssueChainId == Context.ChainId, "Incorrect chain.");
 
         var quantity = input.Quantity > 0 ? input.Quantity : 1;
-        protocolInfo.Supply = protocolInfo.Supply.Add(quantity);
-        protocolInfo.Issued = protocolInfo.Issued.Add(quantity);
-        Assert(protocolInfo.Issued <= protocolInfo.TotalSupply, "Total supply exceeded.");
-        State.NftCollectionMap[input.Symbol] = protocolInfo;
+        collectionInfo.Supply = collectionInfo.Supply.Add(quantity);
+        collectionInfo.Issued = collectionInfo.Issued.Add(quantity);
+        Assert(collectionInfo.Issued <= collectionInfo.TotalSupply, "Total supply exceeded.");
+        State.NftCollectionMap[input.Symbol] = collectionInfo;
 
-        // Inherit from protocol info.
-        var nftMetadata = protocolInfo.Metadata.Clone();
+        // Inherit from collection info.
+        var nftMetadata = collectionInfo.Metadata.Clone();
         if (input.Metadata != null)
             foreach (var pair in input.Metadata.Value)
                 if (!nftMetadata.Value.ContainsKey(pair.Key))
@@ -432,16 +432,16 @@ public partial class NFTContract
         var nftMinted = new NFTMinted
         {
             Symbol = input.Symbol,
-            CollectionName = protocolInfo.CollectionName,
+            CollectionName = collectionInfo.CollectionName,
             Metadata = nftMetadata,
             Owner = owner,
             Minter = Context.Sender,
             Quantity = quantity,
             Alias = input.Alias,
-            BaseUri = protocolInfo.BaseUri,
+            BaseUri = collectionInfo.BaseUri,
             Uri = input.Uri ?? string.Empty,
-            Creator = protocolInfo.Creator,
-            NftType = protocolInfo.NftType,
+            Creator = collectionInfo.Creator,
+            NftType = collectionInfo.NftType,
             TotalQuantity = nftInfo.Quantity,
             TokenHash = tokenHash
         };

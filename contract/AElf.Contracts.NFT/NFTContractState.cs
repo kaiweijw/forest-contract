@@ -5,7 +5,7 @@ namespace AElf.Contracts.NFT;
 
 public partial class NFTContractState : ContractState
 {
-    public Int64State NftProtocolNumberFlag { get; set; }
+    public Int64State NftCollectionNumberFlag { get; set; }
     public Int32State CurrentSymbolNumberLength { get; set; }
     public MappedState<long, bool> IsCreatedMap { get; set; }
 
@@ -40,7 +40,7 @@ public partial class NFTContractState : ContractState
     public SingletonState<NFTTypes> NFTTypes { get; set; }
 
     /// <summary>
-    ///     Symbol (Protocol) -> Owner Address -> Operator Address List
+    ///     Symbol (Collection) -> Owner Address -> Operator Address List
     /// </summary>
     public MappedState<string, Address, AddressList> OperatorMap { get; set; }
 }
