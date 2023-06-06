@@ -6,9 +6,9 @@ namespace AElf.Contracts.NFT;
 
 public partial class NFTContract
 {
-    public override NFTProtocolInfo GetNFTProtocolInfo(StringValue input)
+    public override NFTCollectionInfo GetNFTCollectionInfo(StringValue input)
     {
-        return State.NftProtocolMap[input.Value];
+        return State.NftCollectionMap[input.Value];
     }
 
     public override NFTInfo GetNFTInfo(GetNFTInfoInput input)
@@ -21,8 +21,8 @@ public partial class NFTContract
     {
         var nftInfo = State.NftInfoMap[input];
         if (nftInfo == null) return new NFTInfo();
-        var nftProtocolInfo = State.NftProtocolMap[nftInfo.Symbol];
-        nftInfo.ProtocolName = nftProtocolInfo.ProtocolName;
+        var nftProtocolInfo = State.NftCollectionMap[nftInfo.Symbol];
+        nftInfo.CollectionName = nftProtocolInfo.CollectionName;
         nftInfo.Creator = nftProtocolInfo.Creator;
         nftInfo.BaseUri = nftProtocolInfo.BaseUri;
         nftInfo.NftType = nftProtocolInfo.NftType;

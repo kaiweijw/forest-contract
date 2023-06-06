@@ -12,7 +12,7 @@ public partial class ForestContract
 
         // 0% - 10%
         Assert(0 <= input.Royalty && input.Royalty <= 1000, "Royalty should be between 0% to 10%.");
-        var nftProtocolInfos = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        var nftCollectionInfos = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol
         });
@@ -21,18 +21,18 @@ public partial class ForestContract
             Symbol = input.Symbol
         });
         
-        var nftProtocolInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        var nftCollectionInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol,
         });
-        Assert(!string.IsNullOrEmpty(nftProtocolInfo.Symbol), "NFT Protocol not found.");
+        Assert(!string.IsNullOrEmpty(nftCollectionInfo.Symbol), "NFT Collection not found.");
         
         var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol,
         });
 
-        Assert(nftProtocolInfo.Issuer == Context.Sender || nftInfo.Issuer==Context.Sender,
+        Assert(nftCollectionInfo.Issuer == Context.Sender || nftInfo.Issuer==Context.Sender,
             "No permission.");
         State.CertainNFTRoyaltyMap[input.Symbol] = new CertainNFTRoyaltyInfo
         {
@@ -47,14 +47,13 @@ public partial class ForestContract
     public override Empty SetTokenWhiteList(SetTokenWhiteListInput input)
     {
         AssertContractInitialized();
-        var nftProtocolInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        var nftCollectionInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol
         });
 
-        // var nftProtocolInfo = State.NFTContract.GetNFTProtocolInfo.Call(new StringValue {Value = input.Symbol});
-        Assert(nftProtocolInfo.Issuer != null, "NFT Protocol not found.");
-        Assert(nftProtocolInfo.Issuer == Context.Sender, "Only NFT Protocol Creator can set token white list.");
+        Assert(nftCollectionInfo.Issuer != null, "NFT Collection not found.");
+        Assert(nftCollectionInfo.Issuer == Context.Sender, "Only NFT Collection Creator can set token white list.");
         State.TokenWhiteListMap[input.Symbol] = input.TokenWhiteList;
         Context.Fire(new TokenWhiteListChanged
         {

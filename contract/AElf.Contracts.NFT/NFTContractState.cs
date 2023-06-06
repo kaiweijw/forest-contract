@@ -21,7 +21,7 @@ public partial class NFTContractState : ContractState
     /// </summary>
     public MappedState<Hash, Address, long> BalanceMap { get; set; }
 
-    public MappedState<string, NFTProtocolInfo> NftProtocolMap { get; set; }
+    public MappedState<string, NFTCollectionInfo> NftCollectionMap { get; set; }
 
     /// <summary>
     ///     Token Hash -> Owner Address -> Spender Address -> Approved Amount
