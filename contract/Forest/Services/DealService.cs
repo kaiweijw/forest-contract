@@ -27,7 +27,6 @@ public class DealService
                 var dealResult = new DealResult
                 {
                     Symbol = input.MakeOfferInput.Symbol,
-                    TokenId = input.MakeOfferInput.TokenId,
                     Quantity = needToDealQuantity,
                     PurchaseSymbol = input.MakeOfferInput.Price.Symbol,
                     PurchaseAmount = listedNftInfo.Price.Amount,
@@ -43,7 +42,6 @@ public class DealService
                 var dealResult = new DealResult
                 {
                     Symbol = input.MakeOfferInput.Symbol,
-                    TokenId = input.MakeOfferInput.TokenId,
                     Quantity = needToDealQuantity,
                     PurchaseSymbol = input.MakeOfferInput.Price.Symbol,
                     PurchaseAmount = listedNftInfo.Price.Amount,

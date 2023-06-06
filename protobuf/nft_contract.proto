@@ -19,7 +19,7 @@ service NFTContract {
   option (aelf.csharp_state) = "AElf.Contracts.NFT.NFTContractState";
   option (aelf.base) = "acs1.proto";
 
-  // Create a new nft protocol.
+  // Create a new nft collection.
   rpc Create (CreateInput) returns (google.protobuf.StringValue) {
   }
   rpc CrossChainCreate (CrossChainCreateInput) returns (google.protobuf.Empty) {
@@ -39,8 +39,8 @@ service NFTContract {
   // De-approve.
   rpc UnApprove (UnApproveInput) returns (google.protobuf.Empty) {
   }
-  // Approve or de-approve another address as the operator of all NFTs of a certain protocol.
-  rpc ApproveProtocol (ApproveProtocolInput) returns (google.protobuf.Empty) {
+  // Approve or de-approve another address as the operator of all NFTs of a certain collection.
+  rpc ApproveCollection (ApproveCollectionInput) returns (google.protobuf.Empty) {
   }
   // Destroy nfts.
   rpc Burn (BurnInput) returns (google.protobuf.Empty) {
@@ -65,7 +65,7 @@ service NFTContract {
   rpc RemoveNFTType (google.protobuf.StringValue) returns (google.protobuf.Empty) {
   }
 
-  rpc GetNFTProtocolInfo (google.protobuf.StringValue) returns (NFTProtocolInfo) {
+  rpc GetNFTCollectionInfo (google.protobuf.StringValue) returns (NFTCollectionInfo) {
     option (aelf.is_view) = true;
   }
   rpc GetNFTInfo (GetNFTInfoInput) returns (NFTInfo) {
@@ -107,10 +107,10 @@ message NFTTypes {
 
 // Inputs
 message CreateInput {
-  // The type of this nft protocol.
+  // The type of this nft Collection.
   string nft_type = 1;
-  // The name of this nft protocol.
-  string protocol_name = 2;
+  // The name of this nft Collection.
+  string collection_name = 2;
   // The total supply of the token.
   int64 total_supply = 3;
   // The address that created the token.
@@ -164,7 +164,7 @@ message UnApproveInput {
   int64 amount = 4;
 }
 
-message ApproveProtocolInput {
+message ApproveCollectionInput {
   aelf.Address operator = 1;
   string symbol = 2;
   bool approved = 3;
@@ -258,7 +258,7 @@ message CalculateTokenHashInput {
   int64 token_id = 2;
 }
 
-message NFTProtocolInfo {
+message NFTCollectionInfo {
   // The symbol of the token.
   string symbol = 1;
   // The minted number of the token.
@@ -277,18 +277,18 @@ message NFTProtocolInfo {
   Metadata metadata = 8;
   // NFT Type.
   string nft_type = 9;
-  // Protocol name, aka token name in MultiToken Contract.
-  string protocol_name = 10;
+  // Collection name, aka token name in MultiToken Contract.
+  string collection_name = 10;
   // Is token id can be reused.
   bool is_token_id_reuse = 11;
   int64 issued = 12;
 }
 
 message NFTInfo {
-  // The symbol of the protocol this nft belongs to.
+  // The symbol of the collection this nft belongs to.
   string symbol = 1;
-  // The name of the protocol this nft belongs to.
-  string protocol_name = 2;
+  // The name of the collection this nft belongs to.
+  string collection_name = 2;
   // Actually is the order of this token.
   int64 token_id = 3;
   // The address that creat the base token.
@@ -366,12 +366,12 @@ message AddNFTTypeInput {
 
 // Events
 
-message NFTProtocolCreated {
+message NFTCollectionCreated {
   option (aelf.is_event) = true;
-  // The symbol of this protocol.
+  // The symbol of this collection.
   string symbol = 1;
-  // The name of this protocol.
-  string protocol_name = 2;
+  // The name of this collection.
+  string collection_name = 2;
   // The total supply of the token.
   int64 total_supply = 3;
   // The address that created the token.
@@ -391,10 +391,10 @@ message NFTProtocolCreated {
 
 message NFTMinted {
   option (aelf.is_event) = true;
-  // The symbol of this protocol.
+  // The symbol of this collection.
   string symbol = 1;
-  // The name of this protocol.
-  string protocol_name = 2;
+  // The name of this collection.
+  string collection_name = 2;
   // Actually is the order of this token.
   int64 token_id = 3;
   // The address that creat the base token.

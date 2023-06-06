@@ -88,16 +88,16 @@ public partial class NFTContract
     {
         if (State.CurrentSymbolNumberLength.Value == 0) State.CurrentSymbolNumberLength.Value = NumberMinLength;
 
-        var flag = State.NftProtocolNumberFlag.Value;
+        var flag = State.NftCollectionNumberFlag.Value;
 
         if (flag == 0)
         {
-            // Initial protocol number flag.
-            var protocolNumber = 1;
-            for (var i = 1; i < State.CurrentSymbolNumberLength.Value; i++) protocolNumber = protocolNumber.Mul(10);
+            // Initial collection number flag.
+            var collectionNumber = 1;
+            for (var i = 1; i < State.CurrentSymbolNumberLength.Value; i++) collectionNumber = collectionNumber.Mul(10);
 
-            State.NftProtocolNumberFlag.Value = protocolNumber;
-            flag = protocolNumber;
+            State.NftCollectionNumberFlag.Value = collectionNumber;
+            flag = collectionNumber;
         }
 
         var upperNumberFlag = flag.Mul(2);
@@ -105,10 +105,10 @@ public partial class NFTContract
         {
             var newSymbolNumberLength = State.CurrentSymbolNumberLength.Value.Add(1);
             State.CurrentSymbolNumberLength.Value = newSymbolNumberLength;
-            var protocolNumber = 1;
-            for (var i = 1; i < newSymbolNumberLength; i++) protocolNumber = protocolNumber.Mul(10);
+            var collectionNumber = 1;
+            for (var i = 1; i < newSymbolNumberLength; i++) collectionNumber = collectionNumber.Mul(10);
 
-            State.NftProtocolNumberFlag.Value = protocolNumber;
+            State.NftCollectionNumberFlag.Value = collectionNumber;
             return newSymbolNumberLength;
         }
 

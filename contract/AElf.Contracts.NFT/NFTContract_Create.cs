@@ -14,7 +14,7 @@ public partial class NFTContract : NFTContractContainer.NFTContractBase
     public override StringValue Create(CreateInput input)
     {
         Assert(Context.ChainId == ChainHelper.ConvertBase58ToChainId("AELF"),
-            "NFT Protocol can only be created at aelf mainchain.");
+            "NFT Collection can only be created at aelf mainchain.");
         MakeSureTokenContractAddressSet();
         MakeSureRandomNumberProviderContractAddressSet();
         var symbol = GetSymbol(input.NftType);
@@ -27,7 +27,7 @@ public partial class NFTContract : NFTContractContainer.NFTContractBase
             Issuer = creator,
             IsBurnable = input.IsBurnable,
             IssueChainId = input.IssueChainId,
-            TokenName = input.ProtocolName,
+            TokenName = input.CollectionName,
             TotalSupply = input.TotalSupply,
             ExternalInfo = tokenExternalInfo
         };
@@ -37,33 +37,33 @@ public partial class NFTContract : NFTContractContainer.NFTContractBase
         if (!minterList.Value.Contains(creator)) minterList.Value.Add(creator);
         State.MinterListMap[symbol] = minterList;
 
-        var protocolInfo = new NFTProtocolInfo
+        var collectionInfo = new NFTCollectionInfo
         {
             Symbol = symbol,
             BaseUri = input.BaseUri,
             TotalSupply = tokenCreateInput.TotalSupply,
             Creator = tokenCreateInput.Issuer,
             Metadata = new Metadata { Value = { tokenExternalInfo.Value } },
-            ProtocolName = tokenCreateInput.TokenName,
+            CollectionName = tokenCreateInput.TokenName,
             IsTokenIdReuse = input.IsTokenIdReuse,
             IssueChainId = tokenCreateInput.IssueChainId,
             IsBurnable = tokenCreateInput.IsBurnable,
             NftType = input.NftType
         };
-        State.NftProtocolMap[symbol] = protocolInfo;
+        State.NftCollectionMap[symbol] = collectionInfo;
 
-        Context.Fire(new NFTProtocolCreated
+        Context.Fire(new NFTCollectionCreated
         {
             Symbol = tokenCreateInput.Symbol,
             Creator = tokenCreateInput.Issuer,
             IsBurnable = tokenCreateInput.IsBurnable,
             IssueChainId = tokenCreateInput.IssueChainId,
-            ProtocolName = tokenCreateInput.TokenName,
+            CollectionName = tokenCreateInput.TokenName,
             TotalSupply = tokenCreateInput.TotalSupply,
-            Metadata = protocolInfo.Metadata,
-            BaseUri = protocolInfo.BaseUri,
-            IsTokenIdReuse = protocolInfo.IsTokenIdReuse,
-            NftType = protocolInfo.NftType
+            Metadata = collectionInfo.Metadata,
+            BaseUri = collectionInfo.BaseUri,
+            IsTokenIdReuse = collectionInfo.IsTokenIdReuse,
+            NftType = collectionInfo.NftType
         });
 
         return new StringValue
@@ -76,7 +76,7 @@ public partial class NFTContract : NFTContractContainer.NFTContractBase
     {
         MakeSureTokenContractAddressSet();
         InitialNFTTypeNameMap();
-        Assert(State.NftProtocolMap[input.Symbol] == null, $"Protocol {input.Symbol} already created.");
+        Assert(State.NftCollectionMap[input.Symbol] == null, $"Collection {input.Symbol} already created.");
         var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol
@@ -92,7 +92,7 @@ public partial class NFTContract : NFTContractContainer.NFTContractBase
             throw new AssertionException(
                 $"Full name of {nftTypeShortName} not found. Use AddNFTType to add this new pair.");
 
-        var nftProtocolInfo = new NFTProtocolInfo
+        var nftCollectionInfo = new NFTCollectionInfo
         {
             Symbol = input.Symbol,
             TotalSupply = tokenInfo.TotalSupply,
@@ -102,28 +102,28 @@ public partial class NFTContract : NFTContractContainer.NFTContractBase
             IssueChainId = tokenInfo.IssueChainId,
             IsTokenIdReuse = isTokenIdReuse,
             Metadata = new Metadata { Value = { tokenInfo.ExternalInfo.Value } },
-            ProtocolName = tokenInfo.TokenName,
+            CollectionName = tokenInfo.TokenName,
             NftType = nftTypeFullName
         };
-        State.NftProtocolMap[input.Symbol] = nftProtocolInfo;
+        State.NftCollectionMap[input.Symbol] = nftCollectionInfo;
 
         State.MinterListMap[input.Symbol] = new MinterList
         {
-            Value = { nftProtocolInfo.Creator }
+            Value = { nftCollectionInfo.Creator }
         };
 
-        Context.Fire(new NFTProtocolCreated
+        Context.Fire(new NFTCollectionCreated
         {
             Symbol = input.Symbol,
-            Creator = nftProtocolInfo.Creator,
-            IsBurnable = nftProtocolInfo.IsBurnable,
-            IssueChainId = nftProtocolInfo.IssueChainId,
-            ProtocolName = nftProtocolInfo.ProtocolName,
-            TotalSupply = nftProtocolInfo.TotalSupply,
-            Metadata = nftProtocolInfo.Metadata,
-            BaseUri = nftProtocolInfo.BaseUri,
+            Creator = nftCollectionInfo.Creator,
+            IsBurnable = nftCollectionInfo.IsBurnable,
+            IssueChainId = nftCollectionInfo.IssueChainId,
+            CollectionName = nftCollectionInfo.CollectionName,
+            TotalSupply = nftCollectionInfo.TotalSupply,
+            Metadata = nftCollectionInfo.Metadata,
+            BaseUri = nftCollectionInfo.BaseUri,
             IsTokenIdReuse = isTokenIdReuse,
-            NftType = nftProtocolInfo.NftType
+            NftType = nftCollectionInfo.NftType
         });
         return new Empty();
     }
