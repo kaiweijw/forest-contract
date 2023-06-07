@@ -72,7 +72,7 @@ public partial class ForestContractTests
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 OfferTo = DefaultAddress,
                 Quantity = 1,
                 Price = new Price
@@ -95,7 +95,7 @@ public partial class ForestContractTests
             var requestInfo = await BuyerForestContractStub.GetRequestInfo.CallAsync(new GetRequestInfoInput
             {
                 Symbol = symbol,
-                TokenId = 2
+                // TokenId = 2
             });
             requestInfo.DepositRate.ShouldBe(2000);
             requestInfo.IsConfirmed.ShouldBeFalse();
@@ -109,7 +109,7 @@ public partial class ForestContractTests
             await CreatorForestContractStub.HandleRequest.SendAsync(new HandleRequestInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 IsConfirm = true,
                 Requester = User2Address
             });
@@ -127,7 +127,7 @@ public partial class ForestContractTests
             var requestInfo = await BuyerForestContractStub.GetRequestInfo.CallAsync(new GetRequestInfoInput
             {
                 Symbol = symbol,
-                TokenId = 2
+                // TokenId = 2
             });
             requestInfo.IsConfirmed.ShouldBeTrue();
             return symbol;
@@ -142,14 +142,14 @@ public partial class ForestContractTests
             await NFTContractStub.Mint.SendAsync(new MintInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Quantity = 1,
                 Alias = "Gift"
             });
             await NFTContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Amount = 1,
                 Spender = ForestContractAddress
             });
@@ -159,7 +159,7 @@ public partial class ForestContractTests
                     new ListWithEnglishAuctionInput
                     {
                         Symbol = symbol,
-                        TokenId = 2,
+                        // TokenId = 2,
                         StartingPrice = 100_00000000,
                         PurchaseSymbol = "ELF",
                         Duration = new ListDuration
@@ -178,7 +178,7 @@ public partial class ForestContractTests
                     new ListWithDutchAuctionInput
                     {
                         Symbol = symbol,
-                        TokenId = 2,
+                        // TokenId = 2,
                         StartingPrice = 100_00000000,
                         EndingPrice = 50_00000000,
                         PurchaseSymbol = "ELF",
@@ -196,7 +196,7 @@ public partial class ForestContractTests
             var listInput = new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -248,7 +248,7 @@ public partial class ForestContractTests
             var requestInfo = await CreatorForestContractStub.GetRequestInfo.CallAsync(new GetRequestInfoInput
             {
                 Symbol = symbol,
-                TokenId = 2
+                // TokenId = 2
             });
             requestInfo.ListTime.ShouldNotBeNull();
             
@@ -256,7 +256,7 @@ public partial class ForestContractTests
                 new GetWhitelistIdInput()
                 {
                     Symbol = symbol,
-                    TokenId = 2,
+                    // TokenId = 2,
                     Owner = DefaultAddress
                 })).WhitelistId;
             var whitelistIds = await WhitelistContractStub.GetWhitelistByManager.CallAsync(ForestContractAddress);
@@ -289,7 +289,7 @@ public partial class ForestContractTests
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 OfferTo = DefaultAddress,
                 Price = new Price
                 {
@@ -302,7 +302,7 @@ public partial class ForestContractTests
             var requestInfo = await CreatorForestContractStub.GetRequestInfo.CallAsync(new GetRequestInfoInput
             {
                 Symbol = symbol,
-                TokenId = 2
+                // TokenId = 2
             });
             // Removed after dealing.
             requestInfo.Price.ShouldBeNull();
@@ -330,7 +330,7 @@ public partial class ForestContractTests
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 2,
+                    // TokenId = 2,
                     Owner = User2Address
                 });
                 nftBalance.Balance.ShouldBe(1);
@@ -340,7 +340,7 @@ public partial class ForestContractTests
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 2,
+                    // TokenId = 2,
                     Owner = DefaultAddress
                 });
                 nftBalance.Balance.ShouldBe(0);
