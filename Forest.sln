@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "contract", "contract", "{5C
 		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.csproj.FileListAbsolute.txt = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.csproj.FileListAbsolute.txt
 		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.csproj.AssemblyReference.cache = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.csproj.AssemblyReference.cache
 		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.AssemblyInfoInputs.cache = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.AssemblyInfoInputs.cache
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.cs = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.cs
+		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\.NETCoreApp,Version = v6.0.AssemblyAttributes.cs = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.cs
 		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.GeneratedMSBuildEditorConfig.editorconfig = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.GeneratedMSBuildEditorConfig.editorconfig
 		contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.deps.json = contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.deps.json
 		contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.dll = contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.dll
@@ -62,6 +62,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Whitelist.Tests", "test\Forest.Whitelist.Tests\Forest.Whitelist.Tests.csproj", "{14132439-CA55-41F9-B9DF-DB3C799E1BEB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Contracts.MarketNFTContract", "contract\AElf.Contracts.MarketNFTContract\AElf.Contracts.MarketNFTContract.csproj", "{827056E8-9C1E-4565-8AB1-E81ED4F3F839}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Contracts.MarketNFTContract.Tests", "test\AElf.Contracts.MarketNFTContract.Tests\AElf.Contracts.MarketNFTContract.Tests.csproj", "{635B3AD3-4970-4239-8A0E-E0391318A694}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -109,6 +111,10 @@ Global
 		{827056E8-9C1E-4565-8AB1-E81ED4F3F839}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{827056E8-9C1E-4565-8AB1-E81ED4F3F839}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{827056E8-9C1E-4565-8AB1-E81ED4F3F839}.Release|Any CPU.Build.0 = Release|Any CPU
+		{635B3AD3-4970-4239-8A0E-E0391318A694}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{635B3AD3-4970-4239-8A0E-E0391318A694}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{635B3AD3-4970-4239-8A0E-E0391318A694}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{635B3AD3-4970-4239-8A0E-E0391318A694}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -124,6 +130,7 @@ Global
 		{57D062AC-F184-4A74-A3CD-F200E1F1600A} = {5C980166-C987-470D-AEE0-3858A170A903}
 		{14132439-CA55-41F9-B9DF-DB3C799E1BEB} = {DBC47323-E6A2-42A2-A624-CE2EE6139567}
 		{827056E8-9C1E-4565-8AB1-E81ED4F3F839} = {21D85A91-5BB8-4912-8107-49435A461AAC}
+		{635B3AD3-4970-4239-8A0E-E0391318A694} = {DBC47323-E6A2-42A2-A624-CE2EE6139567}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D7426B41-E959-40E4-9ED8-ED8D9C50F133}
