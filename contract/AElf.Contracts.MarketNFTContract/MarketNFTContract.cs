@@ -41,4 +41,16 @@ public partial class MarketNFTContract : MarketNFTContractContainer.MarketNFTCon
         });
         return new Empty();
     }
+    
+    public override Empty CrossChainCreateToken(CrossChainCreateTokenInput input)
+    {
+        State.TokenContract.CrossChainCreateToken.Send(new MultiToken.CrossChainCreateTokenInput
+        {
+            FromChainId = input.FromChainId,
+            ParentChainHeight = input.ParentChainHeight,
+            TransactionBytes = input.TransactionBytes,
+            MerklePath = input.MerklePath
+        });
+        return new Empty();
+    }
 }

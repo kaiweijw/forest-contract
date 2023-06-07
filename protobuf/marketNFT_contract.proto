@@ -35,14 +35,22 @@ service MarketNFTContract {
     // an action defined as a gRPC service method.
     // this action take a google.protobuf.Empty (placeholder for void) as input
     // and returns a custom defined type: HelloReturn.
-    rpc Hello (google.protobuf.Empty) returns (HelloReturn) { }
-    rpc Create (CreateInput) returns (google.protobuf.Empty) {
+    rpc Create (CreateInput) returns (google.protobuf.Empty) { }
+    rpc CrossChainCreateToken(CrossChainCreateTokenInput) returns (google.protobuf.Empty) {
     }
 }
 
 // a custom message, used as the return type of the Hello action
-message HelloReturn {
-    string Value = 1;
+
+message CrossChainCreateTokenInput {
+    // The chain id of the chain on which the token was created.
+    int32 from_chain_id = 1;
+    // The height of the transaction that created the token.
+    int64 parent_chain_height = 2;
+    // The transaction that created the token.
+    bytes transaction_bytes = 3;
+    // The merkle path created from the transaction that created the transaction.
+    aelf.MerklePath merkle_path = 4;
 }
 
 message ExternalInfo {
