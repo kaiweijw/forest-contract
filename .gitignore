@@ -303,6 +303,8 @@ coverage*.xml
 scripts/patcher/*
 test/patched/*
 
+AElf.Boilerplate.ForestContract.Launcher/*
+
 tools
 .dotnet
 !.idea/
