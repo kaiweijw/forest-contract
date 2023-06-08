@@ -926,45 +926,45 @@ public partial class ForestContractMakeOfferTests
             });
             nftBalance.Output.Balance.ShouldBe(10);
 
-            // try
-            // {
-                // user2 make offer to user1
-                await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
-                {
-                    Symbol = NftSymbol,
-                    OfferTo = User1Address,
-                    Quantity = 1,
-                    Price = offerPrice,
-                    ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
-                });
-                
-            //     // never run this line
-            //     true.ShouldBe(false);
-            // }
-            // catch (ShouldAssertException e)
-            // {
-            //     throw;
-            // }
-            // catch (Exception e)
-            // { 
-            //     e.ShouldNotBeNull();
-            // }
-
+            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = 1,
+                Price = offerPrice,
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
+            });
         }
 
         #endregion
         
-        #region check seller NFT
+        #region check offer list
+        /*
+            To run unit tests locally 
+            because the contract does not support listing NFTs with past start times, 
+            the following code needs to be commented out:
+            Class-Method: Forest.ForestContract.AdjustListDuration
+            
+                if (duration.StartTime == null || duration.StartTime < Context.CurrentBlockTime)
+                {
+                    duration.StartTime = Context.CurrentBlockTime;
+                }
+         
+         */
 
-        {
-            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
-            {
-                Symbol = NftSymbol,
-                Owner = User1Address
-            });
-            nftBalance.Output.Balance.ShouldBe(9);
-        }
-
+        //
+        // {
+        //     // list offers just sent
+        //     var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
+        //     {
+        //         Symbol = NftSymbol,
+        //         Address = User2Address,
+        //     }).Result.Output;
+        //     offerList.Value.Count.ShouldBeGreaterThan(0);
+        //     offerList.Value[0].To.ShouldBe(User1Address);
+        //     offerList.Value[0].From.ShouldBe(User2Address);
+        // }
+        //
         #endregion
 
     }

@@ -48,7 +48,10 @@ public partial class ForestContract
                 var price = whitelistManager.GetExtraInfoByAddress(whitelistId);
                 if (price != null && price.Amount <= input.Price.Amount && price.Symbol == input.Price.Symbol)
                 {
-                    var minStartList = listedNftInfoList.Value.OrderBy(i => i.Duration.StartTime).ToList();
+                    var minStartList = listedNftInfoList.Value
+                        .Where(info => !IsListedNftTimedOut(info))
+                        .OrderBy(i => i.Duration.StartTime)
+                        .ToList();
                     if (minStartList.Count == 0)
                     {
                         PerformMakeOffer(input);

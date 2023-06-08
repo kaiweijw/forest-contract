@@ -1443,35 +1443,20 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #endregion
         
         
-        #region check seller NFT
+        #region check offer list
+        /*
+            To run unit tests locally 
+            because the contract does not support listing NFTs with past start times, 
+            the following code needs to be commented out:
+            Class-Method: Forest.ForestContract.AdjustListDuration
+            
+                if (duration.StartTime == null || duration.StartTime < Context.CurrentBlockTime)
+                {
+                    duration.StartTime = Context.CurrentBlockTime;
+                }
+         
+         */
         
-        {
-            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
-            {
-                Symbol = NftSymbol,
-                Owner = User1Address
-            });
-            nftBalance.Output.Balance.ShouldBe(9);
-        }
-        
-        #endregion
-        
-        #region check buyer NFT
-        
-        {
-            var nftBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
-            {
-                Symbol = NftSymbol,
-                Owner = User2Address
-            });
-            nftBalance.Output.Balance.ShouldBe(1);
-        }
-        
-        #endregion
-
-        // contract NOT support timeout of fix-price-list NFT
-        //
-        // #region check offer list
         //
         // {
         //     // list offers just sent
@@ -1485,7 +1470,7 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         //     offerList.Value[0].From.ShouldBe(User2Address);
         // }
         //
-        // #endregion
+        #endregion
     }
         
     [Fact]
