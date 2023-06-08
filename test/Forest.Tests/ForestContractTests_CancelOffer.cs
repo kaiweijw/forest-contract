@@ -756,18 +756,33 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
 
         #endregion
         
-        #region common user Cancel order
+        #region common user Cancel order again
 
         {
-            await BuyerForestContractStub.CancelOffer.SendAsync(new CancelOfferInput()
+            try
             {
-                Symbol = NftSymbol,
-                OfferFrom = User2Address,
-                IndexList = new Int32List()
+                await BuyerForestContractStub.CancelOffer.SendAsync(new CancelOfferInput()
                 {
-                    Value = { 0 }
-                }
-            });
+                    Symbol = NftSymbol,
+                    OfferFrom = User2Address,
+                    IndexList = new Int32List()
+                    {
+                        Value = { 0 }
+                    }
+                });
+                
+                // never run this line
+                true.ShouldBe(false);
+            }
+            catch (ShouldAssertException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                // throw "Offer not exits"
+                e.ShouldNotBeNull();
+            }
         }
 
         #endregion
@@ -835,33 +850,34 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         #region common user Cancel order
 
         {
-            try
+            await BuyerForestContractStub.CancelOffer.SendAsync(new CancelOfferInput()
             {
-                await BuyerForestContractStub.CancelOffer.SendAsync(new CancelOfferInput()
+                Symbol = NftSymbol,
+                OfferFrom = User2Address,
+                IndexList = new Int32List()
                 {
-                    Symbol = NftSymbol,
-                    OfferFrom = User2Address,
-                    IndexList = new Int32List()
-                    {
-                        Value = { 0 }
-                    }
-                });
-                
-                // never run this line
-                true.ShouldBe(false);
-            }
-            catch (ShouldAssertException e)
-            {
-                throw;
-            }
-            catch (Exception e)
-            {
-                // throw "No permission"
-                e.ShouldNotBeNull();
-            }
+                    Value = { 0 }
+                }
+            });
         }
 
         #endregion
+        
+        
+        #region check offer list
+
+        {
+            // list offers just sent
+            var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
+            {
+                Symbol = NftSymbol,
+                Address = User2Address,
+            }).Result.Output;
+            offerList.Value.Count.ShouldBe(0);
+        }
+
+        #endregion
+
     }
     
 

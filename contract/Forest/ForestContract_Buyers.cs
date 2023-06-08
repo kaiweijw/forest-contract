@@ -272,10 +272,12 @@ public partial class ForestContract
                 // This nft does not exist.
                 State.OfferListMap[input.Symbol].Remove(Context.Sender);
             }
+            
+            Assert(offerList?.Value?.Count > 0, "Offer not exists");
 
             if (input.IndexList != null && input.IndexList.Value.Any())
             {
-                for (var i = 0; i < offerList.Value.Count; i++)
+                for (var i = 0; i < offerList?.Value?.Count; i++)
                 {
                     if (!input.IndexList.Value.Contains(i))
                     {
