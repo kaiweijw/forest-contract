@@ -178,7 +178,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
 
 
     [Fact]
-    public async void MakeOffer_Case44_Deal_Offer_deal()
+    public async void Deal_Case44_Deal_Offer_deal()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -280,7 +280,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
     
     [Fact]
-    public async void MakeOffer_Case45_Deal_Offer_fail()
+    public async void Deal_Case45_Deal_Offer_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -359,7 +359,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
     
     [Fact]
-    public async void MakeOffer_Case46_Deal_Offer_beyondQuantity_fail()
+    public async void Deal_Case46_Deal_Offer_beyondQuantity_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -434,7 +434,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
     
     [Fact]
-    public async void MakeOffer_Case46_Deal_Offer_lessQuantity_deal()
+    public async void Deal_Case46_Deal_Offer_lessQuantity_deal()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -537,7 +537,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
 
     [Fact]
-    public async void MakeOffer_Case47_Deal_OfferList_afterOnShelf_deal()
+    public async void Deal_Case47_Deal_OfferList_afterOnShelf_deal()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -705,7 +705,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
 
     [Fact]
-    public async void MakeOffer_Case48_Nft_notEnough_fail()
+    public async void Deal_Case48_Nft_notEnough_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -782,7 +782,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
     
     [Fact]
-    public async void MakeOffer_Case49_Nft_offerExpired_fail()
+    public async void Deal_Case49_Nft_offerExpired_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -859,7 +859,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
     
     [Fact]
-    public async void MakeOffer_Case50_Nft_invalidSymbol_fail()
+    public async void Deal_Case50_Nft_invalidSymbol_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -936,7 +936,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
     
     [Fact]
-    public async void MakeOffer_Case51_Nft_invalidOfferFrom_fail()
+    public async void Deal_Case51_Nft_invalidOfferFrom_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -1013,7 +1013,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
 
     [Fact]
-    public async void MakeOffer_Case52_Nft_invalidDealQuantity_fail()
+    public async void Deal_Case52_Nft_invalidDealQuantity_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -1090,7 +1090,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
     
     [Fact]
-    public async void MakeOffer_Case53_Nft_ElfNotEnough_fail()
+    public async void Deal_Case53_Nft_ElfNotEnough_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -1166,7 +1166,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     }
     
     [Fact]
-    public async void MakeOffer_Case54_Deal_afterOnShelf_fail()
+    public async void Deal_Case54_Deal_afterOnShelf_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
