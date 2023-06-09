@@ -613,8 +613,8 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
-        var offerQuantity = 2;
-        var dealQuantity = 2;
+        var offerQuantity = 1;
+        var dealQuantity = 1;
         var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
 
         #region user buy
