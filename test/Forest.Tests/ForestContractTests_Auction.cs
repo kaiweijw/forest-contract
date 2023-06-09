@@ -44,7 +44,7 @@ public partial class ForestContractTests
             await NFTContractStub.Mint.SendAsync(new MintInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Quantity = 1,
                 Alias = "Gift2"
             });
@@ -52,7 +52,7 @@ public partial class ForestContractTests
             await NFTContractStub.Approve.SendAsync(new ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Amount = 1,
                 Spender = ForestContractAddress
             });
@@ -60,7 +60,7 @@ public partial class ForestContractTests
             await SellerForestContractStub.ListWithEnglishAuction.SendAsync(new ListWithEnglishAuctionInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Duration = new ListDuration
                 {
                     DurationHours = 100
@@ -74,7 +74,7 @@ public partial class ForestContractTests
                 new GetEnglishAuctionInfoInput
                 {
                     Symbol = symbol,
-                    TokenId = 2
+                    // TokenId = 2
                 });
             auctionInfo.Owner.ShouldBe(DefaultAddress);
             auctionInfo.PurchaseSymbol.ShouldBe("ELF");
@@ -92,7 +92,7 @@ public partial class ForestContractTests
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Quantity = 1,
                 Price = new Price
                 {
@@ -105,7 +105,7 @@ public partial class ForestContractTests
                 var offerList = await BuyerForestContractStub.GetOfferList.CallAsync(new GetOfferListInput
                 {
                     Symbol = symbol,
-                    TokenId = 2
+                    // TokenId = 2
                 });
                 offerList.Value.Count.ShouldBe(1);
                 offerList.Value.First().From.ShouldBe(User2Address);
@@ -128,7 +128,7 @@ public partial class ForestContractTests
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Quantity = 1,
                 Price = new Price
                 {
@@ -141,7 +141,7 @@ public partial class ForestContractTests
                 var offerList = await BuyerForestContractStub.GetOfferList.CallAsync(new GetOfferListInput
                 {
                     Symbol = symbol,
-                    TokenId = 2
+                    // TokenId = 2
                 });
                 offerList.Value.Count.ShouldBe(1);
             }
@@ -150,7 +150,7 @@ public partial class ForestContractTests
                 var bidList = await BuyerForestContractStub.GetBidList.CallAsync(new GetBidListInput
                 {
                     Symbol = symbol,
-                    TokenId = 2
+                    // TokenId = 2
                 });
                 bidList.Value.Count.ShouldBe(1);
             }
@@ -158,7 +158,7 @@ public partial class ForestContractTests
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Quantity = 1,
                 Price = new Price
                 {
@@ -171,7 +171,7 @@ public partial class ForestContractTests
                 var offerList = await BuyerForestContractStub.GetOfferList.CallAsync(new GetOfferListInput
                 {
                     Symbol = symbol,
-                    TokenId = 2
+                    // TokenId = 2
                 });
                 offerList.Value.Count.ShouldBe(2);
             }
@@ -180,7 +180,7 @@ public partial class ForestContractTests
                 var bidList = await BuyerForestContractStub.GetBidList.CallAsync(new GetBidListInput
                 {
                     Symbol = symbol,
-                    TokenId = 2
+                    // TokenId = 2
                 });
                 bidList.Value.Count.ShouldBe(1);
             }
@@ -203,7 +203,7 @@ public partial class ForestContractTests
             await Buyer2ForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Quantity = 1,
                 Price = new Price
                 {
@@ -224,7 +224,7 @@ public partial class ForestContractTests
             await SellerForestContractStub.Deal.SendAsync(new DealInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 OfferFrom = User2Address,
                 Price = new Price
                 {
@@ -247,7 +247,7 @@ public partial class ForestContractTests
                 var balance = await NFTContractStub.GetBalance.CallAsync(new GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 2,
+                    // TokenId = 2,
                     Owner = User2Address
                 });
                 balance.Balance.ShouldBe(1);
@@ -257,7 +257,7 @@ public partial class ForestContractTests
                 var balance = await NFTContractStub.GetBalance.CallAsync(new GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 2,
+                    // TokenId = 2,
                     Owner = DefaultAddress
                 });
                 balance.Balance.ShouldBe(0);
@@ -287,7 +287,7 @@ public partial class ForestContractTests
             await NFTContractStub.Mint.SendAsync(new MintInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Quantity = 1,
                 Alias = "Gift2"
             });
@@ -308,7 +308,7 @@ public partial class ForestContractTests
             await NFTContractStub.Approve.SendAsync(new ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Amount = 1,
                 Spender = ForestContractAddress
             });
@@ -316,7 +316,7 @@ public partial class ForestContractTests
             await SellerForestContractStub.ListWithDutchAuction.SendAsync(new ListWithDutchAuctionInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Duration = new ListDuration
                 {
                     DurationHours = 100
@@ -330,7 +330,7 @@ public partial class ForestContractTests
                 new GetDutchAuctionInfoInput
                 {
                     Symbol = symbol,
-                    TokenId = 2
+                    // TokenId = 2
                 });
             auctionInfo.Owner.ShouldBe(DefaultAddress);
             auctionInfo.PurchaseSymbol.ShouldBe("ELF");
@@ -348,7 +348,7 @@ public partial class ForestContractTests
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -361,7 +361,7 @@ public partial class ForestContractTests
                 var offerList = await BuyerForestContractStub.GetOfferList.CallAsync(new GetOfferListInput
                 {
                     Symbol = symbol,
-                    TokenId = 2
+                    // TokenId = 2
                 });
                 offerList.Value.Count.ShouldBe(1);
             }
@@ -376,7 +376,7 @@ public partial class ForestContractTests
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -389,7 +389,7 @@ public partial class ForestContractTests
                 var balance = await NFTContractStub.GetBalance.CallAsync(new GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 2,
+                    // TokenId = 2,
                     Owner = User2Address
                 });
                 balance.Balance.ShouldBe(1);
@@ -399,7 +399,7 @@ public partial class ForestContractTests
                 var offerList = await BuyerForestContractStub.GetOfferList.CallAsync(new GetOfferListInput
                 {
                     Symbol = symbol,
-                    TokenId = 2
+                    // TokenId = 2
                 });
                 offerList.Value.Count.ShouldBe(1);
             }
@@ -408,7 +408,7 @@ public partial class ForestContractTests
                 var balance = await NFTContractStub.GetBalance.CallAsync(new GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 2,
+                    // TokenId = 2,
                     Owner = DefaultAddress
                 });
                 balance.Balance.ShouldBe(0);
@@ -436,7 +436,7 @@ public partial class ForestContractTests
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Quantity = 1,
                 Price = new Price
                 {
@@ -448,7 +448,7 @@ public partial class ForestContractTests
             await Buyer2ForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Quantity = 1,
                 Price = new Price
                 {
@@ -467,7 +467,7 @@ public partial class ForestContractTests
             await SellerForestContractStub.Delist.SendAsync(new DelistInput
             {
                 Symbol = symbol,
-                TokenId = 2,
+                // TokenId = 2,
                 Quantity = 1,
                 Price = new Price
                 {
@@ -480,7 +480,7 @@ public partial class ForestContractTests
                 new GetListedNFTInfoListInput
                 {
                     Symbol = symbol,
-                    TokenId = 2,
+                    // TokenId = 2,
                     Owner = DefaultAddress
                 }));
             listedNftList.Value.Count.ShouldBe(0);

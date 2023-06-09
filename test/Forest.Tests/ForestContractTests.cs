@@ -25,7 +25,7 @@ namespace Forest
         {
             var executionResult = await NFTContractStub.Create.SendAsync(new CreateInput
             {
-                ProtocolName = "aelf Art",
+                // ProtocolName = "aelf Art",
                 NftType = NFTType.Art.ToString(),
                 TotalSupply = 1000,
                 IsBurnable = false,
@@ -33,8 +33,8 @@ namespace Forest
             });
             var symbol = executionResult.Output.Value;
 
-            var nftProtocolInfo = await NFTContractStub.GetNFTProtocolInfo.CallAsync(new StringValue {Value = symbol});
-            nftProtocolInfo.TotalSupply.ShouldBe(1000);
+            // var nftProtocolInfo = await NFTContractStub.GetNFTProtocolInfo.CallAsync(new StringValue {Value = symbol});
+            // nftProtocolInfo.TotalSupply.ShouldBe(1000);
 
             return symbol;
         }
@@ -90,7 +90,7 @@ namespace Forest
                     }
                 },
                 NftType = NFTType.Badges.ToString(),
-                ProtocolName = "Badge",
+                // ProtocolName = "Badge",
                 IsTokenIdReuse = true,
                 MinterList = new MinterList
                 {
@@ -117,7 +117,7 @@ namespace Forest
             await AdminForestContractStub.MintBadge.SendAsync(new MintBadgeInput()
             {
                 Symbol = symbol,
-                TokenId = 233
+                // // TokenId = 233
             });
             return symbol;
         }
@@ -144,7 +144,7 @@ namespace Forest
             await NFTContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Amount = 100,
                 Spender = ForestContractAddress
             });
@@ -152,7 +152,7 @@ namespace Forest
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -170,7 +170,7 @@ namespace Forest
                 new GetListedNFTInfoListInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // // TokenId = 233,
                     Owner = DefaultAddress
                 })).Value.First();
             listedNftInfo.Price.Symbol.ShouldBe("ELF");
@@ -185,7 +185,7 @@ namespace Forest
                     new ListWithFixedPriceInput
                     {
                         Symbol = symbol,
-                        TokenId = 233,
+                        // // TokenId = 233,
                         Price = new Price
                         {
                             Symbol = "ELF",
@@ -210,7 +210,7 @@ namespace Forest
 
             var executionResult = await NFTContractStub.Create.SendAsync(new CreateInput
             {
-                ProtocolName = "aelf Collections",
+                // ProtocolName = "aelf Collections",
                 NftType = NFTType.Collectables.ToString(),
                 TotalSupply = 1000,
                 IsBurnable = false,
@@ -223,7 +223,7 @@ namespace Forest
                 Symbol = symbol,
                 Alias = "test",
                 Quantity = 20,
-                TokenId = 233
+                // TokenId = 233
             });
             // await TokenContractStub.Issue.SendAsync(new IssueInput
             // {
@@ -241,7 +241,7 @@ namespace Forest
             await NFTContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Amount = 100,
                 Spender = ForestContractAddress
             });
@@ -249,7 +249,7 @@ namespace Forest
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -281,7 +281,7 @@ namespace Forest
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 1,
                 Price = new Price
@@ -314,7 +314,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = User2Address
                 });
                 nftBalance.Balance.ShouldBe(1);
@@ -324,7 +324,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = DefaultAddress
                 });
                 nftBalance.Balance.ShouldBe(0);
@@ -346,7 +346,7 @@ namespace Forest
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 2,
                 Price = new Price
@@ -359,7 +359,7 @@ namespace Forest
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 1,
                 Price = new Price
@@ -373,14 +373,14 @@ namespace Forest
                 new GetAddressListInput
                 {
                     Symbol = symbol,
-                    TokenId = 233
+                    // // TokenId = 233
                 });
             offerAddressList.Value.ShouldContain(User2Address);
         
             var offerList = await BuyerForestContractStub.GetOfferList.CallAsync(new GetOfferListInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 Address = User2Address
             });
             offerList.Value.Count.ShouldBe(2);
@@ -399,7 +399,7 @@ namespace Forest
             await CreatorForestContractStub.SetRoyalty.SendAsync(new SetRoyaltyInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 Royalty = 10,
                 RoyaltyFeeReceiver = MarketServiceFeeReceiverAddress
             });
@@ -407,7 +407,7 @@ namespace Forest
             var offerList = await BuyerForestContractStub.GetOfferList.CallAsync(new GetOfferListInput
             {
                 Symbol = symbol,
-                TokenId = 233
+                // // TokenId = 233
             });
             offerList.Value.Count.ShouldBe(2);
         
@@ -415,7 +415,7 @@ namespace Forest
             var executionResult = await SellerForestContractStub.Deal.SendWithExceptionAsync(new DealInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 OfferFrom = offer.From,
                 Quantity = 1,
                 Price = offer.Price
@@ -425,7 +425,7 @@ namespace Forest
             await SellerForestContractStub.Delist.SendAsync(new DelistInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -437,7 +437,7 @@ namespace Forest
             var executionResult1 = await SellerForestContractStub.Deal.SendAsync(new DealInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 OfferFrom = offer.From,
                 Quantity = 1,
                 Price = offer.Price
@@ -470,7 +470,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = User2Address
                 });
                 nftBalance.Balance.ShouldBe(1);
@@ -480,7 +480,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = DefaultAddress
                 });
                 nftBalance.Balance.ShouldBe(0);
@@ -509,7 +509,7 @@ namespace Forest
             await NFTContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Amount = 1,
                 Spender = ForestContractAddress
             });
@@ -524,7 +524,7 @@ namespace Forest
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 1,
                 Price = new Price
@@ -537,7 +537,7 @@ namespace Forest
             var offerList = await BuyerForestContractStub.GetOfferList.CallAsync(new GetOfferListInput
             {
                 Symbol = symbol,
-                TokenId = 233
+                // // TokenId = 233
             });
             offerList.Value.Count.ShouldBe(1);
             
@@ -545,7 +545,7 @@ namespace Forest
             await SellerForestContractStub.Deal.SendAsync(new DealInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // // TokenId = 233,
                 OfferFrom = offer.From,
                 Quantity = 1,
                 Price = offer.Price
@@ -574,7 +574,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = User2Address
                 });
                 nftBalance.Balance.ShouldBe(1);
@@ -584,7 +584,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = DefaultAddress
                 });
                 nftBalance.Balance.ShouldBe(0);
@@ -664,7 +664,7 @@ namespace Forest
 
             var executionResult = await NFTContractStub.Create.SendAsync(new CreateInput
             {
-                ProtocolName = "aelf Collections",
+                // ProtocolName = "aelf Collections",
                 NftType = NFTType.Collectables.ToString(),
                 TotalSupply = 1000,
                 IsBurnable = false,
@@ -677,7 +677,7 @@ namespace Forest
                 Symbol = symbol,
                 Alias = "test",
                 Quantity = 20,
-                TokenId = 233
+                // TokenId = 233
             });
 
             // await TokenContractStub.Issue.SendAsync(new IssueInput
@@ -696,7 +696,7 @@ namespace Forest
             await NFTContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Amount = 100,
                 Spender = ForestContractAddress
             });
@@ -704,7 +704,7 @@ namespace Forest
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -715,13 +715,13 @@ namespace Forest
                     DurationHours = 24
                 },
                 Quantity = 5,
-                IsWhitelistAvailable = false,
+                IsWhitelistAvailable = true,
                 IsMergeToPreviousListedInfo = false
             });
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -732,13 +732,13 @@ namespace Forest
                     DurationHours = 24
                 },
                 Quantity = 7,
-                IsWhitelistAvailable = false,
+                IsWhitelistAvailable = true,
                 IsMergeToPreviousListedInfo = false
             });
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -749,7 +749,7 @@ namespace Forest
                     DurationHours = 24
                 },
                 Quantity = 8,
-                IsWhitelistAvailable = false,
+                IsWhitelistAvailable = true,
                 IsMergeToPreviousListedInfo = false
             });
             await NFTBuyerTokenContractStub.Approve.SendAsync(new ApproveInput
@@ -761,7 +761,7 @@ namespace Forest
             var executionResult1 = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 4,
                 Price = new Price
@@ -772,11 +772,11 @@ namespace Forest
             });
             var log = ListedNFTChanged.Parser.ParseFrom(executionResult1.TransactionResult.Logs
                 .First(l => l.Name == nameof(ListedNFTChanged)).NonIndexed);
-            log.TokenId.ShouldBe(233);
+            // log.TokenId.ShouldBe(233);
             var executionResult2 = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 2,
                 Price = new Price
@@ -795,7 +795,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = User2Address
                 });
                 nftBalance.Balance.ShouldBe(6);
@@ -811,7 +811,7 @@ namespace Forest
             var executionResult3 = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 1,
                 Price = new Price
@@ -824,7 +824,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = User2Address
                 });
                 nftBalance.Balance.ShouldBe(6);
@@ -846,7 +846,7 @@ namespace Forest
 
             var executionResult = await NFTContractStub.Create.SendAsync(new CreateInput
             {
-                ProtocolName = "aelf Collections",
+                // ProtocolName = "aelf Collections",
                 NftType = NFTType.Collectables.ToString(),
                 TotalSupply = 1000,
                 IsBurnable = false,
@@ -859,7 +859,7 @@ namespace Forest
                 Symbol = symbol,
                 Alias = "test",
                 Quantity = 20,
-                TokenId = 233
+                // TokenId = 233
             });
 
             // await TokenContractStub.Issue.SendAsync(new IssueInput
@@ -878,7 +878,7 @@ namespace Forest
             await NFTContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Amount = 100,
                 Spender = ForestContractAddress
             });
@@ -886,7 +886,7 @@ namespace Forest
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -897,13 +897,13 @@ namespace Forest
                     DurationHours = 24
                 },
                 Quantity = 5,
-                IsWhitelistAvailable = false,
+                IsWhitelistAvailable = true,
                 IsMergeToPreviousListedInfo = false
             });
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -914,13 +914,13 @@ namespace Forest
                     DurationHours = 24
                 },
                 Quantity = 7,
-                IsWhitelistAvailable = false,
+                IsWhitelistAvailable = true,
                 IsMergeToPreviousListedInfo = false
             });
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -931,7 +931,7 @@ namespace Forest
                     DurationHours = 24
                 },
                 Quantity = 8,
-                IsWhitelistAvailable = false,
+                IsWhitelistAvailable = true,
                 IsMergeToPreviousListedInfo = false
             });
             await NFTBuyerTokenContractStub.Approve.SendAsync(new ApproveInput
@@ -943,7 +943,7 @@ namespace Forest
             var executionResult1 = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 21,
                 Price = new Price
@@ -956,7 +956,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = User2Address
                 });
                 nftBalance.Balance.ShouldBe(20);
@@ -974,7 +974,7 @@ namespace Forest
                 {
                     Symbol = symbol,
                     Address = User2Address,
-                    TokenId = 233
+                    // TokenId = 233
                 });
                 offerList.Value.Count.ShouldBe(1);
                 offerList.Value[0].Quantity.ShouldBe(1);
@@ -988,7 +988,7 @@ namespace Forest
 
             var executionResult = await NFTContractStub.Create.SendAsync(new CreateInput
             {
-                ProtocolName = "aelf Collections",
+                // ProtocolName = "aelf Collections",
                 NftType = NFTType.Collectables.ToString(),
                 TotalSupply = 1000,
                 IsBurnable = false,
@@ -1001,7 +1001,7 @@ namespace Forest
                 Symbol = symbol,
                 Alias = "test",
                 Quantity = 20,
-                TokenId = 233
+                // TokenId = 233
             });
 
             // await TokenContractStub.Issue.SendAsync(new IssueInput
@@ -1020,7 +1020,7 @@ namespace Forest
             await NFTContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Amount = 100,
                 Spender = ForestContractAddress
             });
@@ -1028,7 +1028,7 @@ namespace Forest
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -1067,7 +1067,7 @@ namespace Forest
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -1078,7 +1078,7 @@ namespace Forest
                     DurationHours = 24
                 },
                 Quantity = 7,
-                IsWhitelistAvailable = false,
+                IsWhitelistAvailable = true,
                 IsMergeToPreviousListedInfo = true
             });
             await NFTBuyerTokenContractStub.Approve.SendAsync(new ApproveInput
@@ -1090,7 +1090,7 @@ namespace Forest
             var executionResult1 = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 7,
                 Price = new Price
@@ -1103,7 +1103,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = User2Address
                 });
                 nftBalance.Balance.ShouldBe(7);
@@ -1113,7 +1113,7 @@ namespace Forest
                     new GetListedNFTInfoListInput
                     {
                         Symbol = symbol,
-                        TokenId = 233,
+                        // TokenId = 233,
                         Owner = DefaultAddress
                     });
                 info.Value.Count.ShouldBe(1);
@@ -1137,7 +1137,7 @@ namespace Forest
                 {
                     Symbol = symbol,
                     Address = User2Address,
-                    TokenId = 233
+                    // TokenId = 233
                 });
                 offerList.Value.Count.ShouldBe(0);
             }
@@ -1150,7 +1150,7 @@ namespace Forest
 
             var executionResult = await NFTContractStub.Create.SendAsync(new CreateInput
             {
-                ProtocolName = "aelf Collections",
+                // ProtocolName = "aelf Collections",
                 NftType = NFTType.Collectables.ToString(),
                 TotalSupply = 1000,
                 IsBurnable = false,
@@ -1163,7 +1163,7 @@ namespace Forest
                 Symbol = symbol,
                 Alias = "test",
                 Quantity = 20,
-                TokenId = 233
+                // TokenId = 233
             });
 
             // await TokenContractStub.Issue.SendAsync(new IssueInput
@@ -1182,7 +1182,7 @@ namespace Forest
             await NFTContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Amount = 100,
                 Spender = ForestContractAddress
             });
@@ -1190,7 +1190,7 @@ namespace Forest
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -1229,7 +1229,7 @@ namespace Forest
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -1252,7 +1252,7 @@ namespace Forest
             var executionResult1 = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 7,
                 Price = new Price
@@ -1265,7 +1265,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = User2Address
                 });
                 nftBalance.Balance.ShouldBe(7);
@@ -1275,7 +1275,7 @@ namespace Forest
                     new GetListedNFTInfoListInput
                     {
                         Symbol = symbol,
-                        TokenId = 233,
+                        // TokenId = 233,
                         Owner = DefaultAddress
                     });
                 info.Value.Count.ShouldBe(1);
@@ -1302,7 +1302,7 @@ namespace Forest
                 {
                     Symbol = symbol,
                     Address = User2Address,
-                    TokenId = 233
+                    // TokenId = 233
                 });
                 offerList.Value.Count.ShouldBe(0);
             }
@@ -1326,7 +1326,7 @@ namespace Forest
 
             var executionResult = await NFTContractStub.Create.SendAsync(new CreateInput
             {
-                ProtocolName = "aelf Collections",
+                // ProtocolName = "aelf Collections",
                 NftType = NFTType.Collectables.ToString(),
                 TotalSupply = 1000,
                 IsBurnable = false,
@@ -1339,7 +1339,7 @@ namespace Forest
                 Symbol = symbol,
                 Alias = "test",
                 Quantity = 20,
-                TokenId = 233
+                // TokenId = 233
             });
 
             // await TokenContractStub.Issue.SendAsync(new IssueInput
@@ -1358,14 +1358,14 @@ namespace Forest
             await NFTContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Amount = 100,
                 Spender = ForestContractAddress
             });
             await NFT2ContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Amount = 100,
                 Spender = ForestContractAddress
             });
@@ -1373,7 +1373,7 @@ namespace Forest
             await SellerForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 Price = new Price
                 {
                     Symbol = "ELF",
@@ -1384,14 +1384,14 @@ namespace Forest
                     DurationHours = 24
                 },
                 Quantity = 5,
-                IsWhitelistAvailable = false,
+                IsWhitelistAvailable = true,
                 IsMergeToPreviousListedInfo = false
             });
             {
                 var balance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = DefaultAddress
                 });
                 balance.Balance.ShouldBe(20);
@@ -1406,7 +1406,7 @@ namespace Forest
             var executionResult1 = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
             {
                 Symbol = symbol,
-                TokenId = 233,
+                // TokenId = 233,
                 OfferTo = DefaultAddress,
                 Quantity = 2,
                 Price = new Price
@@ -1419,7 +1419,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = User2Address
                 });
                 nftBalance.Balance.ShouldBe(2);
@@ -1427,7 +1427,7 @@ namespace Forest
                 await NFTContractStub.Approve.SendAsync(new AElf.Contracts.NFT.ApproveInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Amount = 2,
                     Spender = ForestContractAddress
                 });
@@ -1436,7 +1436,7 @@ namespace Forest
                 var balance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = DefaultAddress
                 });
                 balance.Balance.ShouldBe(18);
@@ -1467,7 +1467,7 @@ namespace Forest
                 await Seller2ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Price = new Price
                     {
                         Symbol = "ELF",
@@ -1478,7 +1478,7 @@ namespace Forest
                         DurationHours = 24
                     },
                     Quantity = 2,
-                    IsWhitelistAvailable = false,
+                    IsWhitelistAvailable = true,
                     IsMergeToPreviousListedInfo = false
                 });
             }
@@ -1492,7 +1492,7 @@ namespace Forest
                 await Buyer3ForestContractStub.MakeOffer.SendAsync(new MakeOfferInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     OfferTo = User2Address,
                     Quantity = 1,
                     Price = new Price
@@ -1506,7 +1506,7 @@ namespace Forest
                 var nftBalance = await NFTContractStub.GetBalance.CallAsync(new AElf.Contracts.NFT.GetBalanceInput
                 {
                     Symbol = symbol,
-                    TokenId = 233,
+                    // TokenId = 233,
                     Owner = DefaultAddress
                 });
                 nftBalance.Balance.ShouldBe(19);

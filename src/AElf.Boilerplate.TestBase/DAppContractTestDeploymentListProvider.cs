@@ -11,7 +11,7 @@ namespace AElf.Boilerplate.TestBase
         public List<Hash> GetDeployContractNameList()
         {
             var list = base.GetDeployContractNameList();
-            //list.Add(DAppSmartContractAddressNameProvider.Name);
+            list.Add(DAppSmartContractAddressNameProvider.Name);
             list.Add(ForestSmartContractAddressNameProvider.Name);
             list.Add(WhitelistSmartContractAddressNameProvider.Name);
             list.Add(NFTSmartContractAddressNameProvider.Name);
@@ -24,7 +24,7 @@ namespace AElf.Boilerplate.TestBase
         public List<Hash> GetDeployContractNameList()
         {
             var list = base.GetDeployContractNameList();
-            //list.Add(DAppSmartContractAddressNameProvider.Name);
+            list.Add(DAppSmartContractAddressNameProvider.Name);
             list.Add(ForestSmartContractAddressNameProvider.Name);
             list.Add(WhitelistSmartContractAddressNameProvider.Name);
             list.Add(NFTSmartContractAddressNameProvider.Name);
