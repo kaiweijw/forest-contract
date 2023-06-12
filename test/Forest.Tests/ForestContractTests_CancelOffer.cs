@@ -198,7 +198,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 OfferTo = User1Address,
                 Quantity = offerQuantity,
                 Price = offerPrice,
-                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddSeconds(-1)),
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5)),
             });
         }
         #endregion
@@ -627,7 +627,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 OfferTo = User1Address,
                 Quantity = offerQuantity,
                 Price = offerPrice,
-                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddSeconds(-1)),
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5)),
             });
         }
         #endregion
