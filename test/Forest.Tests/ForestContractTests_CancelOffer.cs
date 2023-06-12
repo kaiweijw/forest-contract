@@ -191,7 +191,17 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         #region user buy
 
         {
-            // user2 make offer to user1
+            // user2 make offer VALID
+            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = offerQuantity,
+                Price = offerPrice,
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
+            });
+            
+            // user2 make offer EXPIRE1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
                 Symbol = NftSymbol,
@@ -199,6 +209,16 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 Quantity = offerQuantity,
                 Price = offerPrice,
                 ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5)),
+            });
+            
+            // user2 make offer EXPIRE2
+            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = offerQuantity,
+                Price = offerPrice,
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-10)),
             });
         }
         #endregion
@@ -212,10 +232,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 Symbol = NftSymbol,
                 Address = User2Address,
             }).Result.Output;
-            offerList.Value.Count.ShouldBeGreaterThan(0);
-            offerList.Value[0].To.ShouldBe(User1Address);
-            offerList.Value[0].From.ShouldBe(User2Address);
-            offerList.Value[0].Quantity.ShouldBe(offerQuantity);
+            offerList.Value.Count.ShouldBe(3);
         }
 
         #endregion
@@ -245,7 +262,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 Symbol = NftSymbol,
                 Address = User2Address,
             }).Result.Output;
-            offerList.Value.Count.ShouldBe(0);
+            offerList.Value.Count.ShouldBe(1);
         }
 
         #endregion
