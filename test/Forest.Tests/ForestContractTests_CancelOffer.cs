@@ -177,7 +177,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
 
 
     [Fact]
-    public async void CancelOffer_Case25_Admin_CancelExpiredOffer()
+    public async void CancelOffer_Case2_Admin_CancelExpiredOffer()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -253,7 +253,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
     }
     
     [Fact]
-    public async void CancelOffer_Case26_ContractNotInitialize_fail()
+    public async void CancelOffer_Case3_ContractNotInitialize_fail()
     {
         // await InitializeForestContract();
         await PrepareNftData();
@@ -298,7 +298,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
     }
     
     [Fact]
-    public async void CancelOffer_Case27_commonUser_cancelExpiredOffer()
+    public async void CancelOffer_Case4_commonUser_cancelExpiredOffer()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -375,7 +375,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
     }
     
     [Fact]
-    public async void CancelOffer_Case28_offerUser_cancelValidOffer()
+    public async void CancelOffer_Case5_offerUser_cancelValidOffer()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -452,7 +452,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
     }
     
     [Fact]
-    public async void CancelOffer_Case29_commonUser_cancelValidOffer()
+    public async void CancelOffer_Case6_commonUser_cancelValidOffer()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -529,7 +529,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
     }
     
     [Fact]
-    public async void CancelOffer_Case30_Admin_CancelValidOffer()
+    public async void CancelOffer_Case7_Admin_CancelValidOffer()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -606,7 +606,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
     }
     
     [Fact]
-    public async void CancelOffer_Case31_Admin_CancelExpiredOffer()
+    public async void CancelOffer_Case8_Admin_CancelExpiredOffer()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -682,7 +682,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
     }
     
     [Fact]
-    public async void CancelOffer_Case32_commonUser_cancelOfferTwice()
+    public async void CancelOffer_Case9_commonUser_cancelOfferTwice()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -790,7 +790,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
     
 
     [Fact]
-    public async void CancelOffer_Case33_commonUser_cancelAfterBurned()
+    public async void CancelOffer_Case10_commonUser_cancelAfterBurned()
     {
         await InitializeForestContract();
         await PrepareNftData();
