@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
@@ -603,6 +605,8 @@ public class ForestContractTests_Deal : ForestContractTestBase
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // user2 make offer to user1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -1232,6 +1236,8 @@ public class ForestContractTests_Deal : ForestContractTestBase
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // user2 make offer to user1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {

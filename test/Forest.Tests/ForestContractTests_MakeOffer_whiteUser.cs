@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using AElf.CSharp.Core.Extension;
+using AElf.Sdk.CSharp;
+using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
@@ -13,6 +17,8 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
     private const string ElfSymbol = "ELF";
     private const int ServiceFeeRate = 1000; // 10%
     private const long InitializeElfAmount = 10000_0000_0000;
+    
+    private CSharpSmartContractContext _context;
 
     private async Task InitializeForestContract()
     {
@@ -311,6 +317,9 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy
 
         {
+
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -437,6 +446,24 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
+            // check buyer ELF balance
+            var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = ElfSymbol,
+                Owner = User2Address
+            });
+            elfBalance.Output.Balance.ShouldBe(InitializeElfAmount);
+
+            // check seller ELF balance
+            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            nftBalance.Output.Balance.ShouldBe(10);
+            
             // user2 make offer to user1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -547,6 +574,24 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
+            // check buyer ELF balance
+            var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = ElfSymbol,
+                Owner = User2Address
+            });
+            elfBalance.Output.Balance.ShouldBe(InitializeElfAmount);
+
+            // check seller ELF balance
+            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            nftBalance.Output.Balance.ShouldBe(10);
+            
             // user2 make offer to user1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -632,6 +677,24 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
+            // check buyer ELF balance
+            var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = ElfSymbol,
+                Owner = User2Address
+            });
+            elfBalance.Output.Balance.ShouldBe(InitializeElfAmount);
+
+            // check seller ELF balance
+            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            nftBalance.Output.Balance.ShouldBe(10);
+            
             // user2 make offer to user1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -697,6 +760,8 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         var whitePrice = Elf(0);
         var offerPrice = Elf(1_0000_0000);
 
+        var list = await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+        
         #region ListWithFixedPrice with zero whitePrice
 
         {
@@ -729,7 +794,7 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
                 Duration = new ListDuration()
                 {
                     // start 1sec ago
-                    StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddSeconds(-1)),
+                    StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1)),
                     // public 10min after
                     PublicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10)),
                     DurationHours = 1,
@@ -738,10 +803,28 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         }
         
         #endregion
-
+        
         #region whitelist user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+
+            // check buyer ELF balance
+            var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = ElfSymbol,
+                Owner = User2Address
+            });
+            elfBalance.Output.Balance.ShouldBe(InitializeElfAmount);
+
+            // check seller ELF balance
+            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            nftBalance.Output.Balance.ShouldBe(10);
+
             // user2 make offer to user1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -839,6 +922,24 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy, FAIL
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
+            // check buyer ELF balance
+            var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = ElfSymbol,
+                Owner = User2Address
+            });
+            elfBalance.Output.Balance.ShouldBe(InitializeElfAmount);
+
+            // check seller ELF balance
+            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            nftBalance.Output.Balance.ShouldBe(10);
+            
             // user2 make offer to user1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -943,6 +1044,24 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy, FAIL
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
+            // check buyer ELF balance
+            var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = ElfSymbol,
+                Owner = User2Address
+            });
+            elfBalance.Output.Balance.ShouldBe(InitializeElfAmount);
+
+            // check seller ELF balance
+            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            nftBalance.Output.Balance.ShouldBe(10);
+            
             // user2 make offer to user1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -1047,6 +1166,8 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -1178,6 +1299,8 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -1309,6 +1432,8 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -1413,6 +1538,8 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -1534,6 +1661,8 @@ public partial class ForestContractMakeOfferTests : ForestContractTestBase
         #region whitelist user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check seller ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {

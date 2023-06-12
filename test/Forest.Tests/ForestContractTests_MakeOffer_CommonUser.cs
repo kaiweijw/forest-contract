@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
@@ -97,6 +99,8 @@ public partial class ForestContractMakeOfferTests
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -244,6 +248,8 @@ public partial class ForestContractMakeOfferTests
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -391,6 +397,8 @@ public partial class ForestContractMakeOfferTests
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -515,6 +523,8 @@ public partial class ForestContractMakeOfferTests
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -640,6 +650,8 @@ public partial class ForestContractMakeOfferTests
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -775,6 +787,8 @@ public partial class ForestContractMakeOfferTests
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -910,6 +924,8 @@ public partial class ForestContractMakeOfferTests
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -991,6 +1007,8 @@ public partial class ForestContractMakeOfferTests
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -1110,6 +1128,8 @@ public partial class ForestContractMakeOfferTests
         #region common user buy
 
         {
+            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
+            
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
