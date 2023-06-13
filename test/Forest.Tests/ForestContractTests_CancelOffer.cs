@@ -616,6 +616,9 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 Address = User2Address,
             }).Result.Output;
             offerList.Value.Count.ShouldBeGreaterThan(0);
+            offerList.Value[0].To.ShouldBe(User1Address);
+            offerList.Value[0].From.ShouldBe(User2Address);
+            offerList.Value[0].Quantity.ShouldBe(offerQuantity);
         }
 
         #endregion
