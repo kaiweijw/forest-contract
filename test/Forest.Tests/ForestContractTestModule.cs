@@ -5,6 +5,7 @@ using AElf.Contracts.NFT;
 using AElf.ContractTestBase;
 using AElf.ContractTestBase.ContractTestKit;
 using AElf.Kernel.SmartContract.Application;
+using AElf.Sdk.CSharp;
 using Forest.Whitelist;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;

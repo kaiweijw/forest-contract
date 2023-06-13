@@ -48,7 +48,10 @@ public partial class ForestContract
                 var price = whitelistManager.GetExtraInfoByAddress(whitelistId);
                 if (price != null && price.Amount <= input.Price.Amount && price.Symbol == input.Price.Symbol)
                 {
-                    var minStartList = listedNftInfoList.Value.OrderBy(i => i.Duration.StartTime).ToList();
+                    var minStartList = listedNftInfoList.Value
+                        .Where(info => !IsListedNftTimedOut(info))
+                        .OrderBy(i => i.Duration.StartTime)
+                        .ToList();
                     if (minStartList.Count == 0)
                     {
                         PerformMakeOffer(input);
@@ -269,10 +272,12 @@ public partial class ForestContract
                 // This nft does not exist.
                 State.OfferListMap[input.Symbol].Remove(Context.Sender);
             }
+            
+            Assert(offerList?.Value?.Count > 0, "Offer not exists");
 
             if (input.IndexList != null && input.IndexList.Value.Any())
             {
-                for (var i = 0; i < offerList.Value.Count; i++)
+                for (var i = 0; i < offerList?.Value?.Count; i++)
                 {
                     if (!input.IndexList.Value.Contains(i))
                     {

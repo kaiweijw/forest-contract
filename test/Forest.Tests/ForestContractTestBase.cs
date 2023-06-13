@@ -56,19 +56,24 @@ namespace Forest
         
         internal TokenContractImplContainer.TokenContractImplStub TokenContractStub;
         internal TokenContractImplContainer.TokenContractImplStub UserTokenContractStub;
+        internal TokenContractImplContainer.TokenContractImplStub User2TokenContractStub;
         internal TokenContractImplContainer.TokenContractImplStub NFTBuyerTokenContractStub;
         internal TokenContractImplContainer.TokenContractImplStub NFTBuyer2TokenContractStub;
         
         internal NFTContractContainer.NFTContractStub NFTContractStub { get; set; }
+        internal NFTContractContainer.NFTContractStub NFT1ContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub ForestContractStub { get; set; }
         internal WhitelistContractContainer.WhitelistContractStub WhitelistContractStub { get; set; }
         
         internal ForestContractContainer.ForestContractStub SellerForestContractStub { get; set; }
-    
+        internal ForestContractContainer.ForestContractStub Seller1ForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub Seller2ForestContractStub { get; set; }
+        
         internal ForestContractContainer.ForestContractStub BuyerForestContractStub { get; set; }
+        internal ForestContractContainer.ForestContractStub Buyer1ForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub Buyer2ForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub Buyer3ForestContractStub { get; set; }
+        
         internal ForestContractContainer.ForestContractStub CreatorForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub AdminForestContractStub { get; set; }
         
@@ -88,6 +93,8 @@ namespace Forest
                 GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, DefaultKeyPair);
             UserTokenContractStub =
                 GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User1KeyPair);
+            User2TokenContractStub =
+                GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User2KeyPair);
             NFTBuyerTokenContractStub =
                 GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User2KeyPair);
             NFTBuyer2TokenContractStub =
@@ -97,8 +104,10 @@ namespace Forest
             AdminForestContractStub =GetForestContractStub(DefaultKeyPair);
             ForestContractStub = GetForestContractStub(DefaultKeyPair);
             SellerForestContractStub = GetForestContractStub(DefaultKeyPair);
+            Seller1ForestContractStub = GetForestContractStub(User1KeyPair);
             Seller2ForestContractStub = GetForestContractStub(User2KeyPair);
             BuyerForestContractStub = GetForestContractStub(User2KeyPair);
+            Buyer1ForestContractStub = GetForestContractStub(User1KeyPair);
             Buyer2ForestContractStub = GetForestContractStub(User3KeyPair);
             Buyer3ForestContractStub = GetForestContractStub(DefaultKeyPair);
             CreatorForestContractStub = GetForestContractStub(DefaultKeyPair);
