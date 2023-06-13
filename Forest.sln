@@ -3,42 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "contract", "contract", "{5C980166-C987-470D-AEE0-3858A170A903}"
-	ProjectSection(SolutionItems) = preProject
-		contract\Directory.Build.props = contract\Directory.Build.props
-		contract\AElf.Contracts.MarketNFTContract\obj\rider.project.restore.info = contract\AElf.Contracts.MarketNFTContract\obj\rider.project.restore.info
-		contract\AElf.Contracts.MarketNFTContract\obj\project.nuget.cache = contract\AElf.Contracts.MarketNFTContract\obj\project.nuget.cache
-		contract\AElf.Contracts.MarketNFTContract\obj\AElf.Contracts.MarketNFTContract.csproj.nuget.g.props = contract\AElf.Contracts.MarketNFTContract\obj\AElf.Contracts.MarketNFTContract.csproj.nuget.g.props
-		contract\AElf.Contracts.MarketNFTContract\obj\AElf.Contracts.MarketNFTContract.csproj.nuget.g.targets = contract\AElf.Contracts.MarketNFTContract\obj\AElf.Contracts.MarketNFTContract.csproj.nuget.g.targets
-		contract\AElf.Contracts.MarketNFTContract\obj\project.packagespec.json = contract\AElf.Contracts.MarketNFTContract\obj\project.packagespec.json
-		contract\AElf.Contracts.MarketNFTContract\obj\project.assets.json = contract\AElf.Contracts.MarketNFTContract\obj\project.assets.json
-		contract\AElf.Contracts.MarketNFTContract\obj\AElf.Contracts.MarketNFTContract.csproj.nuget.dgspec.json = contract\AElf.Contracts.MarketNFTContract\obj\AElf.Contracts.MarketNFTContract.csproj.nuget.dgspec.json
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.assets.cache = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.assets.cache
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\ref\AElf.Contracts.MarketNFTContract.dll = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\ref\AElf.Contracts.MarketNFTContract.dll
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.dll = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.dll
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\refint\AElf.Contracts.MarketNFTContract.dll = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\refint\AElf.Contracts.MarketNFTContract.dll
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.AssemblyInfo.cs = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.AssemblyInfo.cs
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.csproj.CoreCompileInputs.cache = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.csproj.CoreCompileInputs.cache
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.pdb = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.pdb
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.csproj.FileListAbsolute.txt = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.csproj.FileListAbsolute.txt
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.csproj.AssemblyReference.cache = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.csproj.AssemblyReference.cache
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.AssemblyInfoInputs.cache = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.AssemblyInfoInputs.cache
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.cs = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.cs
-		contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.GeneratedMSBuildEditorConfig.editorconfig = contract\AElf.Contracts.MarketNFTContract\obj\Debug\net6.0\AElf.Contracts.MarketNFTContract.GeneratedMSBuildEditorConfig.editorconfig
-		contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.deps.json = contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.deps.json
-		contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.dll = contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.dll
-		contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.pdb = contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.pdb
-		contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.dll.patched = contract\AElf.Contracts.MarketNFTContract\bin\Debug\net6.0\AElf.Contracts.MarketNFTContract.dll.patched
-		contract\AElf.Contracts.MarketNFTContract\AElf.Contracts.MarketNFTContract.csproj = contract\AElf.Contracts.MarketNFTContract\AElf.Contracts.MarketNFTContract.csproj
-		contract\AElf.Contracts.MarketNFTContract\MarketNFTContract.cs = contract\AElf.Contracts.MarketNFTContract\MarketNFTContract.cs
-		contract\AElf.Contracts.MarketNFTContract\MarketNFTContractState.cs = contract\AElf.Contracts.MarketNFTContract\MarketNFTContractState.cs
-		contract\AElf.Contracts.MarketNFTContract\Protobuf\Generated\MarketNFTContract.c.cs = contract\AElf.Contracts.MarketNFTContract\Protobuf\Generated\MarketNFTContract.c.cs
-		contract\AElf.Contracts.MarketNFTContract\Protobuf\Generated\MarketNFTContract.g.cs = contract\AElf.Contracts.MarketNFTContract\Protobuf\Generated\MarketNFTContract.g.cs
-		contract\AElf.Contracts.MarketNFTContract\Protobuf\Generated\TokenContract.g.cs = contract\AElf.Contracts.MarketNFTContract\Protobuf\Generated\TokenContract.g.cs
-		contract\AElf.Contracts.MarketNFTContract\Protobuf\Generated\TokenContract.c.cs = contract\AElf.Contracts.MarketNFTContract\Protobuf\Generated\TokenContract.c.cs
-		contract\AElf.Contracts.MarketNFTContract\Protobuf\Generated\Asc12.g.cs = contract\AElf.Contracts.MarketNFTContract\Protobuf\Generated\Asc12.g.cs
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{21D85A91-5BB8-4912-8107-49435A461AAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DBC47323-E6A2-42A2-A624-CE2EE6139567}"
