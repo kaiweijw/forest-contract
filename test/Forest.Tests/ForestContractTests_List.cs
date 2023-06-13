@@ -828,19 +828,60 @@ public class ForestContractListTests : ForestContractTestBase
             Func<Task> act =()=> Seller1ForestContractStub.Delist.SendAsync(new DelistInput
             {
                 Symbol = NftSymbol,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 1000
-                },
-                Quantity = 20
+                Price = sellPrice,
+                Quantity = -9000
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
-            exception.Message.ShouldContain("Listed NFT Info not exists. (Or already delisted.");
+            exception.Message.ShouldContain("Quantity must be a positive integer.");
             
         }
     }
 
+    
+    [Fact]
+    public async void Delist21Test()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        var sellPrice = Elf(3);
+        { 
+            await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            {
+                Symbol = NftSymbol,
+                Quantity = 1,
+                IsWhitelistAvailable = true,
+                Price = sellPrice
+            });
+
+            var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
+                new GetListedNFTInfoListInput
+                {
+                    Symbol = NftSymbol,
+                    Owner = User1Address
+                })).Value.First();
+            listedNftInfo.Price.Symbol.ShouldBe("ELF");
+            listedNftInfo.Price.Amount.ShouldBe(3);
+            listedNftInfo.Quantity.ShouldBe(1);
+            listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
+            listedNftInfo.Duration.StartTime.ShouldNotBeNull();
+            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+        }
+        await Seller1ForestContractStub.Delist.SendAsync(new DelistInput
+        {
+            Symbol = NftSymbol,
+            Price = sellPrice,
+            Quantity = 9000
+        });
+           
+        var listedNftInfo1 = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
+            new GetListedNFTInfoListInput
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            }));
+        listedNftInfo1.Value.Count.ShouldBe(0);
+       
+    }
     [Fact]
     public async void TransferTest()
     {

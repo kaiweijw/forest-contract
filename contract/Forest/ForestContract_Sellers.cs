@@ -126,6 +126,7 @@ public partial class ForestContract
         
         public override Empty Delist(DelistInput input)
         {
+            Assert(input.Quantity >0, "Quantity must be a positive integer.");
             var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
             if (listedNftInfoList == null || listedNftInfoList.Value.All(i => i.ListType == ListType.NotListed))
             {
@@ -140,7 +141,7 @@ public partial class ForestContract
             {
                 throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
             }
-
+            input.Quantity = input.Quantity>listedNftInfo.Quantity?listedNftInfo.Quantity:listedNftInfo.Quantity;
             var projectId = CalculateProjectId(input.Symbol, Context.Sender);
             var whitelistId = State.WhitelistIdMap[projectId];
             
