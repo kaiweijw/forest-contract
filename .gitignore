@@ -303,7 +303,7 @@ coverage*.xml
 scripts/patcher/*
 test/patched/*
 
-AElf.Boilerplate.ForestContract.Launcher/*
+src/AElf.Boilerplate.ForestContract.Launcher
 
 tools
 .dotnet
