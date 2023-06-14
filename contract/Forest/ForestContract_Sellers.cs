@@ -1,5 +1,6 @@
 using System.Linq;
 using AElf;
+using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using AElf.Types;
@@ -16,6 +17,19 @@ public partial class ForestContract
             AssertWhitelistContractInitialized();
             Assert(input.Price.Amount > 0, "Incorrect listing price.");
             Assert(input.Quantity > 0, "Incorrect quantity.");
+             
+            var tokeninfo =  State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+            {
+                Symbol = input.Symbol
+            });
+            Assert(!string.IsNullOrWhiteSpace(tokeninfo.Symbol), "this NFT Info not exists.");
+            
+            var balance = State.TokenContract.GetBalance.Call(new AElf.Contracts.MultiToken.GetBalanceInput
+            {
+                Symbol = input.Symbol,
+                Owner = Context.Sender
+            });
+            Assert(balance.Balance >= input.Quantity, "Check sender NFT balance failed."); 
             var duration = AdjustListDuration(input.Duration);
             var whitelists = input.Whitelists;
             var projectId = CalculateProjectId(input.Symbol,Context.Sender);
@@ -65,58 +79,30 @@ public partial class ForestContract
 
             var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ??
                                     new ListedNFTInfoList();
-            ListedNFTInfo listedNftInfo;
-            listedNftInfo = listedNftInfoList.Value.FirstOrDefault(i =>
-                i.Price.Symbol == input.Price.Symbol && i.Price.Amount == input.Price.Amount &&
-                i.Owner == Context.Sender && i.Duration.StartTime == input.Duration.StartTime &&
-                i.Duration.PublicTime == input.Duration.PublicTime &&
-                i.Duration.DurationHours == input.Duration.DurationHours);
 
-            bool isMergedToPreviousListedInfo;
-            if (listedNftInfo == null)
+            ListedNFTInfo listedNftInfo = new ListedNFTInfo
             {
-                listedNftInfo = new ListedNFTInfo
-                {
-                    ListType = ListType.FixedPrice,
-                    Owner = Context.Sender,
-                    Price = input.Price,
-                    Quantity = input.Quantity,
-                    Symbol = input.Symbol,
-                    Duration = duration,
-                };
-                listedNftInfoList.Value.Add(listedNftInfo);
-                isMergedToPreviousListedInfo = false;
-                Context.Fire(new ListedNFTAdded
-                {
-                    Symbol = input.Symbol,
-                    Duration = duration,
-                    Owner = Context.Sender,
-                    Price = input.Price,
-                    Quantity = input.Quantity,
-                    WhitelistId = whitelistId
-                });
-            }
-            else
+                ListType = ListType.FixedPrice,
+                Owner = Context.Sender,
+                Price = input.Price,
+                Quantity = input.Quantity,
+                Symbol = input.Symbol,
+                Duration = duration,
+            };
+            listedNftInfoList.Value.Add(listedNftInfo);
+            Context.Fire(new ListedNFTAdded
             {
-                listedNftInfo.Quantity = listedNftInfo.Quantity.Add(input.Quantity);
-                var previousDuration = listedNftInfo.Duration.Clone();
-                listedNftInfo.Duration = duration;
-                isMergedToPreviousListedInfo = true;
-                Context.Fire(new ListedNFTChanged
-                {
-                    Symbol = input.Symbol,
-                    Duration = duration,
-                    Owner = Context.Sender,
-                    Price = input.Price,
-                    Quantity = listedNftInfo.Quantity,
-                    PreviousDuration = previousDuration,
-                    WhitelistId = whitelistId
-                });
-            }
+                Symbol = input.Symbol,
+                Duration = duration,
+                Owner = Context.Sender,
+                Price = input.Price,
+                Quantity = input.Quantity,
+                WhitelistId = whitelistId
+            });
 
             State.ListedNFTInfoListMap[input.Symbol][Context.Sender] = listedNftInfoList;
 
-            var totalQuantity = listedNftInfoList.Value.Where(i => i.Owner == Context.Sender).Sum(i => i.Quantity);
+            //var totalQuantity = listedNftInfoList.Value.Where(i => i.Owner == Context.Sender).Sum(i => i.Quantity);
 
             Context.Fire(new FixedPriceNFTListed
             {
@@ -125,7 +111,7 @@ public partial class ForestContract
                 Quantity = input.Quantity,
                 Symbol = listedNftInfo.Symbol,
                 Duration = listedNftInfo.Duration,
-                IsMergedToPreviousListedInfo = isMergedToPreviousListedInfo,
+                //IsMergedToPreviousListedInfo = isMergedToPreviousListedInfo,
                 WhitelistId = whitelistId
             });
 
@@ -140,6 +126,7 @@ public partial class ForestContract
         
         public override Empty Delist(DelistInput input)
         {
+            Assert(input.Quantity >0, "Quantity must be a positive integer.");
             var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
             if (listedNftInfoList == null || listedNftInfoList.Value.All(i => i.ListType == ListType.NotListed))
             {
@@ -154,7 +141,10 @@ public partial class ForestContract
             {
                 throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
             }
-
+            input.Quantity = input.Quantity > listedNftInfo.Quantity
+                ? listedNftInfo.Quantity
+                : input.Quantity;
+            
             var projectId = CalculateProjectId(input.Symbol, Context.Sender);
             var whitelistId = State.WhitelistIdMap[projectId];
             
