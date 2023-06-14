@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Forest;
 
-public partial class ForestContractMakeOfferTests : ForestContractTestBase
+public partial class ForestContractTests_MakeOffer : ForestContractTestBase
 {
     private const string NftSymbol = "TESTNFT-1";
     private const string ElfSymbol = "ELF";

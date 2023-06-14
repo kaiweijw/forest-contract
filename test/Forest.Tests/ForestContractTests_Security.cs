@@ -102,7 +102,7 @@ public class ForestContractTests_Security : ForestContractTestBase
                 Amount = 5,
                 To = User1Address
             });
-            
+
             // issue 10 NFTs to user3
             await UserTokenContractStub.Issue.SendAsync(new IssueInput()
             {
@@ -220,11 +220,11 @@ public class ForestContractTests_Security : ForestContractTestBase
         return res;
     }
 
-    
+
     [Fact]
-    public async void Security_Case3_Deal_noPerm()
+    public async void Security_Case03_Deal_noPerm()
     {
-        
+
         await InitializeForestContract();
         await PrepareNftData();
 
@@ -277,7 +277,7 @@ public class ForestContractTests_Security : ForestContractTestBase
                     OfferFrom = User2Address,
                     Quantity = dealQuantity
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -294,7 +294,7 @@ public class ForestContractTests_Security : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region user2 deal, SUCCESS
 
         {
@@ -309,9 +309,9 @@ public class ForestContractTests_Security : ForestContractTestBase
 
         #endregion
     }
-    
+
     [Fact]
-    public async void Security_Case4_Delist_noPerm()
+    public async void Security_Case04_Delist_noPerm()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -351,9 +351,9 @@ public class ForestContractTests_Security : ForestContractTestBase
                 Symbol = NftSymbol,
                 Owner = User1Address
             });
-            
+
             res.Output.Value.Count.ShouldBe(1);
-            
+
         }
 
         #endregion
@@ -369,7 +369,7 @@ public class ForestContractTests_Security : ForestContractTestBase
                     Quantity = 2,
                     Price = sellPrice
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -387,9 +387,9 @@ public class ForestContractTests_Security : ForestContractTestBase
     }
 
     [Fact]
-    public async void Security_Case5_MakeOffer_success()
+    public async void Security_Case05_MakeOffer_success()
     {
-        
+
         await InitializeForestContract();
         await PrepareNftData();
 
@@ -429,7 +429,7 @@ public class ForestContractTests_Security : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region user3 make offer to user1
 
         {
@@ -462,6 +462,287 @@ public class ForestContractTests_Security : ForestContractTestBase
         #endregion
 
     }
+
+    [Fact]
+    public async void Security_Case06_CancelOffer_noPerm()
+    {
+
+        await InitializeForestContract();
+        await PrepareNftData();
+
+        var sellPrice = Elf(5_0000_0000);
+        var offerPrice = Elf(5_0000_0000);
+        var offerQuantity = 1;
+        var dealQuantity = 1;
+        var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
+
+        #region user2 make EXPIRED offer to user1
+
+        {
+            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = offerQuantity,
+                Price = offerPrice,
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5)),
+            });
+        }
+
+        #endregion
+
+        #region user3 cancelOffer
+
+        {
+            try
+            {
+                await Buyer2ForestContractStub.CancelOffer.SendAsync(new CancelOfferInput()
+                {
+                    Symbol = NftSymbol,
+                    IndexList = new Int32List()
+                    {
+                        Value = { 0 }
+                    },
+                    OfferFrom = User2Address,
+                    IsCancelBid = false
+                });
+
+                // never run this line
+                true.ShouldBe(false);
+            }
+            catch (ShouldAssertException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                e.Message.ShouldContain("No permission");
+            }
+        }
+
+        #endregion
+    }
+
+    [Fact]
+    public async void Security_Case07_SetTokenWhiteList_noPerm()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        
+        await Seller1ForestContractStub.SetTokenWhiteList.SendAsync(new SetTokenWhiteListInput()
+        {
+            Symbol = NftSymbol,
+            TokenWhiteList = new StringList()
+            {
+                Value = { "ELF", "USDT" }
+            }
+        });
+
+        try
+        {
+            await Seller2ForestContractStub.SetTokenWhiteList.SendAsync(new SetTokenWhiteListInput()
+            {
+                Symbol = NftSymbol,
+                TokenWhiteList = new StringList()
+                {
+                    Value = { "ELF", "USDT" }
+                }
+            });
+
+        }
+        catch (ShouldAssertException e)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            e.Message.ShouldContain("Only NFT Collection Creator");
+        }
+    }
     
+    [Fact]
+    public async void Security_Case08_SetServiceFee_noPerm()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+
+        var sellPrice = Elf(5_0000_0000);
+        var offerPrice = Elf(5_0000_0000);
+        var offerQuantity = 1;
+        var dealQuantity = 1;
+        var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
+
+        #region admin set success
+
+        {
+            await AdminForestContractStub.SetServiceFee.SendAsync(new SetServiceFeeInput()
+            {
+                ServiceFeeRate = 1000,
+                ServiceFeeReceiver = User1Address
+            });
+        }
+        
+        #endregion
+        
+        #region user3 set success
+
+        {
+            try
+            {
+                await Seller2ForestContractStub.SetServiceFee.SendAsync(new SetServiceFeeInput()
+                {
+                    ServiceFeeRate = 1000,
+                    ServiceFeeReceiver = User1Address
+                });
+                
+                // never run this line
+                true.ShouldBe(false);
+            }
+            catch (ShouldAssertException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                e.Message.ShouldContain("No permission");
+            }
+
+        }
+        
+        #endregion
+        
+    }
+    
+    [Fact]
+    public async void Security_Case09_SetGlobalTokenWhiteList_noPerm()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        
+        await AdminForestContractStub.SetGlobalTokenWhiteList.SendAsync(new StringList()
+        {
+            Value = { "ELF", "USDT" }
+        });
+
+        try
+        {        
+            await Seller1ForestContractStub.SetGlobalTokenWhiteList.SendAsync(new StringList()
+            {
+                Value = { "ELF", "USDT" }
+            });
+
+            // never run this line
+            true.ShouldBe(false);
+        }
+        catch (ShouldAssertException e)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            e.Message.ShouldContain("No permission");
+        }
+    }
+    
+    [Fact]
+    public async void Security_Case10_SetWhitelistContract_noPerm()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        
+        await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);
+
+        try
+        {        
+            await Seller1ForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);
+
+            // never run this line
+            true.ShouldBe(false);
+        }
+        catch (ShouldAssertException e)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            e.Message.ShouldContain("No permission");
+        }
+    }
+
+    [Fact]
+    public async void Security_Case11_CreateNFT_success()
+    {
+        await InitializeForestContract();
+        
+        await UserTokenContractStub.Create.SendAsync(new CreateInput
+        {
+            Symbol = "TESTNFT-0",
+            TokenName = "TESTNFT—collection",
+            TotalSupply = 100,
+            Decimals = 0,
+            Issuer = User1Address,
+            IsBurnable = false,
+            IssueChainId = 0,
+            ExternalInfo = new ExternalInfo()
+        });
+        
+        await User2TokenContractStub.Create.SendAsync(new CreateInput
+        {
+            Symbol = "TESTMFT-0",
+            TokenName = "TESTMFT—collection",
+            TotalSupply = 100,
+            Decimals = 0,
+            Issuer = User1Address,
+            IsBurnable = false,
+            IssueChainId = 0,
+            ExternalInfo = new ExternalInfo()
+        });
+    }
+
+    [Fact]
+    public async void Security_Case12_ListFixedPrice_InvalidQty_fail()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+
+        var whitePrice = Elf(1_0000_0000);
+        var sellPrice = Elf(5_0000_0000);
+        var offerPrice = Elf(5_0000_0000);
+        var offerQuantity = 2;
+        var dealQuantity = 2;
+        var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
+
+        // before startTime
+        var startTime = Timestamp.FromDateTime(DateTime.UtcNow);
+        var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10));
+
+        try
+        {
+            
+            await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
+            {
+                Symbol = NftSymbol,
+                Quantity = -5,
+                IsWhitelistAvailable = true,
+                Price = sellPrice,
+                Whitelists = GenWhiteInfoList(GenWhiteList(GenPriceTag("WHITELIST_TAG", whitePrice), User3Address)),
+                Duration = new ListDuration()
+                {
+                    StartTime = startTime,
+                    PublicTime = publicTime,
+                    DurationHours = 1,
+                },
+            });
+        }
+        catch (ShouldAssertException e)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            e.Message.ShouldContain("Incorrect quantity");
+        }
+
+    }
     
 }
