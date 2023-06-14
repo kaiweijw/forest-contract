@@ -1,5 +1,6 @@
 using System.Linq;
 using AElf;
+using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using AElf.Types;
@@ -21,6 +22,14 @@ public partial class ForestContract
             var projectId = CalculateProjectId(input.Symbol,Context.Sender);
             var whitelistId = new Hash();
             var whitelistManager = GetWhitelistManager();
+            
+            var nftBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput()
+            {
+                Symbol = input.Symbol,
+                Owner = Context.Sender
+            });
+            Assert(input.Quantity <= nftBalance.Balance, "Check sender NFT balance failed.");
+            
             if (input.IsWhitelistAvailable)
             {
                 var extraInfoList = ConvertToExtraInfo(whitelists);

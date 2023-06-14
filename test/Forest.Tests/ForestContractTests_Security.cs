@@ -733,6 +733,8 @@ public class ForestContractTests_Security : ForestContractTestBase
                     DurationHours = 1,
                 },
             });
+            
+            true.ShouldBe(false);
         }
         catch (ShouldAssertException e)
         {
@@ -741,6 +743,54 @@ public class ForestContractTests_Security : ForestContractTestBase
         catch (Exception e)
         {
             e.Message.ShouldContain("Incorrect quantity");
+        }
+
+    }
+    
+    [Fact]
+    public async void Security_Case13_ListFixedPrice_nftNotEnough_fail()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+
+        var whitePrice = Elf(1_0000_0000);
+        var sellPrice = Elf(5_0000_0000);
+        var offerPrice = Elf(5_0000_0000);
+        var offerQuantity = 2;
+        var dealQuantity = 2;
+        var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
+
+        // before startTime
+        var startTime = Timestamp.FromDateTime(DateTime.UtcNow);
+        var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10));
+
+        try
+        {
+            
+            await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
+            {
+                Symbol = NftSymbol,
+                Quantity = 500,
+                IsWhitelistAvailable = true,
+                Price = sellPrice,
+                Whitelists = GenWhiteInfoList(GenWhiteList(GenPriceTag("WHITELIST_TAG", whitePrice), User3Address)),
+                Duration = new ListDuration()
+                {
+                    StartTime = startTime,
+                    PublicTime = publicTime,
+                    DurationHours = 1,
+                },
+            });
+            
+            true.ShouldBe(false);
+        }
+        catch (ShouldAssertException e)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            e.Message.ShouldContain("Check sender NFT balance failed");
         }
 
     }
