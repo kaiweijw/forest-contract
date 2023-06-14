@@ -243,7 +243,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             log1.Symbol.ShouldBe(NftSymbol);
             log1.ExpireTime.ShouldNotBeNull();
             log1.OfferTo.ShouldBe(User1Address);
-            
+
             var log2 = Sold.Parser.ParseFrom(executionResult.TransactionResult.Logs
                 .First(l => l.Name == nameof(Sold))
                 .NonIndexed);
@@ -254,12 +254,11 @@ public class ForestContractTests_Deal : ForestContractTestBase
             log2.NftTo.ShouldBe(User2Address);
             log2.PurchaseSymbol.ShouldBe("ELF");
 
-            
+
             var log3 = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
                 .First(l => l.Name == nameof(Transferred))
                 .NonIndexed);
             log3.Amount.ShouldBe(900000000);
-
         }
 
         #endregion

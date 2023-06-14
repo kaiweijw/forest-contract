@@ -169,8 +169,6 @@ public class ForestContractListTests : ForestContractTestBase
                                     Value = { User2Address, User3Address },
                                 }
                             },
-                            // other WhitelistInfo here
-                            // new WhitelistInfo() {}
                         }
                     },
                     Duration = new ListDuration
@@ -407,7 +405,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(2);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647);
+            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
         }
     }
 
@@ -660,7 +658,7 @@ public class ForestContractListTests : ForestContractTestBase
         log1.Price.Symbol.ShouldBe(ElfSymbol);
         log1.Price.Amount.ShouldBe(3);
         log1.Duration.StartTime.ShouldNotBeNull();
-        log1.Duration.DurationHours.ShouldBe(2147483647);
+        log1.Duration.DurationHours.ShouldBe(2147483647L);
         
         var log2 = NFTDelisted.Parser
             .ParseFrom(executionResult1.TransactionResult.Logs.Last(l => l.Name == nameof(NFTDelisted))
