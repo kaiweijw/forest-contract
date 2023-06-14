@@ -224,9 +224,11 @@ public partial class ForestContract
             Assert(balance.Balance >= input.Quantity, "Insufficient NFT balance.");
 
             var offer = State.OfferListMap[input.Symbol][input.OfferFrom]?.Value
-                .FirstOrDefault(o =>
-                    o.From == input.OfferFrom && o.Price.Symbol == input.Price.Symbol &&
-                    o.Price.Amount == input.Price.Amount && o.ExpireTime >= Context.CurrentBlockTime);
+                .FirstOrDefault(o => o.From == input.OfferFrom 
+                                     && o.To == Context.Sender 
+                                     && o.Price.Symbol == input.Price.Symbol 
+                                     && o.Price.Amount == input.Price.Amount 
+                                     && o.ExpireTime >= Context.CurrentBlockTime);
             Price price;
             long totalAmount;
             if (offer == null)
