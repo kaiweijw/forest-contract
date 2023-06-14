@@ -218,9 +218,9 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
             listedNftInfo.Duration.DurationHours.ShouldBe(24);
         }
-        
+
         //GetWhitelistId
-        Func<Task> act =()=> Seller1ForestContractStub.GetWhitelistId.CallAsync(new GetWhitelistIdInput()
+        Func<Task> act = () => Seller1ForestContractStub.GetWhitelistId.CallAsync(new GetWhitelistIdInput()
         {
             Symbol = NftSymbol,
             Owner = User1Address
@@ -228,7 +228,7 @@ public class ForestContractListTests : ForestContractTestBase
         var exception = await Assert.ThrowsAsync<Exception>(act);
         exception.Message.ShouldContain("Failed to call GetWhitelistId");
     }
-    
+
     [Fact]
     public async void ListWithFixedPrice3Test()
     {
@@ -283,9 +283,9 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
             listedNftInfo.Duration.DurationHours.ShouldBe(24);
         }
-        
+
         //GetWhitelistId
-        Func<Task> act =()=> Seller1ForestContractStub.GetWhitelistId.CallAsync(new GetWhitelistIdInput()
+        Func<Task> act = () => Seller1ForestContractStub.GetWhitelistId.CallAsync(new GetWhitelistIdInput()
         {
             Symbol = NftSymbol,
             Owner = User1Address
@@ -293,14 +293,14 @@ public class ForestContractListTests : ForestContractTestBase
         var exception = await Assert.ThrowsAsync<Exception>(act);
         exception.Message.ShouldContain("Failed to call GetWhitelistId");
     }
-    
+
     [Fact]
     public async void ListWithFixedPrice4Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         var sellPrice = Elf(3);
-      
+
         {
             await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
@@ -325,7 +325,7 @@ public class ForestContractListTests : ForestContractTestBase
                     DurationHours = 24
                 }
             });
-            
+
             var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
                 new GetListedNFTInfoListInput
                 {
@@ -370,7 +370,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Duration.DurationHours.ShouldBe(2147483647);
         }
     }
-    
+
     [Fact]
     public async void ListWithFixedPrice6Test()
     {
@@ -378,7 +378,7 @@ public class ForestContractListTests : ForestContractTestBase
         //await PrepareNftData();
         var sellPrice = Elf(3);
         {
-            Func<Task> act =()=> Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            Func<Task> act = () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = "oiii-1",
                 Quantity = 2,
@@ -387,18 +387,17 @@ public class ForestContractListTests : ForestContractTestBase
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("this NFT Info not exists.");
-            
         }
         //Insufficient NFT balance.
     }
-    
+
     [Fact]
     public async void ListWithFixedPrice7Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         {
-            Func<Task> act =()=> Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            Func<Task> act = () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
                 Quantity = 2,
@@ -411,16 +410,16 @@ public class ForestContractListTests : ForestContractTestBase
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("usdt is not in token white list.");
-            
         }
     }
+
     [Fact]
     public async void ListWithFixedPrice8Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         {
-            Func<Task> act =()=> Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            Func<Task> act = () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
                 Quantity = 2,
@@ -436,13 +435,14 @@ public class ForestContractListTests : ForestContractTestBase
             //
         }
     }
+
     [Fact]
     public async void ListWithFixedPrice9Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         {
-            Func<Task> act =()=> Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            Func<Task> act = () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
                 Quantity = 2,
@@ -458,7 +458,7 @@ public class ForestContractListTests : ForestContractTestBase
             //
         }
     }
-    
+
     [Fact]
     public async void ListWithFixedPrice10Test()
     {
@@ -466,7 +466,7 @@ public class ForestContractListTests : ForestContractTestBase
         await PrepareNftData();
         var sellPrice = Elf(3);
         {
-            Func<Task> act =()=> Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            Func<Task> act = () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
                 Quantity = 2000,
@@ -481,6 +481,7 @@ public class ForestContractListTests : ForestContractTestBase
             exception.Message.ShouldContain("Check sender NFT balance failed.");
         }
     }
+
     [Fact]
     public async void ListWithFixedPrice11Test()
     {
@@ -488,7 +489,7 @@ public class ForestContractListTests : ForestContractTestBase
         await PrepareNftData();
         var sellPrice = Elf(3);
         {
-            Func<Task> act =()=>  Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            Func<Task> act = () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
                 Quantity = -10,
@@ -497,9 +498,9 @@ public class ForestContractListTests : ForestContractTestBase
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("Incorrect quantity.");
-            
         }
     }
+
     [Fact]
     public async void ListWithFixedPrice12Test()
     {
@@ -507,7 +508,7 @@ public class ForestContractListTests : ForestContractTestBase
         await PrepareNftData();
         var sellPrice = Elf(3);
         {
-            Func<Task> act =()=>  Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            Func<Task> act = () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
                 Quantity = 0,
@@ -516,10 +517,9 @@ public class ForestContractListTests : ForestContractTestBase
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("Incorrect quantity.");
-            
         }
     }
-    
+
     [Fact]
     public async void ListWithFixedPrice13Test()
     {
@@ -527,7 +527,7 @@ public class ForestContractListTests : ForestContractTestBase
         await PrepareNftData();
         var sellPrice = Elf(3);
         {
-            Func<Task> act =()=>  Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            Func<Task> act = () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
                 Quantity = 1,
@@ -536,10 +536,9 @@ public class ForestContractListTests : ForestContractTestBase
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("Contract not initialized.");
-            
         }
     }
-    
+
     [Fact]
     public async void ListWithFixedPrice14Test()
     {
@@ -551,10 +550,10 @@ public class ForestContractListTests : ForestContractTestBase
         });
 
         //await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);
-    
+
         var sellPrice = Elf(3);
         {
-            Func<Task> act =()=>  Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            Func<Task> act = () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
                 Quantity = 1,
@@ -563,17 +562,16 @@ public class ForestContractListTests : ForestContractTestBase
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("Whitelist Contract not initialized.");
-            
         }
     }
-    
+
     [Fact]
     public async void Delist15Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         var sellPrice = Elf(3);
-        { 
+        {
             await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
@@ -595,14 +593,14 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
             listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
         }
-        
+
         await Seller1ForestContractStub.Delist.SendAsync(new DelistInput
-            {
-                Symbol = NftSymbol,
-                Price = sellPrice,
-                Quantity = 1
-            });
-           
+        {
+            Symbol = NftSymbol,
+            Price = sellPrice,
+            Quantity = 1
+        });
+
         var listedNftInfo1 = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
             new GetListedNFTInfoListInput
             {
@@ -617,14 +615,14 @@ public class ForestContractListTests : ForestContractTestBase
         listedNftInfo1.Duration.DurationHours.ShouldBe(2147483647L);
     }
 
-    
+
     [Fact]
     public async void Delist16Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         var sellPrice = Elf(3);
-        { 
+        {
             await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
@@ -646,7 +644,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
             listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
         }
-        
+
         await Seller1ForestContractStub.Delist.SendAsync(new DelistInput
         {
             Symbol = NftSymbol,
@@ -655,7 +653,7 @@ public class ForestContractListTests : ForestContractTestBase
             Quantity = 1
         });
         {
-            Func<Task> act =()=> Seller1ForestContractStub.Delist.SendAsync(new DelistInput
+            Func<Task> act = () => Seller1ForestContractStub.Delist.SendAsync(new DelistInput
             {
                 Symbol = NftSymbol,
                 // // TokenId = 233,
@@ -664,18 +662,16 @@ public class ForestContractListTests : ForestContractTestBase
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("Listed NFT Info not exists. (Or already delisted.");
-            
         }
-        
     }
-    
+
     [Fact]
     public async void Delist17Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         var sellPrice = Elf(3);
-        { 
+        {
             await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
@@ -698,7 +694,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
         }
         {
-            Func<Task> act =()=> Seller1ForestContractStub.Delist.SendAsync(new DelistInput
+            Func<Task> act = () => Seller1ForestContractStub.Delist.SendAsync(new DelistInput
             {
                 Symbol = "abkd-1",
                 Price = sellPrice,
@@ -707,16 +703,15 @@ public class ForestContractListTests : ForestContractTestBase
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("Listed NFT Info not exists. (Or already delisted.");
         }
-        
     }
-    
+
     [Fact]
     public async void Delist18Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         var sellPrice = Elf(3);
-        { 
+        {
             await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
@@ -739,7 +734,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
         }
         {
-            Func<Task> act =()=> Seller1ForestContractStub.Delist.SendAsync(new DelistInput
+            Func<Task> act = () => Seller1ForestContractStub.Delist.SendAsync(new DelistInput
             {
                 Symbol = NftSymbol,
                 Price = null,
@@ -749,14 +744,14 @@ public class ForestContractListTests : ForestContractTestBase
             exception.Message.ShouldContain("Need to specific list record.");
         }
     }
-    
+
     [Fact]
     public async void Delist19Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         var sellPrice = Elf(3);
-        { 
+        {
             await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
@@ -779,7 +774,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
         }
         {
-            Func<Task> act =()=> Seller1ForestContractStub.Delist.SendAsync(new DelistInput
+            Func<Task> act = () => Seller1ForestContractStub.Delist.SendAsync(new DelistInput
             {
                 Symbol = NftSymbol,
                 Price = new Price
@@ -791,17 +786,16 @@ public class ForestContractListTests : ForestContractTestBase
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("Listed NFT Info not exists. (Or already delisted.");
-            
         }
     }
-    
+
     [Fact]
     public async void Delist20Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         var sellPrice = Elf(3);
-        { 
+        {
             await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
@@ -824,7 +818,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
         }
         {
-            Func<Task> act =()=> Seller1ForestContractStub.Delist.SendAsync(new DelistInput
+            Func<Task> act = () => Seller1ForestContractStub.Delist.SendAsync(new DelistInput
             {
                 Symbol = NftSymbol,
                 Price = sellPrice,
@@ -832,18 +826,17 @@ public class ForestContractListTests : ForestContractTestBase
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("Quantity must be a positive integer.");
-            
         }
     }
 
-    
+
     [Fact]
     public async void Delist21Test()
     {
         await InitializeForestContract();
         await PrepareNftData();
         var sellPrice = Elf(3);
-        { 
+        {
             await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
             {
                 Symbol = NftSymbol,
@@ -871,7 +864,7 @@ public class ForestContractListTests : ForestContractTestBase
             Price = sellPrice,
             Quantity = 9000
         });
-           
+
         var listedNftInfo1 = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
             new GetListedNFTInfoListInput
             {
@@ -879,15 +872,14 @@ public class ForestContractListTests : ForestContractTestBase
                 Owner = User1Address
             }));
         listedNftInfo1.Value.Count.ShouldBe(0);
-       
     }
+
     [Fact]
     public async void TransferTest()
     {
         await InitializeForestContract();
         await PrepareNftData();
         {
-
             {
                 var balance1 = await TokenContractStub.GetBalance.CallAsync(
                     new AElf.Contracts.MultiToken.GetBalanceInput
@@ -916,11 +908,9 @@ public class ForestContractListTests : ForestContractTestBase
                         Symbol = NftSymbol,
                         Owner = User2Address
                     });
-                
-                balance3.Balance.ShouldBe(2);
 
+                balance3.Balance.ShouldBe(2);
             }
         }
     }
 }
- 

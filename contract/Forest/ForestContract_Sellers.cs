@@ -142,8 +142,8 @@ public partial class ForestContract
                 throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
             }
             input.Quantity = input.Quantity > listedNftInfo.Quantity
-                ?listedNftInfo.Quantity
-                :input.Quantity;
+                ? listedNftInfo.Quantity
+                : input.Quantity;
             
             var projectId = CalculateProjectId(input.Symbol, Context.Sender);
             var whitelistId = State.WhitelistIdMap[projectId];
