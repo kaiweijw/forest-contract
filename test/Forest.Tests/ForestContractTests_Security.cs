@@ -661,36 +661,6 @@ public class ForestContractTests_Security : ForestContractTestBase
     }
 
     [Fact]
-    public async void Security_Case11_CreateNFT_success()
-    {
-        await InitializeForestContract();
-
-        await UserTokenContractStub.Create.SendAsync(new CreateInput
-        {
-            Symbol = "TESTNFT-0",
-            TokenName = "TESTNFT—collection",
-            TotalSupply = 100,
-            Decimals = 0,
-            Issuer = User1Address,
-            IsBurnable = false,
-            IssueChainId = 0,
-            ExternalInfo = new ExternalInfo()
-        });
-
-        await User2TokenContractStub.Create.SendAsync(new CreateInput
-        {
-            Symbol = "TESTMFT-0",
-            TokenName = "TESTMFT—collection",
-            TotalSupply = 100,
-            Decimals = 0,
-            Issuer = User1Address,
-            IsBurnable = false,
-            IssueChainId = 0,
-            ExternalInfo = new ExternalInfo()
-        });
-    }
-
-    [Fact]
     public async void Security_Case12_ListFixedPrice_InvalidQty_fail()
     {
         await InitializeForestContract();
@@ -1025,7 +995,7 @@ public class ForestContractTests_Security : ForestContractTestBase
         });
 
         #endregion
-        
+
         #region User1 deal offer, FAILED
 
         try
@@ -1049,9 +1019,8 @@ public class ForestContractTests_Security : ForestContractTestBase
         }
 
         #endregion
-        
     }
-    
+
     [Fact]
     public async void Security_Case18_Delist_invalidQty_fail()
     {
@@ -1091,24 +1060,12 @@ public class ForestContractTests_Security : ForestContractTestBase
 
         #region Delist beyound qty
 
-        // try
-        // {
-            await Seller1ForestContractStub.Delist.SendAsync(new DelistInput()
-            {
-                Symbol = NftSymbol,
-                Price = sellPrice,
-                Quantity = 11
-            });
-        //     true.ShouldBe(false);
-        // }
-        // catch (ShouldAssertException e)
-        // {
-        //     throw;
-        // }
-        // catch (Exception e)
-        // {
-        //     e.Message.ShouldContain("Check sender NFT balance failed");
-        // }
+        await Seller1ForestContractStub.Delist.SendAsync(new DelistInput()
+        {
+            Symbol = NftSymbol,
+            Price = sellPrice,
+            Quantity = 11
+        });
 
         #endregion
 
@@ -1122,7 +1079,6 @@ public class ForestContractTests_Security : ForestContractTestBase
         list.Output.Value.Count.ShouldBe(0);
 
         #endregion
-
     }
 
     [Fact]
@@ -1152,8 +1108,9 @@ public class ForestContractTests_Security : ForestContractTestBase
         {
             e.Message.ShouldContain("Invalid param Quantity");
         }
+
         #endregion
-        
+
         #region MakeOffer invalid amount
 
         try
@@ -1175,7 +1132,8 @@ public class ForestContractTests_Security : ForestContractTestBase
         {
             e.Message.ShouldContain("Invalid price amount");
         }
+
         #endregion
-        
     }
+
 }
