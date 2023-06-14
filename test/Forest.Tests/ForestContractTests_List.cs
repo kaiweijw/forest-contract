@@ -39,7 +39,7 @@ public class ForestContractListTests : ForestContractTestBase
     private async Task PrepareNftData()
     {
         // create collections via MULTI-TOKEN-CONTRACT
-        await UserTokenContractStub.Create.SendAsync(new CreateInput
+        var executionResult =  await UserTokenContractStub.Create.SendAsync(new CreateInput
         {
             Symbol = "TESTNFT-0",
             TokenName = "TESTNFT—collection",
@@ -50,9 +50,19 @@ public class ForestContractListTests : ForestContractTestBase
             IssueChainId = 0,
             ExternalInfo = new ExternalInfo()
         });
-
+        var log = TokenCreated.Parser
+            .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(TokenCreated))
+                .NonIndexed);
+        log.Symbol.ShouldBe("TESTNFT-0");
+        log.Decimals.ShouldBe(0);
+        log.TotalSupply.ShouldBe(100);
+        log.TokenName.ShouldBe("TESTNFT—collection");
+        log.Issuer.ShouldBe(User1Address);
+        log.IsBurnable.ShouldBe(false);
+        log.IssueChainId.ShouldBe(9992731);
+        
         // create NFT via MULTI-TOKEN-CONTRACT
-        await UserTokenContractStub.Create.SendAsync(new CreateInput
+        var executionResult1 = await UserTokenContractStub.Create.SendAsync(new CreateInput
         {
             Symbol = NftSymbol,
             TokenName = NftSymbol,
@@ -63,15 +73,31 @@ public class ForestContractListTests : ForestContractTestBase
             IssueChainId = 0,
             ExternalInfo = new ExternalInfo()
         });
-
+        var log1 = TokenCreated.Parser
+            .ParseFrom(executionResult1.TransactionResult.Logs.First(l => l.Name == nameof(TokenCreated))
+                .NonIndexed);
+        log1.Symbol.ShouldBe(NftSymbol);
+        log1.Decimals.ShouldBe(0);
+        log1.TotalSupply.ShouldBe(100);
+        log1.TokenName.ShouldBe(NftSymbol);
+        log1.Issuer.ShouldBe(User1Address);
+        log1.IsBurnable.ShouldBe(false);
+        log1.IssueChainId.ShouldBe(9992731);
+        
         // issue 10 NFTs to self
-        await UserTokenContractStub.Issue.SendAsync(new IssueInput()
+        var executionResult2 = await UserTokenContractStub.Issue.SendAsync(new IssueInput()
         {
             Symbol = NftSymbol,
             Amount = 10,
             To = User1Address
         });
-
+        var log2 = Issued.Parser
+            .ParseFrom(executionResult2.TransactionResult.Logs.First(l => l.Name == nameof(Issued))
+                .NonIndexed);
+        log2.Symbol.ShouldBe(NftSymbol);
+        log2.Amount.ShouldBe(10);
+        log2.Memo.ShouldBe("");
+        log2.To.ShouldBe(User1Address);
         // got 100-totalSupply and 10-supply
         var tokenInfo = await UserTokenContractStub.GetTokenInfo.SendAsync(new GetTokenInfoInput()
         {
