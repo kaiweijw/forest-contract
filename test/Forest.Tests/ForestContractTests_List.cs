@@ -909,6 +909,77 @@ public class ForestContractListTests : ForestContractTestBase
 
 
     [Fact]
+    public async void DelistAllTest()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        var sellPrice = Elf(3);
+        {
+            var executionResult = await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(
+                new ListWithFixedPriceInput
+                {
+                    Symbol = NftSymbol,
+                    Quantity = 4,
+                    IsWhitelistAvailable = true,
+                    Price = sellPrice
+                });
+            var log = ListedNFTAdded.Parser
+                .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(ListedNFTAdded))
+                    .NonIndexed);
+            log.Owner.ShouldBe(User1Address);
+            log.Quantity.ShouldBe(4);
+            log.Symbol.ShouldBe(NftSymbol);
+            log.Price.Symbol.ShouldBe(ElfSymbol);
+            log.Price.Amount.ShouldBe(3);
+            log.Duration.StartTime.ShouldNotBeNull();
+            log.Duration.DurationHours.ShouldBe(2147483647L);
+
+            var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
+                new GetListedNFTInfoListInput
+                {
+                    Symbol = NftSymbol,
+                    Owner = User1Address
+                })).Value.First();
+            listedNftInfo.Price.Symbol.ShouldBe("ELF");
+            listedNftInfo.Price.Amount.ShouldBe(3);
+            listedNftInfo.Quantity.ShouldBe(4);
+            listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
+            listedNftInfo.Duration.StartTime.ShouldNotBeNull();
+            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+        }
+
+        var executionResult1 = await Seller1ForestContractStub.Delist.SendAsync(new DelistInput
+        {
+            Symbol = NftSymbol,
+            Price = sellPrice,
+            Quantity = 4
+        });
+        var log1 = ListedNFTRemoved.Parser
+            .ParseFrom(executionResult1.TransactionResult.Logs.First(l => l.Name == nameof(ListedNFTRemoved))
+                .NonIndexed);
+        log1.Owner.ShouldBe(User1Address);
+        log1.Symbol.ShouldBe(NftSymbol);
+        log1.Price.ShouldBeNull();
+        log1.Duration.StartTime.ShouldNotBeNull();
+        log1.Duration.DurationHours.ShouldBe(2147483647L);
+
+        var log2 = NFTDelisted.Parser
+            .ParseFrom(executionResult1.TransactionResult.Logs.Last(l => l.Name == nameof(NFTDelisted))
+                .NonIndexed);
+        log2.Owner.ShouldBe(User1Address);
+        log2.Quantity.ShouldBe(4);
+        log2.Symbol.ShouldBe(NftSymbol);
+
+        var listedNftInfo1 = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
+            new GetListedNFTInfoListInput
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            }));
+        listedNftInfo1.Value.Count.ShouldBe(0);
+    }
+
+    [Fact]
     public async void Delist21Test()
     {
         await InitializeForestContract();
