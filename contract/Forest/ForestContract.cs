@@ -14,13 +14,13 @@ namespace Forest
         public override Empty Initialize(InitializeInput input)
         {
             Assert(State.TokenContract.Value == null, "Already initialized.");
-            State.TokenContract.Value = input.NftContractAddress;
             State.Admin.Value = input.AdminAddress ?? Context.Sender;
             State.ServiceFeeRate.Value = input.ServiceFeeRate == 0 ? DefaultServiceFeeRate : input.ServiceFeeRate;
             State.ServiceFeeReceiver.Value = input.ServiceFeeReceiver ?? State.Admin.Value;
             State.ServiceFee.Value = input.ServiceFee == 0 ? DefaultServiceFeeAmount : input.ServiceFee;
             State.TokenContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
+            State.WhitelistContract.Value = input.WhitelistContractAddress;
             State.GlobalTokenWhiteList.Value = new StringList
             {
                 Value = {Context.Variables.NativeSymbol}

@@ -268,11 +268,12 @@ message WhitelistInfoList{
 // Inputs.
 
 message InitializeInput {
-    aelf.Address nft_contract_address = 1;
-    aelf.Address admin_address = 2;
-    int32 service_fee_rate = 3;
-    aelf.Address service_fee_receiver = 4;
-    int64 service_fee = 5;
+    //aelf.Address nft_contract_address = 1;
+    aelf.Address admin_address = 1;
+    int32 service_fee_rate = 2;
+    aelf.Address service_fee_receiver = 3;
+    int64 service_fee = 4;
+    aelf.Address whitelist_contract_address = 5;
 }
 
 message ListWithFixedPriceInput {
