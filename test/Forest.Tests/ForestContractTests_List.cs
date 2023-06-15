@@ -186,6 +186,18 @@ public class ForestContractListTests : ForestContractTestBase
             log1.Price.Amount.ShouldBe(3);
             log1.Duration.StartTime.ShouldNotBeNull();
             log1.Duration.DurationHours.ShouldBe(24);
+            
+            var lo2 = FixedPriceNFTListed.Parser
+                .ParseFrom(executionResult1.TransactionResult.Logs.First(l => l.Name == nameof(FixedPriceNFTListed))
+                    .NonIndexed);
+            lo2.Owner.ShouldBe(User1Address);
+            lo2.Quantity.ShouldBe(2);
+            lo2.Symbol.ShouldBe(NftSymbol);
+            lo2.Price.Symbol.ShouldBe(ElfSymbol);
+            lo2.Price.Amount.ShouldBe(3);
+            lo2.Duration.StartTime.ShouldNotBeNull();
+            lo2.Duration.DurationHours.ShouldBe(24);
+            
 
             var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
                 new GetListedNFTInfoListInput
