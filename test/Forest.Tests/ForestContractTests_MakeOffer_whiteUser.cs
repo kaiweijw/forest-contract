@@ -1700,8 +1700,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // should throw "Origin owner cannot be sender himself." error
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("cannot be sender himself");
             }
         }
 

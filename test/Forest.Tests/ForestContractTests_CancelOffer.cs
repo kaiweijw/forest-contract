@@ -305,8 +305,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // throw "Contract not initialized."
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("Contract not initialized");
             }
 
         }
@@ -383,8 +382,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // throw "No permission"
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("No permission");
             }
         }
 
@@ -537,8 +535,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // throw "No permission"
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("No permission");
             }
         }
 
@@ -800,8 +797,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // throw "Offer not exits"
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("Offer not exists");
             }
         }
 

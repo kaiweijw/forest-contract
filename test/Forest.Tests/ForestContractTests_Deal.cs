@@ -350,7 +350,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.ShouldNotBeNull();
                 e.Message.ShouldContain("offer is empty");
             }
 
@@ -428,7 +427,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.ShouldNotBeNull();
                 e.Message.ShouldContain("Deal quantity exceeded");
             }
 
@@ -610,7 +608,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.ShouldNotBeNull();
                 e.Message.ShouldContain("offer is empty");
             }
 
@@ -859,7 +856,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.ShouldNotBeNull();
                 e.Message.ShouldContain("Insufficient NFT balance");
             }
 
@@ -936,7 +932,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.ShouldNotBeNull();
                 e.Message.ShouldContain("offer is empty");
             }
 
@@ -1013,8 +1008,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // shoud throw "Insufficient NFT balance." exception
-                e.ShouldNotBeNull();
                 e.Message.ShouldContain("Insufficient NFT balance");
             }
 
@@ -1091,7 +1084,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.ShouldNotBeNull();
                 e.Message.ShouldContain("Insufficient allowance");
             }
 
@@ -1168,7 +1160,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.ShouldNotBeNull();
                 e.Message.ShouldContain("Deal quantity exceeded");
             }
 
@@ -1244,7 +1235,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.ShouldNotBeNull();
                 e.Message.ShouldContain("Insufficient allowance");
             }
 
@@ -1388,7 +1378,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.ShouldNotBeNull();
                 e.Message.ShouldContain("Need to delist at least");
             }
             
