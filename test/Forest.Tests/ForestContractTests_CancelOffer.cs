@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
 using Google.Protobuf.WellKnownTypes;
@@ -148,12 +149,16 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
 
         {
             // approve contract handle NFT of seller   
-            await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+            var executionResult = await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
             {
                 Symbol = NftSymbol,
                 Amount = 5,
                 Spender = ForestContractAddress
             });
+            var log = Approved.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(Approved))
+                .NonIndexed);
+            log.Amount.ShouldBe(5);
 
             // approve contract handle NFT2 of seller   
             await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
@@ -181,7 +186,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 2;
@@ -192,7 +197,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
 
         {
             // user2 make offer VALID
-            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            var executionResult = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
                 Symbol = NftSymbol,
                 OfferTo = User1Address,
@@ -200,7 +205,17 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 Price = offerPrice,
                 ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
             });
-            
+            var log = OfferAdded.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(OfferAdded))
+                .NonIndexed);
+            log.OfferFrom.ShouldBe(User2Address);
+            log.Quantity.ShouldBe(2);
+            log.Symbol.ShouldBe(NftSymbol);
+            log.Price.Symbol.ShouldBe(ElfSymbol);
+            log.Price.Amount.ShouldBe(500000000);
+            log.ExpireTime.ShouldNotBeNull();
+            log.OfferTo.ShouldBe(User1Address);
+            //OfferMade
             // user2 make offer EXPIRE1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -210,7 +225,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 Price = offerPrice,
                 ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5)),
             });
-            
+
             // user2 make offer EXPIRE2
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -221,8 +236,9 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-10)),
             });
         }
+
         #endregion
-        
+
         #region check offer list
 
         {
@@ -240,7 +256,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         #region Admin Cancel order
 
         {
-            await AdminForestContractStub.CancelOffer.SendAsync(new CancelOfferInput()
+            var executionResult = await AdminForestContractStub.CancelOffer.SendAsync(new CancelOfferInput()
             {
                 Symbol = NftSymbol,
                 OfferFrom = User2Address,
@@ -249,10 +265,17 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                     Value = { 0 }
                 }
             });
+            var log = OfferRemoved.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(OfferRemoved))
+                .NonIndexed);
+            log.OfferFrom.ShouldBe(User2Address);
+            log.Symbol.ShouldBe(NftSymbol);
+            log.ExpireTime.ShouldNotBeNull();
+            log.OfferTo.ShouldBe(User1Address);
         }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -266,15 +289,14 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         }
 
         #endregion
-
     }
-    
+
     [Fact]
     public async void CancelOffer_Case3_ContractNotInitialize_fail()
     {
         // await InitializeForestContract();
         await PrepareNftData();
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 2;
@@ -295,7 +317,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                         Value = { 0 }
                     }
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -308,12 +330,11 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 // throw "Contract not initialized."
                 e.ShouldNotBeNull();
             }
-
         }
 
         #endregion
     }
-    
+
     [Fact]
     public async void CancelOffer_Case4_commonUser_cancelExpiredOffer()
     {
@@ -373,7 +394,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                         Value = { 0 }
                     }
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -390,7 +411,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
 
         #endregion
     }
-    
+
     [Fact]
     public async void CancelOffer_Case5_offerUser_cancelValidOffer()
     {
@@ -448,10 +469,10 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                     Value = { 0 }
                 }
             });
-        }   
+        }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -465,9 +486,8 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         }
 
         #endregion
-
     }
-    
+
     [Fact]
     public async void CancelOffer_Case6_commonUser_cancelValidOffer()
     {
@@ -527,7 +547,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                         Value = { 0 }
                     }
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -544,13 +564,13 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
 
         #endregion
     }
-    
+
     [Fact]
     public async void CancelOffer_Case7_Admin_CancelValidOffer()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 2;
@@ -605,7 +625,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -622,15 +642,14 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         }
 
         #endregion
-
     }
-    
+
     [Fact]
     public async void CancelOffer_Case8_Admin_CancelExpiredOffer()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 1;
@@ -650,8 +669,9 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                 ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5)),
             });
         }
+
         #endregion
-        
+
         #region check offer list
 
         {
@@ -684,7 +704,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -698,9 +718,8 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         }
 
         #endregion
-
     }
-    
+
     [Fact]
     public async void CancelOffer_Case9_commonUser_cancelOfferTwice()
     {
@@ -745,7 +764,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region common user Cancel order
 
         {
@@ -758,10 +777,10 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                     Value = { 0 }
                 }
             });
-        }   
+        }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -775,7 +794,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region common user Cancel order again
 
         {
@@ -790,7 +809,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
                         Value = { 0 }
                     }
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -807,7 +826,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
 
         #endregion
     }
-    
+
 
     [Fact]
     public async void CancelOffer_Case10_commonUser_cancelAfterBurned()
@@ -858,15 +877,19 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         #region Burned NFT
 
         {
-            await UserTokenContractStub.Burn.SendAsync(new BurnInput()
+            var executionResult = await UserTokenContractStub.Burn.SendAsync(new BurnInput()
             {
                 Symbol = NftSymbol,
                 Amount = 10
             });
+            var log = Burned.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(Burned))
+                .NonIndexed);
+            log.Amount.ShouldBe(10);
         }
 
         #endregion
-        
+
         #region common user Cancel order
 
         {
@@ -882,8 +905,8 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         }
 
         #endregion
-        
-        
+
+
         #region check offer list
 
         {
@@ -897,9 +920,5 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         }
 
         #endregion
-
     }
-    
-
-
 }

@@ -101,9 +101,7 @@ public partial class ForestContract
             });
 
             State.ListedNFTInfoListMap[input.Symbol][Context.Sender] = listedNftInfoList;
-
-            //var totalQuantity = listedNftInfoList.Value.Where(i => i.Owner == Context.Sender).Sum(i => i.Quantity);
-
+            
             Context.Fire(new FixedPriceNFTListed
             {
                 Owner = listedNftInfo.Owner,
