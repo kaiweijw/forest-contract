@@ -617,6 +617,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
                     DurationHours = 1,
                 },
             });
+            
         }
 
         #endregion
@@ -673,13 +674,36 @@ public class ForestContractTests_Deal : ForestContractTestBase
         #region deal
 
         {
-            await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
+            var executionResult = await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
             {
                 Symbol = NftSymbol,
                 Price = offerPrice,
                 OfferFrom = User2Address,
                 Quantity = dealQuantity
             });
+
+            var log1 = OfferRemoved.Parser
+                .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(OfferRemoved))
+                    .NonIndexed);
+            log1.OfferFrom.ShouldBe(User2Address);
+            log1.Symbol.ShouldBe(NftSymbol);
+            log1.ExpireTime.ShouldNotBeNull();
+            log1.OfferTo.ShouldBe(User1Address);
+
+            var log2 = Sold.Parser
+                .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(Sold))
+                    .NonIndexed);
+            log2.NftSymbol.ShouldBe(NftSymbol);
+            log2.NftFrom.ShouldBe(User1Address);
+            log2.NftQuantity.ShouldBe(1);
+            log2.PurchaseAmount.ShouldBe(300000000);
+            log2.NftTo.ShouldBe(User2Address);
+            log2.PurchaseSymbol.ShouldBe("ELF");
+
+            var log3 = Transferred.Parser
+                .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(Transferred))
+                    .NonIndexed);
+            log3.Amount.ShouldBe(270000000);
         }
 
         #endregion
