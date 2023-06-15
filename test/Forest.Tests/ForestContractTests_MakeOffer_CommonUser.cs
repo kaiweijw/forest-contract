@@ -11,19 +11,17 @@ namespace Forest;
 
 public partial class ForestContractTests_MakeOffer
 {
-
-        
     [Fact]
     public async void MakeOffer_Case35_commonUser_beforeStartTime_notDeal()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // offerPrice < whitePrice < sellPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
         var offerPrice = Elf(10_0000_0000);
-        
+
         // before startTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10));
@@ -100,7 +98,7 @@ public partial class ForestContractTests_MakeOffer
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -142,7 +140,7 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -158,21 +156,20 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-
     }
-    
-        
+
+
     [Fact]
     public async void MakeOffer_Case36_commonUser_beforePublicTime_notDeal()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // offerPrice < whitePrice < sellPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
         var offerPrice = Elf(10_0000_0000);
-        
+
         // before publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10));
@@ -249,7 +246,7 @@ public partial class ForestContractTests_MakeOffer
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -291,7 +288,7 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -307,21 +304,20 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-
     }
-    
-            
+
+
     [Fact]
     public async void MakeOffer_Case37_commonUser_beforePublicTime_notDeal()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // whitePrice <= offerPrice < sellPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
         var offerPrice = Elf(3_0000_0000);
-        
+
         // before publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10));
@@ -398,7 +394,7 @@ public partial class ForestContractTests_MakeOffer
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -440,7 +436,7 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -456,20 +452,19 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-
     }
-    
+
     [Fact]
     public async void MakeOffer_Case38_commonUser_beforePublicTime_notDeal()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // whitePrice <= offerPrice < sellPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
         var offerPrice = Elf(3_0000_0000);
-        
+
         // after publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
@@ -524,7 +519,7 @@ public partial class ForestContractTests_MakeOffer
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -566,7 +561,7 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -582,21 +577,20 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-
     }
-    
+
     [Fact]
     public async void MakeOffer_Case39_commonUser_beforePublicTime_deal()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // whitePrice < sellPrice = offerPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var serviceFee = sellPrice.Amount * ServiceFeeRate / 10000;
-        
+
         // after publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
@@ -646,12 +640,12 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         #region common user buy
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -680,7 +674,7 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         #region check seller NFT
 
         {
@@ -721,19 +715,19 @@ public partial class ForestContractTests_MakeOffer
 
         #endregion
     }
-    
+
     [Fact]
     public async void MakeOffer_Case40_commonUser_beforePublicTime_deal()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // whitePrice < sellPrice < offerPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
         var offerPrice = Elf(10_0000_0000);
         var serviceFee = sellPrice.Amount * ServiceFeeRate / 10000;
-        
+
         // after publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
@@ -788,7 +782,7 @@ public partial class ForestContractTests_MakeOffer
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -817,7 +811,7 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         #region check seller NFT
 
         {
@@ -858,19 +852,19 @@ public partial class ForestContractTests_MakeOffer
 
         #endregion
     }
-    
+
     [Fact]
     public async void MakeOffer_Case41_commonUser_moreCount_notDeal()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // whitePrice < sellPrice < offerPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
         var offerPrice = Elf(10_0000_0000);
         var serviceFee = sellPrice.Amount * ServiceFeeRate / 10000;
-        
+
         // after publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddHours(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
@@ -920,12 +914,12 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         #region common user buy
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -953,8 +947,9 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         #region check offer list
+
         /*
             To run unit tests locally 
             because the contract does not support listing NFTs with past start times, 
@@ -981,22 +976,22 @@ public partial class ForestContractTests_MakeOffer
         //     offerList.Value[0].From.ShouldBe(User2Address);
         // }
         //
-        #endregion
 
+        #endregion
     }
-    
+
     [Fact]
     public async void MakeOffer_Case42_commonUser_afterExpireTime_notDeal()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // whitePrice < sellPrice < offerPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
         var offerPrice = Elf(10_0000_0000);
         var serviceFee = sellPrice.Amount * ServiceFeeRate / 10000;
-        
+
         // after publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
@@ -1004,11 +999,12 @@ public partial class ForestContractTests_MakeOffer
         // not list
 
         // buy 100 NFTs
+
         #region common user buy
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -1034,12 +1030,12 @@ public partial class ForestContractTests_MakeOffer
                 Price = offerPrice,
                 ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
             });
-             
         }
 
         #endregion
-        
+
         // 100 NFTs to offer list
+
         #region check offer list
 
         {
@@ -1056,27 +1052,27 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-
     }
-    
-    
+
+
     [Fact]
     public async void MakeOffer_Case43_commonUser_afterExpireTime_partDeal()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // whitePrice < sellPrice < offerPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
         var offerPrice = Elf(10_0000_0000);
         var serviceFee = sellPrice.Amount * ServiceFeeRate / 10000;
-        
+
         // after publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
 
         // list 5 NFTs
+
         #region ListWithFixedPrice
 
         {
@@ -1123,13 +1119,14 @@ public partial class ForestContractTests_MakeOffer
 
         #endregion
 
-        
+
         // buy 100 NFTs
+
         #region common user buy
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -1155,11 +1152,10 @@ public partial class ForestContractTests_MakeOffer
                 Price = offerPrice,
                 ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
             });
-             
         }
 
         #endregion
-        
+
         #region check seller NFT
 
         {
@@ -1172,7 +1168,7 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         #region check buyer NFT
 
         {
@@ -1199,8 +1195,9 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-        
+
         // 95 NFTs to offer list
+
         #region check offer list
 
         {
@@ -1217,9 +1214,5 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
-
     }
-    
-    
-    
 }

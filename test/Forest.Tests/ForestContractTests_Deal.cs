@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
 using AElf.Types;
@@ -43,7 +44,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
         #region create NFTs
 
         {
-            
             // create collections via MULTI-TOKEN-CONTRACT
             await UserTokenContractStub.Create.SendAsync(new CreateInput
             {
@@ -69,7 +69,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 IssueChainId = 0,
                 ExternalInfo = new ExternalInfo()
             });
-            
+
             // create NFT via MULTI-TOKEN-CONTRACT
             await UserTokenContractStub.Create.SendAsync(new CreateInput
             {
@@ -185,7 +185,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         await InitializeForestContract();
         await PrepareNftData();
 
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 2;
@@ -228,17 +228,41 @@ public class ForestContractTests_Deal : ForestContractTestBase
         #region deal
 
         {
-            await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
+            var executionResult = await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
             {
                 Symbol = NftSymbol,
                 Price = offerPrice,
                 OfferFrom = User2Address,
                 Quantity = dealQuantity
             });
+
+            var log1 = OfferRemoved.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(OfferRemoved))
+                .NonIndexed);
+            log1.OfferFrom.ShouldBe(User2Address);
+            log1.Symbol.ShouldBe(NftSymbol);
+            log1.ExpireTime.ShouldNotBeNull();
+            log1.OfferTo.ShouldBe(User1Address);
+
+            var log2 = Sold.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(Sold))
+                .NonIndexed);
+            log2.NftSymbol.ShouldBe(NftSymbol);
+            log2.NftFrom.ShouldBe(User1Address);
+            log2.NftQuantity.ShouldBe(2);
+            log2.PurchaseAmount.ShouldBe(1000000000);
+            log2.NftTo.ShouldBe(User2Address);
+            log2.PurchaseSymbol.ShouldBe("ELF");
+
+
+            var log3 = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(Transferred))
+                .NonIndexed);
+            log3.Amount.ShouldBe(900000000);
         }
 
         #endregion
-        
+
         #region check seller NFT
 
         {
@@ -274,20 +298,20 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 Symbol = ElfSymbol,
                 Owner = User1Address
             });
-            user1ElfBalance.Output.Balance.ShouldBe(InitializeElfAmount + offerPrice.Amount * dealQuantity - serviceFee);
+            user1ElfBalance.Output.Balance.ShouldBe(InitializeElfAmount + offerPrice.Amount * dealQuantity -
+                                                    serviceFee);
         }
 
         #endregion
-        
     }
-    
+
     [Fact]
     public async void Deal_Case45_Deal_Offer_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
 
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 2;
@@ -340,7 +364,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
                     OfferFrom = User2Address,
                     Quantity = 1
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -352,20 +376,18 @@ public class ForestContractTests_Deal : ForestContractTestBase
             {
                 e.Message.ShouldContain("offer is empty");
             }
-
         }
 
         #endregion
-
     }
-    
+
     [Fact]
     public async void Deal_Case46_Deal_Offer_beyondQuantity_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
 
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 2;
@@ -429,20 +451,18 @@ public class ForestContractTests_Deal : ForestContractTestBase
             {
                 e.Message.ShouldContain("Deal quantity exceeded");
             }
-
         }
 
         #endregion
-     
     }
-    
+
     [Fact]
     public async void Deal_Case46_Deal_Offer_lessQuantity_deal()
     {
         await InitializeForestContract();
         await PrepareNftData();
 
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 2;
@@ -492,11 +512,10 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 OfferFrom = User2Address,
                 Quantity = dealQuantity
             });
-            
         }
 
         #endregion
-        
+
         #region check seller NFT
 
         {
@@ -532,11 +551,11 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 Symbol = ElfSymbol,
                 Owner = User1Address
             });
-            user1ElfBalance.Output.Balance.ShouldBe(InitializeElfAmount + offerPrice.Amount * dealQuantity - serviceFee);
+            user1ElfBalance.Output.Balance.ShouldBe(InitializeElfAmount + offerPrice.Amount * dealQuantity -
+                                                    serviceFee);
         }
 
         #endregion
-     
     }
 
     
@@ -623,7 +642,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // whitePrice <= offerPrice < sellPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
@@ -631,7 +650,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         var offerQuantity = 1;
         var dealQuantity = 1;
         var serviceFee = dealQuantity * offerPrice.Amount * ServiceFeeRate / 10000;
-        
+
         // after publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
@@ -681,12 +700,12 @@ public class ForestContractTests_Deal : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region common user buy
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // user2 make offer to user1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -712,7 +731,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -730,7 +749,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region deal
 
         {
@@ -741,11 +760,10 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 OfferFrom = User2Address,
                 Quantity = dealQuantity
             });
-            
         }
 
         #endregion
-        
+
         #region check seller NFT
 
         {
@@ -781,11 +799,11 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 Symbol = ElfSymbol,
                 Owner = User1Address
             });
-            user1ElfBalance.Output.Balance.ShouldBe(InitializeElfAmount + offerPrice.Amount * dealQuantity - serviceFee);
+            user1ElfBalance.Output.Balance.ShouldBe(InitializeElfAmount + offerPrice.Amount * dealQuantity -
+                                                    serviceFee);
         }
 
         #endregion
-        
     }
 
     [Fact]
@@ -794,7 +812,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         await InitializeForestContract();
         await PrepareNftData();
 
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 50;
@@ -846,7 +864,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
                     OfferFrom = User2Address,
                     Quantity = dealQuantity
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -858,19 +876,18 @@ public class ForestContractTests_Deal : ForestContractTestBase
             {
                 e.Message.ShouldContain("Insufficient NFT balance");
             }
-
         }
 
         #endregion
     }
-    
+
     [Fact]
     public async void Deal_Case49_Nft_offerExpired_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
 
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 1;
@@ -922,7 +939,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
                     OfferFrom = User2Address,
                     Quantity = dealQuantity
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -934,19 +951,18 @@ public class ForestContractTests_Deal : ForestContractTestBase
             {
                 e.Message.ShouldContain("offer is empty");
             }
-
         }
 
         #endregion
     }
-    
+
     [Fact]
     public async void Deal_Case50_Nft_invalidSymbol_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
 
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 1;
@@ -998,7 +1014,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
                     OfferFrom = User2Address,
                     Quantity = dealQuantity
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -1010,19 +1026,18 @@ public class ForestContractTests_Deal : ForestContractTestBase
             {
                 e.Message.ShouldContain("Insufficient NFT balance");
             }
-
         }
 
         #endregion
     }
-    
+
     [Fact]
     public async void Deal_Case51_Nft_invalidOfferFrom_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
 
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 1;
@@ -1074,7 +1089,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
                     OfferFrom = User3Address,
                     Quantity = dealQuantity
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -1086,7 +1101,6 @@ public class ForestContractTests_Deal : ForestContractTestBase
             {
                 e.Message.ShouldContain("Insufficient allowance");
             }
-
         }
 
         #endregion
@@ -1098,7 +1112,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         await InitializeForestContract();
         await PrepareNftData();
 
-        
+
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 1;
@@ -1150,7 +1164,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
                     OfferFrom = User2Address,
                     Quantity = dealQuantity
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -1162,12 +1176,11 @@ public class ForestContractTests_Deal : ForestContractTestBase
             {
                 e.Message.ShouldContain("Deal quantity exceeded");
             }
-
         }
 
         #endregion
     }
-    
+
     [Fact]
     public async void Deal_Case53_Nft_ElfNotEnough_fail()
     {
@@ -1225,7 +1238,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
                     OfferFrom = User2Address,
                     Quantity = dealQuantity
                 });
-                
+
                 // never run this line
                 true.ShouldBe(false);
             }
@@ -1237,18 +1250,17 @@ public class ForestContractTests_Deal : ForestContractTestBase
             {
                 e.Message.ShouldContain("Insufficient allowance");
             }
-
         }
 
         #endregion
     }
-    
+
     [Fact]
     public async void Deal_Case54_Deal_afterOnShelf_fail()
     {
         await InitializeForestContract();
         await PrepareNftData();
-        
+
         // whitePrice <= offerPrice < sellPrice
         var sellPrice = Elf(5_0000_0000);
         var whitePrice = Elf(2_0000_0000);
@@ -1256,7 +1268,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         var offerQuantity = 8;
         var dealQuantity = 7;
         var serviceFee = dealQuantity * offerPrice.Amount * ServiceFeeRate / 10000;
-        
+
         // after publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
@@ -1306,12 +1318,12 @@ public class ForestContractTests_Deal : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region common user buy
 
         {
             await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-            
+
             // user2 make offer to user1
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -1337,7 +1349,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region check offer list
 
         {
@@ -1355,7 +1367,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         }
 
         #endregion
-        
+
         #region deal
 
         {
@@ -1380,14 +1392,8 @@ public class ForestContractTests_Deal : ForestContractTestBase
             {
                 e.Message.ShouldContain("Need to delist at least");
             }
-            
         }
 
         #endregion
-        
     }
-
-
-
-
 }
