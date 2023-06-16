@@ -374,8 +374,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // shoud throw "Neither related offer nor bid are found." exception
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("offer is empty");
             }
         }
 
@@ -440,6 +439,9 @@ public class ForestContractTests_Deal : ForestContractTestBase
                     OfferFrom = User2Address,
                     Quantity = 3
                 });
+                
+                // never run this line
+                true.ShouldBe(false);
             }
             catch (ShouldAssertException e)
             {
@@ -447,8 +449,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // shoud throw "Neither related offer nor bid are found." exception
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("Deal quantity exceeded");
             }
         }
 
@@ -556,6 +557,85 @@ public class ForestContractTests_Deal : ForestContractTestBase
 
         #endregion
     }
+
+    
+    [Fact]
+    public async void Deal_Case46_Deal_Offer_amountNotMatch_fail()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        
+        var sellPrice = Elf(5_0000_0000);
+        var offerPrice = Elf(5_0000_0000);
+        var dealPrice = Elf(15_0000_0000);
+        var offerQuantity = 1;
+        var dealQuantity = 1;
+        var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
+
+        #region user buy
+
+        {
+            // user2 make offer to user1
+            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = offerQuantity,
+                Price = offerPrice,
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
+            });
+        }
+
+        #endregion
+
+        #region check offer list
+
+        {
+            // list offers just sent
+            var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
+            {
+                Symbol = NftSymbol,
+                Address = User2Address,
+            }).Result.Output;
+            offerList.Value.Count.ShouldBeGreaterThan(0);
+            offerList.Value[0].To.ShouldBe(User1Address);
+            offerList.Value[0].From.ShouldBe(User2Address);
+            offerList.Value[0].Quantity.ShouldBe(offerQuantity);
+        }
+
+        #endregion
+
+        #region deal
+
+        {
+            try
+            {
+                await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
+                {
+                    Symbol = NftSymbol,
+                    Price = dealPrice,
+                    OfferFrom = User2Address,
+                    Quantity = dealQuantity
+                });
+                
+                // never run this line
+                true.ShouldBe(false);
+            }
+            catch (ShouldAssertException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                e.Message.ShouldContain("offer is empty");
+            }
+
+        }
+
+        #endregion
+     
+    }
+   
 
     [Fact]
     public async void Deal_Case47_Deal_OfferList_afterOnShelf_deal()
@@ -794,8 +874,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // shoud throw "Insufficient NFT balance." exception
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("Insufficient NFT balance");
             }
         }
 
@@ -870,8 +949,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // shoud throw "Insufficient NFT balance." exception
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("offer is empty");
             }
         }
 
@@ -946,8 +1024,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // shoud throw "Insufficient NFT balance." exception
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("Insufficient NFT balance");
             }
         }
 
@@ -970,8 +1047,8 @@ public class ForestContractTests_Deal : ForestContractTestBase
         #region user buy
 
         {
-            // user2 make offer to user1
-            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            // user3 make offer to user1
+            await Buyer2ForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
                 Symbol = NftSymbol,
                 OfferTo = User1Address,
@@ -990,11 +1067,11 @@ public class ForestContractTests_Deal : ForestContractTestBase
             var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
             {
                 Symbol = NftSymbol,
-                Address = User2Address,
+                Address = User3Address,
             }).Result.Output;
             offerList.Value.Count.ShouldBeGreaterThan(0);
             offerList.Value[0].To.ShouldBe(User1Address);
-            offerList.Value[0].From.ShouldBe(User2Address);
+            offerList.Value[0].From.ShouldBe(User3Address);
             offerList.Value[0].Quantity.ShouldBe(offerQuantity);
         }
 
@@ -1009,7 +1086,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 {
                     Symbol = NftSymbol,
                     Price = offerPrice,
-                    OfferFrom = User4Address,
+                    OfferFrom = User3Address,
                     Quantity = dealQuantity
                 });
 
@@ -1022,8 +1099,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // shoud throw "Insufficient NFT balance." exception
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("Insufficient allowance");
             }
         }
 
@@ -1098,8 +1174,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // shoud throw "Insufficient NFT balance." exception
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("Deal quantity exceeded");
             }
         }
 
@@ -1173,8 +1248,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                // shoud throw "Insufficient NFT balance." exception
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("Insufficient allowance");
             }
         }
 
@@ -1316,7 +1390,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.ShouldNotBeNull();
+                e.Message.ShouldContain("Need to delist at least");
             }
         }
 

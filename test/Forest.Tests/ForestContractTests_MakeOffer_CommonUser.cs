@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Forest;
 
-public partial class ForestContractMakeOfferTests
+public partial class ForestContractTests_MakeOffer
 {
     [Fact]
     public async void MakeOffer_Case35_commonUser_beforeStartTime_notDeal()

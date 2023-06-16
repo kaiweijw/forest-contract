@@ -24,6 +24,8 @@ public partial class ForestContract
         public override Empty MakeOffer(MakeOfferInput input)
         {
             AssertContractInitialized();
+            Assert(input.Quantity > 0, "Invalid param Quantity.");
+            Assert(input.Price.Amount > 0, "Invalid price amount.");
             var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
             {
                 Symbol = input.Symbol,

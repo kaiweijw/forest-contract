@@ -35,6 +35,14 @@ public partial class ForestContract
             var projectId = CalculateProjectId(input.Symbol,Context.Sender);
             var whitelistId = new Hash();
             var whitelistManager = GetWhitelistManager();
+            
+            var nftBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput()
+            {
+                Symbol = input.Symbol,
+                Owner = Context.Sender
+            });
+            Assert(input.Quantity <= nftBalance.Balance, "Check sender NFT balance failed.");
+            
             if (input.IsWhitelistAvailable)
             {
                 var extraInfoList = ConvertToExtraInfo(whitelists);
@@ -212,9 +220,11 @@ public partial class ForestContract
             Assert(balance.Balance >= input.Quantity, "Insufficient NFT balance.");
 
             var offer = State.OfferListMap[input.Symbol][input.OfferFrom]?.Value
-                .FirstOrDefault(o =>
-                    o.From == input.OfferFrom && o.Price.Symbol == input.Price.Symbol &&
-                    o.Price.Amount == input.Price.Amount && o.ExpireTime >= Context.CurrentBlockTime);
+                .FirstOrDefault(o => o.From == input.OfferFrom 
+                                     && o.To == Context.Sender 
+                                     && o.Price.Symbol == input.Price.Symbol 
+                                     && o.Price.Amount == input.Price.Amount 
+                                     && o.ExpireTime >= Context.CurrentBlockTime);
             Price price;
             long totalAmount;
             if (offer == null)

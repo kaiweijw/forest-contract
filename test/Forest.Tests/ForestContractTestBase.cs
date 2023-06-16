@@ -57,6 +57,7 @@ namespace Forest
         internal TokenContractImplContainer.TokenContractImplStub TokenContractStub;
         internal TokenContractImplContainer.TokenContractImplStub UserTokenContractStub;
         internal TokenContractImplContainer.TokenContractImplStub User2TokenContractStub;
+        internal TokenContractImplContainer.TokenContractImplStub User3TokenContractStub;
         internal TokenContractImplContainer.TokenContractImplStub NFTBuyerTokenContractStub;
         internal TokenContractImplContainer.TokenContractImplStub NFTBuyer2TokenContractStub;
         
@@ -68,6 +69,7 @@ namespace Forest
         internal ForestContractContainer.ForestContractStub SellerForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub Seller1ForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub Seller2ForestContractStub { get; set; }
+        internal ForestContractContainer.ForestContractStub Seller3ForestContractStub { get; set; }
         
         internal ForestContractContainer.ForestContractStub BuyerForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub Buyer1ForestContractStub { get; set; }
@@ -95,6 +97,8 @@ namespace Forest
                 GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User1KeyPair);
             User2TokenContractStub =
                 GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User2KeyPair);
+            User3TokenContractStub =
+                GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User3KeyPair);
             NFTBuyerTokenContractStub =
                 GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User2KeyPair);
             NFTBuyer2TokenContractStub =
@@ -106,6 +110,7 @@ namespace Forest
             SellerForestContractStub = GetForestContractStub(DefaultKeyPair);
             Seller1ForestContractStub = GetForestContractStub(User1KeyPair);
             Seller2ForestContractStub = GetForestContractStub(User2KeyPair);
+            Seller3ForestContractStub = GetForestContractStub(User3KeyPair);
             BuyerForestContractStub = GetForestContractStub(User2KeyPair);
             Buyer1ForestContractStub = GetForestContractStub(User1KeyPair);
             Buyer2ForestContractStub = GetForestContractStub(User3KeyPair);
@@ -182,5 +187,7 @@ namespace Forest
             // }
         }
     }
+    
+    
     
 }

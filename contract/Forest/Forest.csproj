@@ -37,6 +37,9 @@
         <ContractReference Include="..\..\protobuf\acs10.proto">
             <Link>Protobuf\Proto\reference\acs10.proto</Link>
         </ContractReference>
+        <ContractReference Include="..\..\protobuf\acs12.proto">
+            <Link>Protobuf\Proto\reference\acs12.proto</Link>
+        </ContractReference>
         <ContractReference Include="..\..\protobuf\parliament_contract.proto">
             <Link>Protobuf\Proto\reference\parliament_contract.proto</Link>
         </ContractReference>
@@ -58,6 +61,9 @@
         </ContractBase>
         <ContractBase Include="..\..\protobuf\acs2.proto">
             <Link>Protobuf\Proto\acs2.proto</Link>
+        </ContractBase>
+        <ContractBase Include="..\..\protobuf\acs12.proto">
+            <Link>Protobuf\Proto\acs12.proto</Link>
         </ContractBase>
         <ContractBase Include="..\..\protobuf\transaction_fee.proto">
             <Link>Protobuf\Proto\transaction_fee.proto</Link>

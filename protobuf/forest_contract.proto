@@ -8,6 +8,7 @@ package Forest;
 import "aelf/core.proto";
 import "aelf/options.proto";
 import "acs1.proto";
+import "acs12.proto";
 import "transaction_fee.proto";
 import "authority_info.proto";
 import "google/protobuf/empty.proto";
@@ -19,6 +20,7 @@ option csharp_namespace = "Forest";
 service ForestContract {
     option (aelf.csharp_state) = "Forest.ForestContractState";
     option (aelf.base) = "acs1.proto";
+    option (aelf.base) = "acs12.proto";
 
     rpc Initialize (InitializeInput) returns (google.protobuf.Empty) {
     }
