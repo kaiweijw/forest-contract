@@ -20,7 +20,6 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
     {
         await AdminForestContractStub.Initialize.SendAsync(new InitializeInput
         {
-            NftContractAddress = NFTContractAddress,
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
         });

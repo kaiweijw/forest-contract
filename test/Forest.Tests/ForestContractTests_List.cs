@@ -19,7 +19,6 @@ public class ForestContractListTests : ForestContractTestBase
     {
         await AdminForestContractStub.Initialize.SendAsync(new InitializeInput
         {
-            NftContractAddress = NFTContractAddress,
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
         });
@@ -582,7 +581,6 @@ public class ForestContractListTests : ForestContractTestBase
     {
         await AdminForestContractStub.Initialize.SendAsync(new InitializeInput
         {
-            NftContractAddress = NFTContractAddress,
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
         });
