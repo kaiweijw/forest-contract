@@ -43,9 +43,6 @@
         <ContractStub Include="..\..\protobuf\forest_contract.proto">
             <Link>Protobuf\Proto\forest_contract.proto</Link>
         </ContractStub>
-        <ContractStub Include="..\..\protobuf\nft_contract.proto">
-            <Link>Protobuf\Proto\nft_contract.proto</Link>
-        </ContractStub>
         <ContractStub Include="..\..\protobuf\whitelist_contract.proto">
             <Link>Protobuf\Proto\whitelist_contract.proto</Link>
         </ContractStub>

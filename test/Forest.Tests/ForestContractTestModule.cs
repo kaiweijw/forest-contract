@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using AElf.Boilerplate.TestBase;
-using AElf.Contracts.NFT;
 using AElf.ContractTestBase;
 using AElf.ContractTestBase.ContractTestKit;
 using AElf.Kernel.SmartContract.Application;
@@ -37,10 +36,6 @@ namespace Forest
                     new WhitelistContractInitializationProvider().ContractCodeName,
                     File.ReadAllBytes(typeof(WhitelistContract).Assembly.Location)
                 },
-                {
-                    new NFTContractInitializationProvider().ContractCodeName,
-                    File.ReadAllBytes(typeof(NFTContract).Assembly.Location)
-                }
             };
             contractCodeProvider.Codes = contractCodes;
         }

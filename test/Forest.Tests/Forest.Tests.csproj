@@ -71,9 +71,6 @@
         <ContractStub Include="..\..\protobuf\parliament_contract_impl.proto">
             <Link>Protobuf\Proto\parliament_contract_impl.proto</Link>
         </ContractStub>
-        <ContractStub Include="..\..\protobuf\nft_contract.proto">
-            <Link>Protobuf\Proto\nft_contract.proto</Link>
-        </ContractStub>
         <ContractStub Include="..\..\protobuf\whitelist_contract.proto">
             <Link>Protobuf\Proto\whitelist_contract.proto</Link>
         </ContractStub>
@@ -99,7 +96,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\contract\AElf.Contracts.NFT\AElf.Contracts.NFT.csproj" />
         <ProjectReference Include="..\..\contract\Forest.Whitelist\Forest.Whitelist.csproj" />
         <ProjectReference Include="..\..\contract\Forest\Forest.csproj" />
         <ProjectReference Include="..\..\src\AElf.Boilerplate.TestBase\AElf.Boilerplate.TestBase.csproj" />
