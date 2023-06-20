@@ -172,7 +172,8 @@ public partial class ForestContract
                     {
                         Symbol = listedNftInfo.Symbol,
                         Duration = listedNftInfo.Duration,
-                        Owner = listedNftInfo.Owner
+                        Owner = listedNftInfo.Owner,
+                        Price = listedNftInfo.Price
                     });
                     break;
                 case ListType.FixedPrice:
