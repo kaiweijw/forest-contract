@@ -36,6 +36,14 @@ public partial class ForestContract
             var whitelistId = new Hash();
             var whitelistManager = GetWhitelistManager();
             
+            // verify same List info
+            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ??
+                                    new ListedNFTInfoList();
+            Assert(listedNftInfoList.Value
+                .Where(i => i.Price == input.Price && i.Duration.StartTime == duration.StartTime)
+                .Count() == 0, "List info already exists");
+
+            
             var nftBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput()
             {
                 Symbol = input.Symbol,
@@ -84,9 +92,6 @@ public partial class ForestContract
 
             Assert(GetTokenWhiteList(input.Symbol).Value.Contains(input.Price.Symbol),
                 $"{input.Price.Symbol} is not in token white list.");
-
-            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ??
-                                    new ListedNFTInfoList();
 
             ListedNFTInfo listedNftInfo = new ListedNFTInfo
             {
