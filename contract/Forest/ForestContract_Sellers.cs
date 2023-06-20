@@ -40,7 +40,7 @@ public partial class ForestContract
             var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ??
                                     new ListedNFTInfoList();
             Assert(listedNftInfoList.Value
-                .Where(i => i.Price == input.Price && i.Duration.StartTime == duration.StartTime)
+                .Where(i => i.Duration.StartTime.Seconds == duration.StartTime.Seconds)
                 .Count() == 0, "List info already exists");
 
             
