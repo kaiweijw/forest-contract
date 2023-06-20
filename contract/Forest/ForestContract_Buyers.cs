@@ -111,13 +111,9 @@ public partial class ForestContract
 
             if (listedNftInfoList.Value.All(i => i.ListType != ListType.FixedPrice))
             {
-                var auctionInfo = listedNftInfoList.Value.FirstOrDefault();
-                if (auctionInfo == null || IsListedNftTimedOut(auctionInfo))
-                {
-                    PerformMakeOffer(input);
-                }
+                
+                PerformMakeOffer(input);
                 State.ListedNFTInfoListMap[input.Symbol][input.OfferTo] = listedNftInfoList;
-
                 return new Empty();
             }
             

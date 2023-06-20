@@ -24,7 +24,6 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
     {
         await AdminForestContractStub.Initialize.SendAsync(new InitializeInput
         {
-            NftContractAddress = NFTContractAddress,
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
         });

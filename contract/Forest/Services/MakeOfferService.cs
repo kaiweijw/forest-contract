@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using AElf.Contracts.MultiToken;
-using AElf.Contracts.NFT;
 using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
@@ -17,7 +16,6 @@ namespace Forest.Services;
 internal class MakeOfferService
 {
     private readonly TokenContractContainer.TokenContractReferenceState _tokenContract;
-    private readonly NFTContractContainer.NFTContractReferenceState _nftContract;
     private readonly WhitelistContractContainer.WhitelistContractReferenceState _whitelistContract;
     private readonly MappedState<Hash, Hash> _whitelistIdMap;
     private readonly MappedState<string, Address, ListedNFTInfoList> _listedNFTInfoListMap;

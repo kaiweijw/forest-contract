@@ -1,5 +1,4 @@
 using AElf.Contracts.MultiToken;
-using AElf.Contracts.NFT;
 using Forest.Whitelist;
 
 namespace Forest;
