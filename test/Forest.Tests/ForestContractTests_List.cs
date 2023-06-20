@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using AElf.CSharp.Core.Extension;
 using Forest.Whitelist;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
@@ -360,6 +361,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Price = sellPrice,
                 Duration = new ListDuration
                 {
+                    StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
                     DurationHours = 24
                 }
             });
