@@ -1028,9 +1028,8 @@ public class ForestContractListTests : ForestContractTestBase
         #region ListWithFixedPrice twice
 
         {
-            try
-            {
-                await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
+            var exception = await Assert.ThrowsAsync<Exception>(
+                () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
                 {
                     Symbol = NftSymbol,
                     Quantity = 5,
@@ -1044,16 +1043,9 @@ public class ForestContractListTests : ForestContractTestBase
                         PublicTime = publicTime,
                         DurationHours = 1,
                     },
-                });
-            }
-            catch (ShouldAssertException e)
-            {
-                throw;
-            }
-            catch (Exception e)
-            {
-                e.Message.ShouldContain("already exists");
-            }
+                })
+            );
+            exception.Message.ShouldContain("already exists");
         }
 
         #endregion
