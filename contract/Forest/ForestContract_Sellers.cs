@@ -53,6 +53,9 @@ public partial class ForestContract
             
             if (input.IsWhitelistAvailable)
             {
+                whitelistId = Context.GenerateId(State.WhitelistContract.Value,
+                        ByteArrayHelper.ConcatArrays(Context.Self.ToByteArray(), projectId.ToByteArray()));
+                
                 var extraInfoList = ConvertToExtraInfo(whitelists);
                 //Listed for the first time, create whitelist.
                 if (State.WhitelistIdMap[projectId] == null)
@@ -70,13 +73,14 @@ public partial class ForestContract
                             Value = {Context.Sender}
                         }
                     });
-                    whitelistId =
-                        Context.GenerateId(State.WhitelistContract.Value,
-                            ByteArrayHelper.ConcatArrays(Context.Self.ToByteArray(), projectId.ToByteArray()));
                     State.WhitelistIdMap[projectId] = whitelistId;
                 }
                 else
                 {
+                    if (!whitelistManager.IsWhitelistAvailable())
+                    {
+                        State.WhitelistContract.EnableWhitelist.Send(whitelistId);
+                    }
                     //Add address list to the existing whitelist.
                     whitelistId = ExistWhitelist(projectId,whitelists,extraInfoList);
                 }
