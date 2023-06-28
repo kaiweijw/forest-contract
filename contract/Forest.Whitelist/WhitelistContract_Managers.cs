@@ -30,18 +30,7 @@ public partial class WhitelistContract
             Manager = managerList,
             StrategyType = input.StrategyType
         };
-        Context.Fire(new WhitelistCreated
-        {
-            WhitelistId = whitelistHash,
-            ProjectId = whitelistInfo.ProjectId,
-            ExtraInfoIdList = whitelistInfo.ExtraInfoIdList,
-            Creator = input.Creator ?? Context.Sender,
-            IsCloneable = whitelistInfo.IsCloneable,
-            IsAvailable = whitelistInfo.IsAvailable,
-            Remark = whitelistInfo.Remark,
-            Manager = whitelistInfo.Manager,
-            StrategyType = whitelistInfo.StrategyType
-        });
+
         var alreadyExistsAddressList = new List<Address>();
         //Remove duplicate addresses.
         var extraInfoList = input.ExtraInfoList.Value;
@@ -119,6 +108,19 @@ public partial class WhitelistContract
                 ExtraInfoIdList = whitelistInfo.ExtraInfoIdList
             });
         }
+        
+        Context.Fire(new WhitelistCreated
+        {
+            WhitelistId = whitelistHash,
+            ProjectId = whitelistInfo.ProjectId,
+            ExtraInfoIdList = whitelistInfo.ExtraInfoIdList,
+            Creator = input.Creator ?? Context.Sender,
+            IsCloneable = whitelistInfo.IsCloneable,
+            IsAvailable = whitelistInfo.IsAvailable,
+            Remark = whitelistInfo.Remark,
+            Manager = whitelistInfo.Manager,
+            StrategyType = whitelistInfo.StrategyType
+        });
 
         State.WhitelistInfoMap[whitelistHash] = whitelistInfo;
         SetWhitelistIdManager(whitelistHash, managerList);
