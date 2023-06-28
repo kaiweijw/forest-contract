@@ -36,6 +36,14 @@ public partial class ForestContract
             var whitelistId = new Hash();
             var whitelistManager = GetWhitelistManager();
             
+            // verify same List info
+            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ??
+                                    new ListedNFTInfoList();
+            Assert(listedNftInfoList.Value
+                .Where(i => i.Duration.StartTime.Seconds == duration.StartTime.Seconds)
+                .Count() == 0, "List info already exists");
+
+            
             var nftBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput()
             {
                 Symbol = input.Symbol,
@@ -49,6 +57,9 @@ public partial class ForestContract
                 //Listed for the first time, create whitelist.
                 if (State.WhitelistIdMap[projectId] == null)
                 {
+                    whitelistId = Context.GenerateId(State.WhitelistContract.Value,
+                        ByteArrayHelper.ConcatArrays(Context.Self.ToByteArray(), projectId.ToByteArray()));
+
                     whitelistManager.CreateWhitelist(new CreateWhitelistInput
                     {
                         ProjectId = projectId,
@@ -62,13 +73,15 @@ public partial class ForestContract
                             Value = {Context.Sender}
                         }
                     });
-                    whitelistId =
-                        Context.GenerateId(State.WhitelistContract.Value,
-                            ByteArrayHelper.ConcatArrays(Context.Self.ToByteArray(), projectId.ToByteArray()));
                     State.WhitelistIdMap[projectId] = whitelistId;
                 }
                 else
                 {
+                    whitelistId = State.WhitelistIdMap[projectId];
+                    if (!whitelistManager.IsWhitelistAvailable())
+                    {
+                        State.WhitelistContract.EnableWhitelist.Send(whitelistId);
+                    }
                     //Add address list to the existing whitelist.
                     whitelistId = ExistWhitelist(projectId,whitelists,extraInfoList);
                 }
@@ -84,9 +97,6 @@ public partial class ForestContract
 
             Assert(GetTokenWhiteList(input.Symbol).Value.Contains(input.Price.Symbol),
                 $"{input.Price.Symbol} is not in token white list.");
-
-            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ??
-                                    new ListedNFTInfoList();
 
             ListedNFTInfo listedNftInfo = new ListedNFTInfo
             {
@@ -167,7 +177,8 @@ public partial class ForestContract
                     {
                         Symbol = listedNftInfo.Symbol,
                         Duration = listedNftInfo.Duration,
-                        Owner = listedNftInfo.Owner
+                        Owner = listedNftInfo.Owner,
+                        Price = listedNftInfo.Price
                     });
                     break;
                 case ListType.FixedPrice:

@@ -2,7 +2,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using AElf.CSharp.Core.Extension;
 using Forest.Whitelist;
+using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
 
@@ -371,6 +373,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Price = sellPrice,
                 Duration = new ListDuration
                 {
+                    StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
                     DurationHours = 24
                 }
             });
@@ -1066,5 +1069,69 @@ public class ForestContractListTests : ForestContractTestBase
                 balance3.Balance.ShouldBe(2);
             }
         }
+    }
+
+
+    [Fact]
+    public async void DuplicateList()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        
+        // whitePrice < sellPrice < offerPrice
+        var sellPrice = Elf(5_0000_0000);
+        var whitePrice = Elf(2_0000_0000);
+
+        // after publicTime
+        var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddHours(-5));
+        var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
+        
+        #region ListWithFixedPrice
+
+        {
+            await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
+            {
+                Symbol = NftSymbol,
+                Quantity = 5,
+                IsWhitelistAvailable = false,
+                Price = sellPrice,
+                Duration = new ListDuration()
+                {
+                    // start 1sec ago
+                    StartTime = startTime,
+                    // public 10min after
+                    PublicTime = publicTime,
+                    DurationHours = 1,
+                },
+            });
+        }
+
+        #endregion
+        
+        #region ListWithFixedPrice twice
+
+        {
+            var exception = await Assert.ThrowsAsync<Exception>(
+                () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
+                {
+                    Symbol = NftSymbol,
+                    Quantity = 5,
+                    IsWhitelistAvailable = false,
+                    Price = sellPrice,
+                    Duration = new ListDuration()
+                    {
+                        // start 1sec ago
+                        StartTime = startTime,
+                        // public 10min after
+                        PublicTime = publicTime,
+                        DurationHours = 1,
+                    },
+                })
+            );
+            exception.Message.ShouldContain("already exists");
+        }
+
+        #endregion
+        
     }
 }
