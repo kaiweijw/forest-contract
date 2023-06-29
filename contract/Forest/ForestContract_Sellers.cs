@@ -78,7 +78,7 @@ public partial class ForestContract
                 else
                 {
                     whitelistId = State.WhitelistIdMap[projectId];
-                    if (!whitelistManager.IsWhitelistAvailable())
+                    if (!whitelistManager.IsWhitelistAvailable(whitelistId))
                     {
                         State.WhitelistContract.EnableWhitelist.Send(whitelistId);
                     }
