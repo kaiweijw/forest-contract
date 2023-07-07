@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core.Extension;
@@ -158,7 +159,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
         await PrepareNftData();
 
         // user2 make offer to user1
-        await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+        var executionResult = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
         {
             Symbol = NftSymbol,
             OfferTo = User1Address,
@@ -166,6 +167,27 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
             Price = Elf(5),
             ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(30))
         });
+        var log = OfferAdded.Parser
+            .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(OfferAdded))
+                .NonIndexed);
+        log.OfferFrom.ShouldBe(User2Address);
+        log.Quantity.ShouldBe(1);
+        log.Symbol.ShouldBe(NftSymbol);
+        log.Price.Symbol.ShouldBe(ElfSymbol);
+        log.Price.Amount.ShouldBe(5);
+        log.ExpireTime.ShouldNotBeNull();
+        log.OfferTo.ShouldBe(User1Address);
+        
+        var log1 = OfferMade.Parser
+            .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(OfferMade))
+                .NonIndexed);
+        log1.OfferFrom.ShouldBe(User2Address);
+        log1.Quantity.ShouldBe(1);
+        log1.Symbol.ShouldBe(NftSymbol);
+        log1.Price.Symbol.ShouldBe(ElfSymbol);
+        log1.Price.Amount.ShouldBe(5);
+        log1.ExpireTime.ShouldNotBeNull();
+        log1.OfferTo.ShouldBe(User1Address);
 
         // list offers just sent
         var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
