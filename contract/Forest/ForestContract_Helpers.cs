@@ -142,13 +142,14 @@ public partial class ForestContract
         
         private ListDuration AdjustListDuration(ListDuration duration)
         {
+            const int SIX_MONTH_HOURS = 4392;
             if (duration == null)
             {
                 duration = new ListDuration
                 {
                     StartTime = Context.CurrentBlockTime,
                     PublicTime = Context.CurrentBlockTime,
-                    DurationHours = int.MaxValue
+                    DurationHours = SIX_MONTH_HOURS
                 };
             }
             else
@@ -165,7 +166,7 @@ public partial class ForestContract
 
                 if (duration.DurationHours == 0)
                 {
-                    duration.DurationHours = int.MaxValue;
+                    duration.DurationHours = SIX_MONTH_HOURS;
                 }
             }
 
