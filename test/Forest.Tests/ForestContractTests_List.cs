@@ -419,7 +419,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(2);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
         }
     }
 
@@ -640,7 +640,7 @@ public class ForestContractListTests : ForestContractTestBase
             log.Price.Symbol.ShouldBe(ElfSymbol);
             log.Price.Amount.ShouldBe(3);
             log.Duration.StartTime.ShouldNotBeNull();
-            log.Duration.DurationHours.ShouldBe(2147483647L);
+            log.Duration.DurationHours.ShouldBe(4392L);
 
             var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
                 new GetListedNFTInfoListInput
@@ -653,7 +653,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(4);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
         }
 
         var executionResult1 = await Seller1ForestContractStub.Delist.SendAsync(new DelistInput
@@ -671,7 +671,7 @@ public class ForestContractListTests : ForestContractTestBase
         log1.Price.Symbol.ShouldBe(ElfSymbol);
         log1.Price.Amount.ShouldBe(3);
         log1.Duration.StartTime.ShouldNotBeNull();
-        log1.Duration.DurationHours.ShouldBe(2147483647L);
+        log1.Duration.DurationHours.ShouldBe(4392L);
         
         var log2 = NFTDelisted.Parser
             .ParseFrom(executionResult1.TransactionResult.Logs.Last(l => l.Name == nameof(NFTDelisted))
@@ -691,7 +691,7 @@ public class ForestContractListTests : ForestContractTestBase
         listedNftInfo1.Quantity.ShouldBe(3);
         listedNftInfo1.ListType.ShouldBe(ListType.FixedPrice);
         listedNftInfo1.Duration.StartTime.ShouldNotBeNull();
-        listedNftInfo1.Duration.DurationHours.ShouldBe(2147483647L);
+        listedNftInfo1.Duration.DurationHours.ShouldBe(4392L);
     }
 
 
@@ -721,7 +721,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(1);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
         }
 
         await Seller1ForestContractStub.Delist.SendAsync(new DelistInput
@@ -770,7 +770,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(1);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
         }
         {
             Func<Task> act = () => Seller1ForestContractStub.Delist.SendAsync(new DelistInput
@@ -810,7 +810,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(1);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
         }
         {
             Func<Task> act = () => Seller1ForestContractStub.Delist.SendAsync(new DelistInput
@@ -850,7 +850,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(1);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
         }
         {
             Func<Task> act = () => Seller1ForestContractStub.Delist.SendAsync(new DelistInput
@@ -894,7 +894,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(1);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
         }
         {
             Func<Task> act = () => Seller1ForestContractStub.Delist.SendAsync(new DelistInput
@@ -933,7 +933,7 @@ public class ForestContractListTests : ForestContractTestBase
             log.Price.Symbol.ShouldBe(ElfSymbol);
             log.Price.Amount.ShouldBe(3);
             log.Duration.StartTime.ShouldNotBeNull();
-            log.Duration.DurationHours.ShouldBe(2147483647L);
+            log.Duration.DurationHours.ShouldBe(4392L);
 
             var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
                 new GetListedNFTInfoListInput
@@ -946,7 +946,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(4);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
         }
 
         var executionResult1 = await Seller1ForestContractStub.Delist.SendAsync(new DelistInput
@@ -960,9 +960,10 @@ public class ForestContractListTests : ForestContractTestBase
                 .NonIndexed);
         log1.Owner.ShouldBe(User1Address);
         log1.Symbol.ShouldBe(NftSymbol);
-        log1.Price.ShouldBeNull();
+        log1.Price.Symbol.ShouldBe(ElfSymbol);
+        log1.Price.Amount.ShouldBe(3);
         log1.Duration.StartTime.ShouldNotBeNull();
-        log1.Duration.DurationHours.ShouldBe(2147483647L);
+        log1.Duration.DurationHours.ShouldBe(4392L);
 
         var log2 = NFTDelisted.Parser
             .ParseFrom(executionResult1.TransactionResult.Logs.Last(l => l.Name == nameof(NFTDelisted))
@@ -1006,7 +1007,7 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(1);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(2147483647L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
         }
         await Seller1ForestContractStub.Delist.SendAsync(new DelistInput
         {
