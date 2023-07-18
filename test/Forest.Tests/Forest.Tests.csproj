@@ -89,9 +89,6 @@
         <ContractBase Include="..\..\protobuf\acs10.proto">
             <Link>Protobuf\Proto\base\acs12.proto</Link>
         </ContractBase>
-        <ContractBase Include="..\..\protobuf\acs12.proto">
-            <Link>Protobuf\Proto\base\acs12.proto</Link>
-        </ContractBase>
         
     </ItemGroup>
 
