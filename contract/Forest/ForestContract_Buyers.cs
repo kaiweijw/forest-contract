@@ -30,7 +30,7 @@ public partial class ForestContract
             {
                 Symbol = input.Symbol,
             });
-
+            Assert(nftInfo!=null, "No result by the input");
             var makeOfferService = GetMakeOfferService();
             makeOfferService.ValidateOffer(input);
 
