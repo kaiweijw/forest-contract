@@ -1,3 +1,8 @@
+trigger:
+  branches:
+    include:
+      - master
+      - release/*
 jobs:
   
   # All tasks on Windows....
