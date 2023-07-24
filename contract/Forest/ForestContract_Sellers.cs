@@ -229,10 +229,16 @@ public partial class ForestContract
                 Owner = Context.Sender
             });
             Assert(balance.Balance >= input.Quantity, "Insufficient NFT balance.");
-
+            
+            var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+            {
+                Symbol = input.Symbol,
+            });
+            Assert(nftInfo != null, "Invalid symbol data");
+            
             var offer = State.OfferListMap[input.Symbol][input.OfferFrom]?.Value
                 .FirstOrDefault(o => o.From == input.OfferFrom 
-                                     && o.To == Context.Sender 
+                                     && (o.To == Context.Sender || o.To == nftInfo?.Issuer) 
                                      && o.Price.Symbol == input.Price.Symbol 
                                      && o.Price.Amount == input.Price.Amount 
                                      && o.ExpireTime >= Context.CurrentBlockTime);

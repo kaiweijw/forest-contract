@@ -232,13 +232,13 @@ public class ForestContractTests_Security : ForestContractTestBase
         var dealQuantity = 1;
         var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
 
-        #region user2 make offer to user1
+        #region user2 make offer to user3
 
         {
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
                 Symbol = NftSymbol,
-                OfferTo = User1Address,
+                OfferTo = User3Address,
                 Quantity = offerQuantity,
                 Price = offerPrice,
                 ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
@@ -256,38 +256,25 @@ public class ForestContractTests_Security : ForestContractTestBase
                 Address = User2Address,
             }).Result.Output;
             offerList.Value.Count.ShouldBeGreaterThan(0);
-            offerList.Value[0].To.ShouldBe(User1Address);
+            offerList.Value[0].To.ShouldBe(User3Address);
             offerList.Value[0].From.ShouldBe(User2Address);
             offerList.Value[0].Quantity.ShouldBe(offerQuantity);
         }
 
         #endregion
 
-        #region user3 deal, NO PERM
+        #region user1 deal, NO PERM
 
         {
-            try
+            var dealFunc = () => Seller1ForestContractStub.Deal.SendAsync(new DealInput()
             {
-                await Seller3ForestContractStub.Deal.SendAsync(new DealInput()
-                {
-                    Symbol = NftSymbol,
-                    Price = offerPrice,
-                    OfferFrom = User2Address,
-                    Quantity = dealQuantity
-                });
-
-                // never run this line
-                true.ShouldBe(false);
-            }
-            catch (ShouldAssertException e)
-            {
-                throw;
-            }
-            catch (Exception e)
-            {
-                // user3 has no NFT
-                e.Message.ShouldContain("offer is empty");
-            }
+                Symbol = NftSymbol,
+                Price = offerPrice,
+                OfferFrom = User2Address,
+                Quantity = dealQuantity
+            });
+            var exception = await Assert.ThrowsAsync<Exception>(dealFunc);
+            exception.Message.ShouldContain("offer is empty");
         }
 
         #endregion
@@ -295,7 +282,7 @@ public class ForestContractTests_Security : ForestContractTestBase
         #region user2 deal, SUCCESS
 
         {
-            await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
+            await Seller3ForestContractStub.Deal.SendAsync(new DealInput()
             {
                 Symbol = NftSymbol,
                 Price = offerPrice,
@@ -1134,5 +1121,4 @@ public class ForestContractTests_Security : ForestContractTestBase
 
         #endregion
     }
-
 }
