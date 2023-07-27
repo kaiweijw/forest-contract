@@ -38,6 +38,15 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
 
     private async Task PrepareNftData()
     {
+        #region prepare SEED
+        
+        await CreateSeedCollection();
+        await CreateSeed("SEED-1", "TESTNFT-0");
+        await TokenContractStub.Issue.SendAsync(new IssueInput() { Symbol = "SEED-1", To = User1Address, Amount = 1 });
+        await UserTokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = TokenContractAddress, Symbol = "SEED-1", Amount = 1 });
+
+        #endregion
+        
         #region create NFTs
 
         {
