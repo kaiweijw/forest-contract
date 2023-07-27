@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
@@ -7,6 +8,7 @@ using Forest.Whitelist;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
+using IssueInput = AElf.Contracts.MultiToken.IssueInput;
 
 namespace Forest;
 
@@ -28,17 +30,23 @@ public class ForestContractListTests : ForestContractTestBase
         await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);
     }
 
-    private static Price Elf(long amunt)
+    private static Price Elf(long amount)
     {
         return new Price()
         {
             Symbol = ElfSymbol,
-            Amount = amunt
+            Amount = amount
         };
     }
 
     private async Task PrepareNftData()
     {
+
+        await CreateSeedCollection();
+        await CreateSeed("SEED-1", "TESTNFT-0");
+        await TokenContractStub.Issue.SendAsync(new IssueInput() { Symbol = "SEED-1", To = User1Address, Amount = 1 });
+        await UserTokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = TokenContractAddress, Symbol = "SEED-1", Amount = 1 });
+        
         // create collections via MULTI-TOKEN-CONTRACT
         var executionResult = await UserTokenContractStub.Create.SendAsync(new CreateInput
         {

@@ -159,8 +159,48 @@ namespace Forest
             //     await tester.Approve.SendAsync(proposalId);
             // }
         }
+        
+        protected async Task CreateSeedCollection() 
+        {
+            await TokenContractStub.Create.SendAsync(new CreateInput()
+            {
+                Symbol = "SEED-0",
+                TokenName = "SEED—collection",
+                TotalSupply = 1,
+                Decimals = 0,
+                Issuer = DefaultAddress,
+                IsBurnable = false,
+                IssueChainId = 0,
+                ExternalInfo = new ExternalInfo()
+            });
+        }
+
+        protected async Task CreateSeed(string seed, string forNFTSymbol)
+        {
+            await TokenContractStub.Create.SendAsync(new CreateInput()
+            {
+                Symbol = seed,
+                TokenName = seed,
+                TotalSupply = 1,
+                Decimals = 0,
+                Issuer = DefaultAddress,
+                IsBurnable = true,
+                IssueChainId = 0,
+                ExternalInfo = new ExternalInfo()
+                {
+                    Value = { 
+                        new Dictionary<string, string>()
+                        {
+                            ["__seed_owned_symbol"] = forNFTSymbol,
+                            ["__seed_exp_time"] = "9992145642"
+                        }
+                    }
+                }
+            });
+
+        }
+        
     }
-    
     
     
 }
