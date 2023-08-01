@@ -284,7 +284,6 @@ message ListWithFixedPriceInput {
     int64 quantity = 4;
     ListDuration duration = 5;
     WhitelistInfoList whitelists = 6;
-    bool is_merge_to_previous_listed_info = 7;
     bool is_whitelist_available = 8;
 }
 
@@ -580,7 +579,6 @@ message Sold {
     aelf.Address nft_from = 1;
     aelf.Address nft_to = 2;
     string nft_symbol = 3;
-    int64 nft_token_id = 4;
     int64 nft_quantity = 5;
     string purchase_symbol = 6;
     int64 purchase_amount = 7;

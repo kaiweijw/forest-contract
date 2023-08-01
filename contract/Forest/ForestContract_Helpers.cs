@@ -50,7 +50,6 @@ public partial class ForestContract
                 NftFrom = performDealInput.NFTFrom,
                 NftTo = performDealInput.NFTTo,
                 NftSymbol = performDealInput.NFTSymbol,
-                NftTokenId = performDealInput.NFTTokenId,
                 NftQuantity = performDealInput.NFTQuantity,
                 PurchaseSymbol = performDealInput.PurchaseSymbol,
                 PurchaseAmount = performDealInput.PurchaseAmount
@@ -62,15 +61,8 @@ public partial class ForestContract
             public Address NFTFrom { get; set; }
             public Address NFTTo { get; set; }
             public string NFTSymbol { get; set; }
-            public long NFTTokenId { get; set; }
             public long NFTQuantity { get; set; }
             public string PurchaseSymbol { get; set; }
-
-            /// <summary>
-            /// If PurchaseSymbol is a Fungible token, PurchaseTokenIs shall always be 0.
-            /// </summary>
-            public long PurchaseTokenId { get; set; }
-
             /// <summary>
             /// Be aware of that this stands for total amount.
             /// </summary>
