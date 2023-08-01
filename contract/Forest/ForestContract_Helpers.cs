@@ -15,78 +15,29 @@ public partial class ForestContract
     private void PerformDeal(PerformDealInput performDealInput)
         {
             Assert(performDealInput.NFTFrom != performDealInput.NFTTo, "NFT From address cannot be NFT To address.");
-            if (performDealInput.PurchaseTokenId == 0)  // todo
+            var serviceFee = performDealInput.PurchaseAmount.Mul(State.ServiceFeeRate.Value).Div(FeeDenominator);
+            var actualAmount = performDealInput.PurchaseAmount.Sub(serviceFee);
+            if (actualAmount != 0)
             {
-                var serviceFee = performDealInput.PurchaseAmount.Mul(State.ServiceFeeRate.Value).Div(FeeDenominator);
-                var royalty = GetRoyalty(new GetRoyaltyInput
-                {
-                    Symbol = performDealInput.NFTSymbol,
-                });
-
-                var royaltyFee = performDealInput.PurchaseAmount.Mul(royalty.Royalty).Div(FeeDenominator);
-                var royaltyFeeReceiver = State.RoyaltyFeeReceiverMap[performDealInput.NFTSymbol];
-                if (royaltyFeeReceiver == null)
-                {
-                    royaltyFee = 0;
-                }
-
-                var actualAmount = performDealInput.PurchaseAmount.Sub(serviceFee).Sub(royaltyFee);
-                //Assert(actualAmount > 0, "Incorrect deal amount.");
-                if (actualAmount != 0)
-                {
-                    State.TokenContract.TransferFrom.Send(new TransferFromInput
-                    {
-                        From = performDealInput.NFTTo,
-                        To = performDealInput.NFTFrom,
-                        Symbol = performDealInput.PurchaseSymbol,
-                        Amount = actualAmount
-                    });
-                    if (serviceFee > 0 && performDealInput.NFTTo != State.ServiceFeeReceiver.Value)
-                    {
-                        State.TokenContract.TransferFrom.Send(new TransferFromInput
-                        {
-                            From = performDealInput.NFTTo,
-                            To = State.ServiceFeeReceiver.Value,
-                            Symbol = performDealInput.PurchaseSymbol,
-                            Amount = serviceFee
-                        });
-                    }
-
-                    if (royaltyFeeReceiver != null && royaltyFee > 0)
-                    {
-                        State.TokenContract.TransferFrom.Send(new TransferFromInput
-                        {
-                            From = performDealInput.NFTTo,
-                            To = royaltyFeeReceiver,
-                            Symbol = performDealInput.PurchaseSymbol,
-                            Amount = royaltyFee
-                        });
-                    }
-                }
-            }
-            else
-            {
-                // Exchange NFTs for NFTs.
                 State.TokenContract.TransferFrom.Send(new TransferFromInput
                 {
                     From = performDealInput.NFTTo,
                     To = performDealInput.NFTFrom,
                     Symbol = performDealInput.PurchaseSymbol,
-                    Amount = performDealInput.PurchaseAmount
+                    Amount = actualAmount
                 });
-
-                if (State.ServiceFee.Value > 0)
+                if (serviceFee > 0 && performDealInput.NFTTo != State.ServiceFeeReceiver.Value)
                 {
-                    // Charge a fixed service fee.
                     State.TokenContract.TransferFrom.Send(new TransferFromInput
                     {
                         From = performDealInput.NFTTo,
                         To = State.ServiceFeeReceiver.Value,
-                        Symbol = Context.Variables.NativeSymbol,
-                        Amount = State.ServiceFee.Value
+                        Symbol = performDealInput.PurchaseSymbol,
+                        Amount = serviceFee
                     });
                 }
             }
+            
             State.TokenContract.TransferFrom.Send(new TransferFromInput
             {
                 From = performDealInput.NFTFrom,
