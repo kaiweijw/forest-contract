@@ -168,11 +168,6 @@ public partial class ForestContract
             {
                 case ListType.FixedPrice when input.Quantity >= listedNftInfo.Quantity:
                     State.ListedNFTInfoListMap[input.Symbol][Context.Sender].Value.Remove(listedNftInfo);
-                    // if (State.WhitelistIdMap[input.Symbol][input.TokenId][Context.Sender] != null)
-                    // {
-                    //     var whitelistId = State.WhitelistIdMap[projectId];
-                    //     State.WhitelistContract.DisableWhitelist.Send(whitelistId);
-                    // }
                     Context.Fire(new ListedNFTRemoved
                     {
                         Symbol = listedNftInfo.Symbol,

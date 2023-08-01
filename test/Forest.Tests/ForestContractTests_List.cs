@@ -735,7 +735,6 @@ public class ForestContractListTests : ForestContractTestBase
         await Seller1ForestContractStub.Delist.SendAsync(new DelistInput
         {
             Symbol = NftSymbol,
-            // // TokenId = 233,
             Price = sellPrice,
             Quantity = 1
         });
@@ -743,7 +742,6 @@ public class ForestContractListTests : ForestContractTestBase
             Func<Task> act = () => Seller1ForestContractStub.Delist.SendAsync(new DelistInput
             {
                 Symbol = NftSymbol,
-                // // TokenId = 233,
                 Price = sellPrice,
                 Quantity = 1
             });
