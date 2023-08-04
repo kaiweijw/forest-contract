@@ -1205,7 +1205,7 @@ public partial class ForestContractTests_MakeOffer
             var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
             {
                 Symbol = NftSymbol,
-                Address = User2Address,
+                // Address = User2Address,
             }).Result.Output;
             offerList.Value.Count.ShouldBeGreaterThan(0);
             offerList.Value[0].To.ShouldBe(User1Address);

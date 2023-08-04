@@ -569,6 +569,10 @@ public class ForestContractTests_Security : ForestContractTestBase
                 ServiceFeeRate = 1000,
                 ServiceFeeReceiver = User1Address
             });
+
+            var serviceFeeResp = await AdminForestContractStub.GetServiceFeeInfo.SendAsync(new Empty());
+            serviceFeeResp?.Output.ShouldNotBeNull();
+            serviceFeeResp?.Output.ServiceFeeRate.ShouldBe(1000);
         }
 
         #endregion
