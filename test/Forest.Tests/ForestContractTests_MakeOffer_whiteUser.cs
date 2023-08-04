@@ -461,9 +461,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
                 },
                 Duration = new ListDuration()
                 {
-                    // start 1sec ago
-                    StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddSeconds(-1)),
-                    // public 10min after
+                    StartTime = Timestamp.FromDateTime(DateTime.UtcNow),
                     PublicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10)),
                     DurationHours = 1,
                 },
