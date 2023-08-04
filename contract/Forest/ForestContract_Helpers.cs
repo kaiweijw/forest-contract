@@ -122,17 +122,6 @@ public partial class ForestContract
             return Context.CurrentBlockTime > expireTime;
         }
 
-        private Price DeserializedInfo(TagInfo tagInfo)
-        {
-            var deserializedInfo = new PriceTag();
-            deserializedInfo.MergeFrom(tagInfo.Info);
-            return new Price
-            {
-                Symbol = deserializedInfo.Symbol,
-                Amount = deserializedInfo.Amount
-            };
-        }
-
         private Hash CalculateProjectId(string symbol,Address sender)
         {
             return HashHelper.ComputeFrom($"{symbol}{sender}");
