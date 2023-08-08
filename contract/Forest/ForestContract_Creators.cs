@@ -52,6 +52,15 @@ public partial class ForestContract
             Symbol = input.Symbol
         });
 
+        foreach (var symbol in input.TokenWhiteList.Value)
+        {
+            var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+            {
+                Symbol = symbol
+            });
+            Assert(tokenInfo != null, "Invalid token : " + symbol);
+        }
+
         Assert(nftCollectionInfo.Issuer != null, "NFT Collection not found.");
         Assert(nftCollectionInfo.Issuer == Context.Sender, "Only NFT Collection Creator can set token white list.");
         State.TokenWhiteListMap[input.Symbol] = input.TokenWhiteList;

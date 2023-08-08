@@ -1,3 +1,4 @@
+using AElf.Contracts.MultiToken;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
@@ -27,10 +28,19 @@ namespace Forest
             };
             return new Empty();
         }
+        
+        public override Empty SetAdministrator(Address input)
+        {
+            AssertSenderIsAdmin();
+            Assert(input != null, "Empty Address");
+            State.Admin.Value = input;
+            return new Empty();
+        }
 
         public override Empty SetServiceFee(SetServiceFeeInput input)
         {
             AssertSenderIsAdmin();
+            Assert(input.ServiceFeeRate >= 0, "Invalid ServiceFeeRate");
             State.ServiceFeeRate.Value = input.ServiceFeeRate;
             State.ServiceFeeReceiver.Value = input.ServiceFeeReceiver ?? State.Admin.Value;
             return new Empty();
@@ -43,7 +53,14 @@ namespace Forest
             {
                 input.Value.Add(Context.Variables.NativeSymbol);
             }
-
+            foreach (var symbol in input.Value)
+            {
+                var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+                {
+                    Symbol = symbol
+                });
+                Assert(tokenInfo != null, "Invalid token : " + symbol);
+            }
             State.GlobalTokenWhiteList.Value = input;
             Context.Fire(new GlobalTokenWhiteListChanged
             {
@@ -55,6 +72,7 @@ namespace Forest
         public override Empty SetWhitelistContract(Address input)
         {
             AssertSenderIsAdmin();
+            Assert(input != null, "Empty contract address");
             State.WhitelistContract.Value = input;
             return new Empty();
         }

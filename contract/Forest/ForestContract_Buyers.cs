@@ -31,6 +31,18 @@ public partial class ForestContract
                 Symbol = input.Symbol,
             });
             Assert(nftInfo != null, "Invalid symbol data");
+            Assert(input.Quantity <= nftInfo?.TotalSupply, "Offer quantity beyond totalSupply");
+            
+            var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+            {
+                Symbol = input.Price.Symbol,
+                Owner = Context.Sender
+            });
+            Assert(balance.Balance >= input.Price.Amount, "Price balance not enough");
+            
+            var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
+            Assert(tokenWhiteList.Contains(input.Price.Symbol), $"Price symbol {input.Price.Symbol} not available");
+            
             var makeOfferService = GetMakeOfferService();
             makeOfferService.ValidateOffer(input);
 

@@ -62,6 +62,8 @@ service ForestContract {
     }
 
     // For Admin.
+    rpc SetAdministrator(aelf.Address) returns (google.protobuf.Empty) {
+    }
     rpc SetServiceFee (SetServiceFeeInput) returns (google.protobuf.Empty) {
     }
     rpc SetGlobalTokenWhiteList (StringList) returns (google.protobuf.Empty) {
@@ -121,6 +123,9 @@ service ForestContract {
         option (aelf.is_view) = true;
     }
     rpc GetServiceFeeInfo (google.protobuf.Empty) returns (ServiceFeeInfo) {
+        option (aelf.is_view) = true;
+    }
+    rpc GetAdministrator(google.protobuf.Empty) returns (aelf.Address) {
         option (aelf.is_view) = true;
     }
 }
