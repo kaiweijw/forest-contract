@@ -531,7 +531,7 @@ public class ForestContractTests_Security : ForestContractTestBase
             Symbol = NftSymbol,
             TokenWhiteList = new StringList()
             {
-                Value = { "ELF", "USDT" }
+                Value = { "ELF", "CPU" }
             }
         });
 
@@ -542,7 +542,7 @@ public class ForestContractTests_Security : ForestContractTestBase
                 Symbol = NftSymbol,
                 TokenWhiteList = new StringList()
                 {
-                    Value = { "ELF", "USDT" }
+                    Value = { "ELF", "CPU" }
                 }
             });
         }
@@ -619,14 +619,14 @@ public class ForestContractTests_Security : ForestContractTestBase
 
         await AdminForestContractStub.SetGlobalTokenWhiteList.SendAsync(new StringList()
         {
-            Value = { "ELF", "USDT" }
+            Value = { "ELF", "CPU" }
         });
 
         try
         {
             await Seller1ForestContractStub.SetGlobalTokenWhiteList.SendAsync(new StringList()
             {
-                Value = { "ELF", "USDT" }
+                Value = { "ELF", "CPU" }
             });
 
             // never run this line
