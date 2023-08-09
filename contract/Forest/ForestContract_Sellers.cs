@@ -5,6 +5,7 @@ using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Forest.Whitelist;
+using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest;
@@ -51,7 +52,7 @@ public partial class ForestContract
 
             if (input.IsWhitelistAvailable)
             {
-                foreach (var whitelistInfo in input.Whitelists.Whitelists)
+                foreach (var whitelistInfo in input.Whitelists?.Whitelists ?? new RepeatedField<WhitelistInfo>())
                 {
                     Assert(tokenWhiteList.Contains(whitelistInfo.PriceTag.Price.Symbol), 
                         $"Invalid price symbol {whitelistInfo.PriceTag.Price.Symbol} in whitelist priceTag");

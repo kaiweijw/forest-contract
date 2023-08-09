@@ -159,6 +159,13 @@ public class ForestContractTests_Security : ForestContractTestBase
                 Symbol = ElfSymbol,
                 Amount = InitializeElfAmount
             });
+            // transfer thousand ELF to buyer
+            await TokenContractStub.Transfer.SendAsync(new TransferInput()
+            {
+                To = User3Address,
+                Symbol = ElfSymbol,
+                Amount = InitializeElfAmount
+            });
         }
 
         #endregion
@@ -815,8 +822,8 @@ public class ForestContractTests_Security : ForestContractTestBase
         var whitePrice = Elf(1_0000_0000);
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
-        var offerQuantity = 200;
-        var dealQuantity = 200;
+        var offerQuantity = 20;
+        var dealQuantity = 20;
         var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
 
         // before startTime
@@ -1135,4 +1142,73 @@ public class ForestContractTests_Security : ForestContractTestBase
 
         #endregion
     }
+
+    [Fact]
+    public async void Security_SetTokenWhitelist_fail()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        var exception = await Assert.ThrowsAsync<Exception>(() => AdminForestContractStub.SetGlobalTokenWhiteList.SendAsync(new StringList()
+        {
+            Value = { "ERROR" }
+        }));
+        exception.Message.ShouldContain("Invalid token");
+
+        var userException = await Assert.ThrowsAsync<Exception>(() =>
+            Seller1ForestContractStub.SetTokenWhiteList.SendAsync(new SetTokenWhiteListInput()
+            {
+                Symbol = NftSymbol,
+                TokenWhiteList = new StringList() { Value = { } }
+            }));
+        userException.Message.ShouldContain("length should be between");
+        
+        userException = await Assert.ThrowsAsync<Exception>(() =>
+            Seller1ForestContractStub.SetTokenWhiteList.SendAsync(new SetTokenWhiteListInput()
+            {
+                Symbol = NftSymbol,
+                TokenWhiteList = new StringList()
+                {
+                    Value =
+                    {
+                        "ERROR", "ERROR", "ERROR", "ERROR", "ERROR", 
+                        "ERROR", "ERROR", "ERROR", "ERROR", "ERROR", 
+                        "ERROR", "ERROR", "ERROR", "ERROR", "ERROR", 
+                        "ERROR", "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"
+                    }
+                }
+            }));
+        userException.Message.ShouldContain("length should be between");
+        
+        userException = await Assert.ThrowsAsync<Exception>(() =>
+            Seller1ForestContractStub.SetTokenWhiteList.SendAsync(new SetTokenWhiteListInput()
+            {
+                Symbol = NftSymbol,
+                TokenWhiteList = new StringList() { Value = { "ERROR" } }
+            }));
+        userException.Message.ShouldContain("Invalid token");
+    }
+
+    [Fact]
+    public async void Security_SetWhitelistContract_fail()
+    {
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            AdminForestContractStub.SetWhitelistContract.SendAsync(null));
+        exception.Message.ShouldContain("Value cannot be null");
+    }
+
+    [Fact]
+    public async void Security_SetAdministrator_fail()
+    {
+        await InitializeForestContract();
+        var admin = await AdminForestContractStub.GetAdministrator.SendAsync(new Empty());
+        admin.Output.ShouldBe(DefaultAddress);
+
+        await AdminForestContractStub.SetAdministrator.SendAsync(User1Address);
+        admin = await AdminForestContractStub.GetAdministrator.SendAsync(new Empty());
+        admin.Output.ShouldBe(User1Address);
+        
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            AdminForestContractStub.SetAdministrator.SendAsync(null));
+        exception.Message.ShouldContain("Value cannot be null");
+    } 
 }

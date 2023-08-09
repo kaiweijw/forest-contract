@@ -59,7 +59,7 @@ namespace Forest
                 {
                     Symbol = symbol
                 });
-                Assert(tokenInfo != null, "Invalid token : " + symbol);
+                Assert(tokenInfo?.Symbol?.Length > 0, "Invalid token : " + symbol);
             }
             State.GlobalTokenWhiteList.Value = input;
             Context.Fire(new GlobalTokenWhiteListChanged

@@ -461,11 +461,18 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
                 },
                 Duration = new ListDuration()
                 {
-                    StartTime = Timestamp.FromDateTime(DateTime.UtcNow),
+                    StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMilliseconds(-500)),
                     PublicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10)),
                     DurationHours = 1,
                 },
             });
+
+            var list = await Seller1ForestContractStub.GetListedNFTInfoList.SendAsync(new GetListedNFTInfoListInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            list.Output.Value.Count.ShouldBe(1);
         }
 
         #endregion
@@ -473,8 +480,6 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
         #region whitelist user buy
 
         {
-            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {

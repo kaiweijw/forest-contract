@@ -38,7 +38,7 @@ public partial class ForestContract
                 Symbol = input.Price.Symbol,
                 Owner = Context.Sender
             });
-            Assert(balance.Balance >= input.Price.Amount, "Price balance not enough");
+            Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Price balance not enough");
             
             var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
             Assert(tokenWhiteList.Contains(input.Price.Symbol), $"Price symbol {input.Price.Symbol} not available");

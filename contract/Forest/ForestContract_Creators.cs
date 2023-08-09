@@ -47,6 +47,9 @@ public partial class ForestContract
     public override Empty SetTokenWhiteList(SetTokenWhiteListInput input)
     {
         AssertContractInitialized();
+        Assert(input.TokenWhiteList.Value.Count > 0 && input.TokenWhiteList.Value.Count <= 20, 
+            "TokenWhiteList length should be between 1-20");
+
         var nftCollectionInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol
@@ -58,11 +61,12 @@ public partial class ForestContract
             {
                 Symbol = symbol
             });
-            Assert(tokenInfo != null, "Invalid token : " + symbol);
+            Assert(tokenInfo?.Symbol?.Length > 0, "Invalid token : " + symbol);
         }
 
         Assert(nftCollectionInfo.Issuer != null, "NFT Collection not found.");
         Assert(nftCollectionInfo.Issuer == Context.Sender, "Only NFT Collection Creator can set token white list.");
+
         State.TokenWhiteListMap[input.Symbol] = input.TokenWhiteList;
         Context.Fire(new TokenWhiteListChanged
         {

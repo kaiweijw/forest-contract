@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
@@ -149,6 +150,14 @@ public class ForestContractTests_Deal : ForestContractTestBase
             await TokenContractStub.Transfer.SendAsync(new TransferInput()
             {
                 To = User2Address,
+                Symbol = ElfSymbol,
+                Amount = InitializeElfAmount
+            });
+            
+            // transfer thousand ELF to buyer
+            await TokenContractStub.Transfer.SendAsync(new TransferInput()
+            {
+                To = User3Address,
                 Symbol = ElfSymbol,
                 Amount = InitializeElfAmount
             });
@@ -1221,7 +1230,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         await PrepareNftData();
 
         var sellPrice = Elf(5_0000_0000);
-        var offerPrice = Elf(50000_0000_0000);
+        var offerPrice = Elf(10000_0000_0000);
         var offerQuantity = 1;
         var dealQuantity = 1;
         var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
@@ -1237,6 +1246,14 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 Quantity = offerQuantity,
                 Price = offerPrice,
                 ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
+            });
+            
+            // user2 transfer ELF away
+            await User2TokenContractStub.Transfer.SendAsync(new TransferInput()
+            {
+                Symbol = ElfSymbol,
+                To = User1Address,
+                Amount = InitializeElfAmount,
             });
         }
 
@@ -1262,27 +1279,14 @@ public class ForestContractTests_Deal : ForestContractTestBase
         #region deal
 
         {
-            try
+            var exception = await Assert.ThrowsAsync<Exception>(() => Seller1ForestContractStub.Deal.SendAsync(new DealInput()
             {
-                await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
-                {
-                    Symbol = NftSymbol,
-                    Price = offerPrice,
-                    OfferFrom = User2Address,
-                    Quantity = dealQuantity
-                });
-
-                // never run this line
-                true.ShouldBe(false);
-            }
-            catch (ShouldAssertException e)
-            {
-                throw;
-            }
-            catch (Exception e)
-            {
-                e.Message.ShouldContain("Insufficient allowance");
-            }
+                Symbol = NftSymbol,
+                Price = offerPrice,
+                OfferFrom = User2Address,
+                Quantity = dealQuantity
+            }));
+            exception.Message.ShouldContain("Insufficient balance");
         }
 
         #endregion
