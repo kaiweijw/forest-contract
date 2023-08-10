@@ -96,4 +96,9 @@ public partial class ForestContract
         {
             return State.Admin.Value;
         }
+
+        public override BizConfig GetBizConfig(Empty input)
+        {
+            return State.BizConfig.Value;
+        }
 }

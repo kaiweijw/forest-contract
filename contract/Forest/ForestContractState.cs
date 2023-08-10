@@ -11,6 +11,8 @@ namespace Forest
         public SingletonState<Address> Admin { get; set; }
 
         public SingletonState<Address> ServiceFeeReceiver { get; set; }
+        
+        public SingletonState<BizConfig> BizConfig { get; set; }
 
         public Int32State ServiceFeeRate { get; set; }
         public Int64State ServiceFee { get; set; }

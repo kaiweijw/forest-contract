@@ -70,6 +70,8 @@ service ForestContract {
     }
     rpc SetWhitelistContract(aelf.Address) returns (google.protobuf.Empty){
     }
+    rpc SetBizConfig(BizConfig) returns (google.protobuf.Empty){
+    }
 
     // For badges owners.
     rpc MintBadge (MintBadgeInput) returns (google.protobuf.Empty) {
@@ -126,6 +128,9 @@ service ForestContract {
         option (aelf.is_view) = true;
     }
     rpc GetAdministrator(google.protobuf.Empty) returns (aelf.Address) {
+        option (aelf.is_view) = true;
+    }
+    rpc GetBizConfig(google.protobuf.Empty) returns (BizConfig){
         option (aelf.is_view) = true;
     }
 }
@@ -448,6 +453,13 @@ message GetRoyaltyInput {
 message RoyaltyInfo {
     int32 royalty = 1;
     aelf.Address royalty_fee_receiver = 2;
+}
+
+message BizConfig
+{
+    int32 maxListCount = 1;
+    int32 maxOfferCount = 2;
+    int32 maxTokenWhitelistCount = 3;
 }
 
 // Events

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using AElf.CSharp.Core.Extension;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
@@ -1214,5 +1215,78 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
+    }
+
+    [Fact]
+    public async void MakeOffer_forManyListings_fail()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        
+        // whitePrice < sellPrice < offerPrice
+        var sellPrice = Elf(1_0000_0000);
+
+        // after publicTime
+        var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(0));
+        var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
+        var issueAmount = 1000;
+        // issue 10 NFTs to self
+        await UserTokenContractStub.Issue.SendAsync(new IssueInput()
+        {
+            Symbol = NftSymbol2,
+            Amount = issueAmount,
+            To = User1Address
+        });
+
+        await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+        {
+            Symbol = NftSymbol2,
+            Amount = issueAmount,
+            Spender = ForestContractAddress
+        });
+
+        var bizConfig = await Seller1ForestContractStub.GetBizConfig.SendAsync(new Empty());
+        
+        for (var i = 0; i < bizConfig.Output.MaxListCount; i++)
+        {
+            startTime = startTime.AddSeconds(1);
+            await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
+            {
+                Symbol = NftSymbol2,
+                Quantity = 1,
+                IsWhitelistAvailable = false,
+                Price = sellPrice,
+                Duration = new ListDuration()
+                {
+                    StartTime = startTime,
+                    PublicTime = publicTime,
+                    DurationHours = 1,
+                }
+            });
+        }
+
+        var lists = await Seller1ForestContractStub.GetListedNFTInfoList.SendAsync(new GetListedNFTInfoListInput()
+        {
+            Owner = User1Address,
+            Symbol = NftSymbol2
+        });
+        lists.Output.Value.Count.ShouldBe(bizConfig.Output.MaxListCount);
+
+        var exception = await Assert.ThrowsAsync<Exception>(() => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(
+            new ListWithFixedPriceInput()
+            {
+                Symbol = NftSymbol2,
+                Quantity = 1,
+                IsWhitelistAvailable = false,
+                Price = sellPrice,
+                Duration = new ListDuration()
+                {
+                    StartTime = startTime.AddSeconds(1),
+                    PublicTime = publicTime,
+                    DurationHours = 1,
+                }
+            }));
+        exception.Message.ShouldContain("Too many");
+
     }
 }

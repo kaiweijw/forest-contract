@@ -47,8 +47,8 @@ public partial class ForestContract
     public override Empty SetTokenWhiteList(SetTokenWhiteListInput input)
     {
         AssertContractInitialized();
-        Assert(input.TokenWhiteList.Value.Count > 0 && input.TokenWhiteList.Value.Count <= 20, 
-            "TokenWhiteList length should be between 1-20");
+        Assert(input.TokenWhiteList.Value.Count > 0 && input.TokenWhiteList.Value.Count <= State.BizConfig.Value.MaxTokenWhitelistCount, 
+            $"TokenWhiteList length should be between 1-{State.BizConfig.Value.MaxTokenWhitelistCount}");
 
         var nftCollectionInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {

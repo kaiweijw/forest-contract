@@ -38,13 +38,13 @@ public partial class ForestContract
             var whitelistId = new Hash();
             var whitelistManager = GetWhitelistManager();
             
-            // verify same List info
-            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ??
-                                    new ListedNFTInfoList();
+            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ?? new ListedNFTInfoList();
+            Assert(listedNftInfoList.Value.Count < State.BizConfig.Value.MaxListCount, 
+                $"Too many listedNft, max count is {State.BizConfig.Value.MaxListCount}");
             Assert(listedNftInfoList.Value
                 .Where(i => i.Duration.StartTime.Seconds == duration.StartTime.Seconds)
                 .Count() == 0, "List info already exists");
-
+            
             
             var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
             Assert(tokenWhiteList.Contains(input.Price.Symbol), 

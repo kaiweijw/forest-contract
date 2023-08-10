@@ -1210,5 +1210,5 @@ public class ForestContractTests_Security : ForestContractTestBase
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(() =>
             AdminForestContractStub.SetAdministrator.SendAsync(null));
         exception.Message.ShouldContain("Value cannot be null");
-    } 
+    }
 }

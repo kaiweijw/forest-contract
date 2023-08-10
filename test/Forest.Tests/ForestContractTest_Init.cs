@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
 using AElf.Standards.ACS1;
@@ -252,6 +253,54 @@ public class ForestContractTest_Init : ForestContractTestBase
 
         royalty?.Output.ShouldNotBeNull();
         royalty?.Output.Royalty.ShouldBe(100);
+    }
+
+    [Fact]
+    public async Task BizConfigTest()
+    {
+        await InitializeForestContract();
+
+        var bizConfig = await Seller1ForestContractStub.GetBizConfig.SendAsync(new Empty());
+        bizConfig?.Output.ShouldNotBeNull();
+        bizConfig?.Output.MaxListCount.ShouldBe(100);
+        bizConfig?.Output.MaxOfferCount.ShouldBe(100);
+        bizConfig?.Output.MaxTokenWhitelistCount.ShouldBe(20);
+
+        await AdminForestContractStub.SetBizConfig.SendAsync(new BizConfig()
+        {
+            MaxListCount = 1,
+            MaxOfferCount = 1,
+            MaxTokenWhitelistCount = 1
+        });
+        bizConfig = await Seller1ForestContractStub.GetBizConfig.SendAsync(new Empty());
+        bizConfig?.Output.ShouldNotBeNull();
+        bizConfig?.Output.MaxListCount.ShouldBe(1);
+        bizConfig?.Output.MaxOfferCount.ShouldBe(1);
+        bizConfig?.Output.MaxTokenWhitelistCount.ShouldBe(1);
+        
+        var exception = await Assert.ThrowsAsync<Exception>(() => AdminForestContractStub.SetBizConfig.SendAsync(new BizConfig()
+        {
+            //EMPTY
+        }));
+        exception.Message.ShouldContain("should grater than 0");
+        
+        exception = await Assert.ThrowsAsync<Exception>(() => AdminForestContractStub.SetBizConfig.SendAsync(new BizConfig()
+        {
+            MaxListCount = 0,
+            MaxOfferCount = 1,
+            MaxTokenWhitelistCount = 1
+        }));
+        exception.Message.ShouldContain("should grater than 0");
+        
+        exception = await Assert.ThrowsAsync<Exception>(() => Seller1ForestContractStub.SetBizConfig.SendAsync(new BizConfig()
+        {
+            MaxListCount = 0,
+            MaxOfferCount = 1,
+            MaxTokenWhitelistCount = 1
+        }));
+        exception.Message.ShouldContain("No permission");
+        
+
     }
     
 }
