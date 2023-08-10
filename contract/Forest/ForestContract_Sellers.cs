@@ -5,6 +5,7 @@ using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Forest.Whitelist;
+using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest;
@@ -29,30 +30,33 @@ public partial class ForestContract
                 Symbol = input.Symbol,
                 Owner = Context.Sender
             });
-            Assert(balance.Balance >= input.Quantity, "Check sender NFT balance failed."); 
+            Assert(balance.Balance >= input.Quantity, "Check sender NFT balance failed.");
+            
             var duration = AdjustListDuration(input.Duration);
             var whitelists = input.Whitelists;
             var projectId = CalculateProjectId(input.Symbol,Context.Sender);
             var whitelistId = new Hash();
             var whitelistManager = GetWhitelistManager();
             
-            // verify same List info
-            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ??
-                                    new ListedNFTInfoList();
+            var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ?? new ListedNFTInfoList();
+            Assert(listedNftInfoList.Value.Count < State.BizConfig.Value.MaxListCount, 
+                $"Too many listedNft, max count is {State.BizConfig.Value.MaxListCount}");
             Assert(listedNftInfoList.Value
                 .Where(i => i.Duration.StartTime.Seconds == duration.StartTime.Seconds)
                 .Count() == 0, "List info already exists");
+            
+            
+            var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
+            Assert(tokenWhiteList.Contains(input.Price.Symbol), 
+                $"{input.Price.Symbol} is not in token white list.");
 
-            
-            var nftBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput()
-            {
-                Symbol = input.Symbol,
-                Owner = Context.Sender
-            });
-            Assert(input.Quantity <= nftBalance.Balance, "Check sender NFT balance failed.");
-            
             if (input.IsWhitelistAvailable)
             {
+                foreach (var whitelistInfo in input.Whitelists?.Whitelists ?? new RepeatedField<WhitelistInfo>())
+                {
+                    Assert(tokenWhiteList.Contains(whitelistInfo.PriceTag.Price.Symbol), 
+                        $"Invalid price symbol {whitelistInfo.PriceTag.Price.Symbol} in whitelist priceTag");
+                }
                 var extraInfoList = ConvertToExtraInfo(whitelists);
                 //Listed for the first time, create whitelist.
                 if (State.WhitelistIdMap[projectId] == null)
@@ -94,9 +98,6 @@ public partial class ForestContract
                     State.WhitelistContract.DisableWhitelist.Send(whitelistId);
                 }
             }
-
-            Assert(GetTokenWhiteList(input.Symbol).Value.Contains(input.Price.Symbol),
-                $"{input.Price.Symbol} is not in token white list.");
 
             ListedNFTInfo listedNftInfo = new ListedNFTInfo
             {

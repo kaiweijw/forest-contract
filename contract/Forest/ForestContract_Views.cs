@@ -1,3 +1,4 @@
+using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest;
@@ -89,5 +90,15 @@ public partial class ForestContract
                 ServiceFeeRate = State.ServiceFeeRate.Value,
                 ServiceFeeReceiver = State.ServiceFeeReceiver.Value
             };
+        }
+
+        public override Address GetAdministrator(Empty input)
+        {
+            return State.Admin.Value;
+        }
+
+        public override BizConfig GetBizConfig(Empty input)
+        {
+            return State.BizConfig.Value;
         }
 }

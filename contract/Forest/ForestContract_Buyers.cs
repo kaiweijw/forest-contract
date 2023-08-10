@@ -31,6 +31,18 @@ public partial class ForestContract
                 Symbol = input.Symbol,
             });
             Assert(nftInfo != null, "Invalid symbol data");
+            Assert(input.Quantity <= nftInfo?.TotalSupply, "Offer quantity beyond totalSupply");
+            
+            var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+            {
+                Symbol = input.Price.Symbol,
+                Owner = Context.Sender
+            });
+            Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Price balance not enough");
+            
+            var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
+            Assert(tokenWhiteList.Contains(input.Price.Symbol), $"Price symbol {input.Price.Symbol} not available");
+            
             var makeOfferService = GetMakeOfferService();
             makeOfferService.ValidateOffer(input);
 
@@ -41,7 +53,7 @@ public partial class ForestContract
 
             var listedNftInfoList =
                 State.ListedNFTInfoListMap[input.Symbol][input.OfferTo];
-            
+
             var whitelistManager = GetWhitelistManager();
             
             if (makeOfferService.IsSenderInWhitelist(input,out var whitelistId) && whitelistManager.IsWhitelistAvailable(whitelistId))
@@ -340,6 +352,8 @@ public partial class ForestContract
         private void PerformMakeOffer(MakeOfferInput input)
         {
             var offerList = State.OfferListMap[input.Symbol][Context.Sender] ?? new OfferList();
+            Assert(offerList.Value.Count < State.BizConfig.Value.MaxOfferCount, 
+                $"Too many offers, max count is {State.BizConfig.Value.MaxOfferCount}");
             var expireTime = input.ExpireTime ?? Context.CurrentBlockTime.AddDays(DefaultExpireDays);
             var maybeSameOffer = offerList.Value.SingleOrDefault(o =>
                 o.Price.Symbol == input.Price.Symbol && o.Price.Amount == input.Price.Amount &&

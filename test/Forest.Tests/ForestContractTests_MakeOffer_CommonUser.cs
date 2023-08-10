@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using AElf.CSharp.Core.Extension;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
@@ -1215,4 +1216,5 @@ public partial class ForestContractTests_MakeOffer
 
         #endregion
     }
+
 }

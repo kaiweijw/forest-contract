@@ -15,6 +15,7 @@ namespace Forest;
 public partial class ForestContractTests_MakeOffer : ForestContractTestBase
 {
     private const string NftSymbol = "TESTNFT-1";
+    private const string NftSymbol2 = "TESTNFT-2";
     private const string ElfSymbol = "ELF";
     private const int ServiceFeeRate = 1000; // 10%
     private const long InitializeElfAmount = 10000_0000_0000;
@@ -81,6 +82,19 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
                 IssueChainId = 0,
                 ExternalInfo = new ExternalInfo()
             });
+            
+            // create NFT via MULTI-TOKEN-CONTRACT
+            await UserTokenContractStub.Create.SendAsync(new CreateInput
+            {
+                Symbol = NftSymbol2,
+                TokenName = NftSymbol2,
+                TotalSupply = 1000,
+                Decimals = 0,
+                Issuer = User1Address,
+                IsBurnable = false,
+                IssueChainId = 0,
+                ExternalInfo = new ExternalInfo()
+            });
         }
 
         #endregion
@@ -104,7 +118,6 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
 
             tokenInfo.Output.TotalSupply.ShouldBe(100);
             tokenInfo.Output.Supply.ShouldBe(10);
-
 
             var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -461,11 +474,18 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
                 },
                 Duration = new ListDuration()
                 {
-                    StartTime = Timestamp.FromDateTime(DateTime.UtcNow),
+                    StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMilliseconds(-500)),
                     PublicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10)),
                     DurationHours = 1,
                 },
             });
+
+            var list = await Seller1ForestContractStub.GetListedNFTInfoList.SendAsync(new GetListedNFTInfoListInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            list.Output.Value.Count.ShouldBe(1);
         }
 
         #endregion
@@ -473,8 +493,6 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
         #region whitelist user buy
 
         {
-            await MineAsync(new List<Transaction>(), Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)));
-
             // check buyer ELF balance
             var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
