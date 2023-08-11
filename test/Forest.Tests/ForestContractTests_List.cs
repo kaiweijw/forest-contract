@@ -25,6 +25,7 @@ public class ForestContractListTests : ForestContractTestBase
         {
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
+            WhitelistContractAddress = WhitelistContractAddress
         });
 
         await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);
@@ -606,6 +607,7 @@ public class ForestContractListTests : ForestContractTestBase
         {
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
+            WhitelistContractAddress = WhitelistContractAddress
         });
 
         //await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);

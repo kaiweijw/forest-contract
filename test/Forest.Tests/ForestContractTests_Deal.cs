@@ -25,6 +25,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         {
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
+            WhitelistContractAddress = WhitelistContractAddress
         });
 
         await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);

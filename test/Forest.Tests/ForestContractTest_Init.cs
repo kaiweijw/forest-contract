@@ -22,6 +22,7 @@ public class ForestContractTest_Init : ForestContractTestBase
         {
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
+            WhitelistContractAddress = WhitelistContractAddress
         });
 
         await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);
@@ -281,8 +282,8 @@ public class ForestContractTest_Init : ForestContractTestBase
 
         var bizConfig = await Seller1ForestContractStub.GetBizConfig.SendAsync(new Empty());
         bizConfig?.Output.ShouldNotBeNull();
-        bizConfig?.Output.MaxListCount.ShouldBe(100);
-        bizConfig?.Output.MaxOfferCount.ShouldBe(100);
+        bizConfig?.Output.MaxListCount.ShouldBe(60);
+        bizConfig?.Output.MaxOfferCount.ShouldBe(60);
         bizConfig?.Output.MaxTokenWhitelistCount.ShouldBe(20);
 
         await AdminForestContractStub.SetBizConfig.SendAsync(new BizConfig()
