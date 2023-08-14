@@ -40,7 +40,7 @@ public partial class ForestContract
             
             var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ?? new ListedNFTInfoList();
             Assert(listedNftInfoList.Value.Count < State.BizConfig.Value.MaxListCount, 
-                $"The number of listings you can make for this NFT item has reached the maximum ({State.BizConfig.Value.MaxListCount}).");
+                $"The current listings have reached the maximum ({State.BizConfig.Value.MaxListCount}).");
             Assert(listedNftInfoList.Value
                 .Where(i => i.Duration.StartTime.Seconds == duration.StartTime.Seconds)
                 .Count() == 0, "List info already exists");
