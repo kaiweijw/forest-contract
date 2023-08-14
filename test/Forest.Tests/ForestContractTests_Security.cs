@@ -503,7 +503,6 @@ public class ForestContractTests_Security : ForestContractTestBase
                         Value = { 0 }
                     },
                     OfferFrom = User2Address,
-                    IsCancelBid = false
                 });
 
                 // never run this line

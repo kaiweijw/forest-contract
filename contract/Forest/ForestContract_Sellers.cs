@@ -135,13 +135,7 @@ public partial class ForestContract
             return new Empty();
         }
 
-        // public override Empty ListForFree(ListForFreeInput input)
-        // {
-        //     //TODO:List price is 0.
-        //     return base.ListForFree(input);
-        // }
-        
-        public override Empty Delist(DelistInput input)
+     public override Empty Delist(DelistInput input)
         {
             Assert(input.Quantity >0, "Quantity must be a positive integer.");
             var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
