@@ -13,12 +13,7 @@ public class DealService
     {
         _context = context;
     }
-    
-    private static int CompareByPriceAmount(ListedNFTInfo info1, ListedNFTInfo info2)
-    {
-        return info1.Price.Amount.CompareTo(info2.Price.Amount);
-    }
-    
+
     public IEnumerable<DealResult> GetDealResultList(GetDealResultListInput input)
     {
         var dealResultList = new List<DealResult>();
