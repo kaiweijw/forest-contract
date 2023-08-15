@@ -147,14 +147,14 @@ public partial class ForestContract
             var toRemove = new ListedNFTInfoList();
             foreach (var dealResult in normalPriceDealResultList)
             {
-                if (!TryDealWithFixedPrice(input, dealResult, listedNftInfoList.Value[dealResult.Index],out var dealQuantity)) continue;
+                var listedNftInfo = affordableNftInfoList[dealResult.Index];
+                if (!TryDealWithFixedPrice(input, dealResult, listedNftInfo, out var dealQuantity)) continue;
                 dealResult.Quantity = dealResult.Quantity.Sub(dealQuantity);
-                var listedNftInfo = listedNftInfoList.Value[dealResult.Index];
-                listedNftInfo.Quantity = listedNftInfoList.Value[dealResult.Index].Quantity.Sub(dealQuantity);
+                listedNftInfo.Quantity = listedNftInfo.Quantity.Sub(dealQuantity);
                 input.Quantity = input.Quantity.Sub(dealQuantity);
-                if (listedNftInfoList.Value[dealResult.Index].Quantity == 0)
+                if (listedNftInfo.Quantity == 0)
                 {
-                    toRemove.Value.Add(listedNftInfoList.Value[dealResult.Index]);
+                    toRemove.Value.Add(listedNftInfo);
                 }
                 else
                 {
