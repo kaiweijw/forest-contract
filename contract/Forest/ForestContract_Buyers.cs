@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
@@ -14,189 +15,195 @@ namespace Forest;
 
 public partial class ForestContract
 {
-   /// <summary>
-        /// There are 2 types of making offer.
-        /// 1. Aiming a owner.
-        /// 2. Only aiming nft. Owner will be the nft protocol creator.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public override Empty MakeOffer(MakeOfferInput input)
+    /// <summary>
+    /// There are 2 types of making offer.
+    /// 1. Aiming a owner.
+    /// 2. Only aiming nft. Owner will be the nft protocol creator.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    public override Empty MakeOffer(MakeOfferInput input)
+    {
+        AssertContractInitialized();
+        Assert(input.Quantity > 0, "Invalid param Quantity.");
+        Assert(input.Price.Amount > 0, "Invalid price amount.");
+        var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
-            AssertContractInitialized();
-            Assert(input.Quantity > 0, "Invalid param Quantity.");
-            Assert(input.Price.Amount > 0, "Invalid price amount.");
-            var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
-            {
-                Symbol = input.Symbol,
-            });
-            Assert(nftInfo != null, "Invalid symbol data");
-            Assert(input.Quantity <= nftInfo?.TotalSupply, "Offer quantity beyond totalSupply");
-            
-            var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
-            {
-                Symbol = input.Price.Symbol,
-                Owner = Context.Sender
-            });
-            Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Insufficient funds");
-            
-            var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
-            Assert(tokenWhiteList.Contains(input.Price.Symbol), $"Price symbol {input.Price.Symbol} not available");
-            
-            var makeOfferService = GetMakeOfferService();
-            makeOfferService.ValidateOffer(input);
+            Symbol = input.Symbol,
+        });
+        Assert(nftInfo != null, "Invalid symbol data");
+        Assert(input.Quantity <= nftInfo?.TotalSupply, "Offer quantity beyond totalSupply");
 
-            if (nftInfo.Supply != 0 && input.OfferTo == null)
-            {
-                input.OfferTo = nftInfo.Issuer;
-            }
+        var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+        {
+            Symbol = input.Price.Symbol,
+            Owner = Context.Sender
+        });
+        Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Insufficient funds");
 
-            var listedNftInfoList =
-                State.ListedNFTInfoListMap[input.Symbol][input.OfferTo];
+        var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
+        Assert(tokenWhiteList.Contains(input.Price.Symbol), $"Price symbol {input.Price.Symbol} not available");
 
-            var whitelistManager = GetWhitelistManager();
-            
-            if (makeOfferService.IsSenderInWhitelist(input,out var whitelistId) && whitelistManager.IsWhitelistAvailable(whitelistId))
+        var makeOfferService = GetMakeOfferService();
+        makeOfferService.ValidateOffer(input);
+
+        if (nftInfo.Supply != 0 && input.OfferTo == null)
+        {
+            input.OfferTo = nftInfo.Issuer;
+        }
+
+        var listedNftInfoList =
+            State.ListedNFTInfoListMap[input.Symbol][input.OfferTo];
+
+        var whitelistManager = GetWhitelistManager();
+
+        if (makeOfferService.IsSenderInWhitelist(input, out var whitelistId) &&
+            whitelistManager.IsWhitelistAvailable(whitelistId))
+        {
+            // Deal one NFT with whitelist price.
+            var price = whitelistManager.GetExtraInfoByAddress(whitelistId);
+            if (price != null && price.Amount <= input.Price.Amount && price.Symbol == input.Price.Symbol)
             {
-                // Deal one NFT with whitelist price.
-                var price = whitelistManager.GetExtraInfoByAddress(whitelistId);
-                if (price != null && price.Amount <= input.Price.Amount && price.Symbol == input.Price.Symbol)
+                var minStartList = new List<ListedNFTInfo>();
+                foreach (var info in listedNftInfoList.Value)
                 {
-                    var minStartList = listedNftInfoList.Value
-                        .Where(info => !IsListedNftTimedOut(info))
-                        .OrderBy(i => i.Duration.StartTime)
-                        .ToList();
-                    if (minStartList.Count == 0)
-                    {
-                        PerformMakeOffer(input);
-                        return new Empty();
-                    }
-                    if (Context.CurrentBlockTime < minStartList[0].Duration.StartTime)
-                    {
-                        PerformMakeOffer(input);
-                        return new Empty();
-                    }
-                    if (TryDealWithFixedPriceWhitelist(input,price,whitelistId))
-                    {
-                        minStartList[0].Quantity = minStartList[0].Quantity.Sub(1);
-                        if (minStartList[0].Quantity == 0)
-                        {
-                            listedNftInfoList.Value.Remove(minStartList[0]);
-                            Context.Fire(new ListedNFTRemoved
-                            {
-                                Symbol = minStartList[0].Symbol,
-                                Duration = minStartList[0].Duration,
-                                Owner = minStartList[0].Owner,
-                                Price = minStartList[0].Price
-                            });
-                        }
-                        else
-                        {
-                            Context.Fire(new ListedNFTChanged
-                            {
-                                Symbol = minStartList[0].Symbol,
-                                Duration = minStartList[0].Duration,
-                                Owner = minStartList[0].Owner,
-                                PreviousDuration = minStartList[0].Duration,
-                                Quantity = minStartList[0].Quantity,
-                                Price = minStartList[0].Price,
-                                WhitelistId = whitelistId
-                            });
-                        }
-                    }
-                    input.Quantity = input.Quantity.Sub(1);
-                    if (input.Quantity == 0)
-                    {
-                        return new Empty();
-                    }
+                    var expireTime = info.Duration.StartTime.AddHours(info.Duration.DurationHours);
+                    if (Context.CurrentBlockTime > expireTime) continue;
+                    minStartList.Add(info);
                 }
-            }
-            
-            var dealStatus = makeOfferService.GetDealStatus(input, out var affordableNftInfoList);
-            switch(dealStatus)
-            {
-                case DealStatus.NotDeal:
+
+                minStartList.Sort(new StartTimeComparer());
+
+                if (minStartList.Count == 0)
+                {
                     PerformMakeOffer(input);
                     return new Empty();
-            }
-            Assert(nftInfo.Supply > 0, "NFT does not exist.");
+                }
 
-            if (listedNftInfoList.Value.All(i => i.ListType != ListType.FixedPrice))
-            {
-                
-                PerformMakeOffer(input);
-                State.ListedNFTInfoListMap[input.Symbol][input.OfferTo] = listedNftInfoList;
-                return new Empty();
-            }
-            
-            var dealService = GetDealService();
-            var getDealResultListInput = new GetDealResultListInput
-            {
-                MakeOfferInput = input,
-                ListedNftInfoList = new ListedNFTInfoList
+                if (Context.CurrentBlockTime < minStartList[0].Duration.StartTime)
                 {
-                    Value = {affordableNftInfoList}
+                    PerformMakeOffer(input);
+                    return new Empty();
                 }
-            };
-            var normalPriceDealResultList = dealService.GetDealResultList(getDealResultListInput).ToList();
-            if (normalPriceDealResultList.Count == 0)
-            {
-                PerformMakeOffer(input);
-                return new Empty();
-            }
-            var toRemove = new ListedNFTInfoList();
-            foreach (var dealResult in normalPriceDealResultList)
-            {
-                var listedNftInfo = affordableNftInfoList[dealResult.Index];
-                if (!TryDealWithFixedPrice(input, dealResult, listedNftInfo, out var dealQuantity)) continue;
-                dealResult.Quantity = dealResult.Quantity.Sub(dealQuantity);
-                listedNftInfo.Quantity = listedNftInfo.Quantity.Sub(dealQuantity);
-                input.Quantity = input.Quantity.Sub(dealQuantity);
-                if (listedNftInfo.Quantity == 0)
+
+                if (TryDealWithFixedPriceWhitelist(input, price, whitelistId))
                 {
-                    toRemove.Value.Add(listedNftInfo);
-                }
-                else
-                {
-                    Context.Fire(new ListedNFTChanged
+                    minStartList[0].Quantity = minStartList[0].Quantity.Sub(1);
+                    if (minStartList[0].Quantity == 0)
                     {
-                        Symbol = listedNftInfo.Symbol,
-                        Duration = listedNftInfo.Duration,
-                        Owner = listedNftInfo.Owner,
-                        PreviousDuration = listedNftInfo.Duration,
-                        Quantity = listedNftInfo.Quantity,
-                        Price = listedNftInfo.Price,
-                        WhitelistId = whitelistId
-                    });
-                }
-            }
-
-            if (toRemove.Value.Count != 0)
-            {
-                foreach (var info in toRemove.Value)
-                {
-                    listedNftInfoList.Value.Remove(info);
-                    Context.Fire(new ListedNFTRemoved
+                        listedNftInfoList.Value.Remove(minStartList[0]);
+                        Context.Fire(new ListedNFTRemoved
+                        {
+                            Symbol = minStartList[0].Symbol,
+                            Duration = minStartList[0].Duration,
+                            Owner = minStartList[0].Owner,
+                            Price = minStartList[0].Price
+                        });
+                    }
+                    else
                     {
-                        Symbol = info.Symbol,
-                        Duration = info.Duration,
-                        Owner = info.Owner,
-                        Price = info.Price
-                    });
+                        Context.Fire(new ListedNFTChanged
+                        {
+                            Symbol = minStartList[0].Symbol,
+                            Duration = minStartList[0].Duration,
+                            Owner = minStartList[0].Owner,
+                            PreviousDuration = minStartList[0].Duration,
+                            Quantity = minStartList[0].Quantity,
+                            Price = minStartList[0].Price,
+                            WhitelistId = whitelistId
+                        });
+                    }
+                }
+
+                input.Quantity = input.Quantity.Sub(1);
+                if (input.Quantity == 0)
+                {
+                    return new Empty();
                 }
             }
+        }
 
-            if (input.Quantity > 0)
-            {
+        var dealStatus = makeOfferService.GetDealStatus(input, out var affordableNftInfoList);
+        switch (dealStatus)
+        {
+            case DealStatus.NotDeal:
                 PerformMakeOffer(input);
+                return new Empty();
+        }
+
+        Assert(nftInfo.Supply > 0, "NFT does not exist.");
+
+        var dealService = GetDealService();
+        var getDealResultListInput = new GetDealResultListInput
+        {
+            MakeOfferInput = input,
+            ListedNftInfoList = new ListedNFTInfoList
+            {
+                Value = { affordableNftInfoList }
             }
-
-            State.ListedNFTInfoListMap[input.Symbol][input.OfferTo] = listedNftInfoList;
-
+        };
+        var normalPriceDealResultList = dealService.GetDealResultList(getDealResultListInput).ToList();
+        if (normalPriceDealResultList.Count == 0)
+        {
+            PerformMakeOffer(input);
             return new Empty();
         }
 
-        private bool TryDealWithFixedPriceWhitelist(MakeOfferInput input,Price price,Hash whitelistId)
+        var toRemove = new ListedNFTInfoList();
+        foreach (var dealResult in normalPriceDealResultList)
+        {
+            var listedNftInfo = affordableNftInfoList[dealResult.Index];
+            if (!TryDealWithFixedPrice(input, dealResult, listedNftInfo, out var dealQuantity))
+                continue;
+
+            dealResult.Quantity = dealResult.Quantity.Sub(dealQuantity);
+            listedNftInfo.Quantity = listedNftInfo.Quantity.Sub(dealQuantity);
+            input.Quantity = input.Quantity.Sub(dealQuantity);
+            if (listedNftInfo.Quantity == 0)
+            {
+                toRemove.Value.Add(listedNftInfo);
+            }
+            else
+            {
+                Context.Fire(new ListedNFTChanged
+                {
+                    Symbol = listedNftInfo.Symbol,
+                    Duration = listedNftInfo.Duration,
+                    Owner = listedNftInfo.Owner,
+                    PreviousDuration = listedNftInfo.Duration,
+                    Quantity = listedNftInfo.Quantity,
+                    Price = listedNftInfo.Price,
+                    WhitelistId = whitelistId
+                });
+            }
+        }
+
+        if (toRemove.Value.Count != 0)
+        {
+            foreach (var info in toRemove.Value)
+            {
+                listedNftInfoList.Value.Remove(info);
+                Context.Fire(new ListedNFTRemoved
+                {
+                    Symbol = info.Symbol,
+                    Duration = info.Duration,
+                    Owner = info.Owner,
+                    Price = info.Price
+                });
+            }
+        }
+
+        if (input.Quantity > 0)
+        {
+            PerformMakeOffer(input);
+        }
+
+        State.ListedNFTInfoListMap[input.Symbol][input.OfferTo] = listedNftInfoList;
+
+        return new Empty();
+    }
+
+    private bool TryDealWithFixedPriceWhitelist(MakeOfferInput input,Price price,Hash whitelistId)
         {
             Assert(input.Price.Symbol == price.Symbol,
                 $"Need to use token {price.Symbol}, not {input.Price.Symbol}");

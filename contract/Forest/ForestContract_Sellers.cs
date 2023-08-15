@@ -41,22 +41,30 @@ public partial class ForestContract
             var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ?? new ListedNFTInfoList();
             Assert(listedNftInfoList.Value.Count < State.BizConfig.Value.MaxListCount, 
                 $"The current listings have reached the maximum ({State.BizConfig.Value.MaxListCount}).");
-            Assert(listedNftInfoList.Value
-                .Where(i => i.Duration.StartTime.Seconds == duration.StartTime.Seconds)
-                .Count() == 0, "List info already exists");
-            
-            
+            var exists = false;
+            foreach (var listedNft in listedNftInfoList.Value)
+            {
+                if (listedNft.Duration.StartTime.Seconds != duration.StartTime.Seconds) continue;
+                exists = true;
+                break;
+            }
+            Assert(!exists, "List info already exists");
+
             var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
             Assert(tokenWhiteList.Contains(input.Price.Symbol), 
                 $"{input.Price.Symbol} is not in token white list.");
 
             if (input.IsWhitelistAvailable)
             {
-                foreach (var whitelistInfo in input.Whitelists?.Whitelists ?? new RepeatedField<WhitelistInfo>())
+                if (input.Whitelists?.Whitelists != null)
                 {
-                    Assert(tokenWhiteList.Contains(whitelistInfo.PriceTag.Price.Symbol), 
-                        $"Invalid price symbol {whitelistInfo.PriceTag.Price.Symbol} in whitelist priceTag");
+                    foreach (var whitelistInfo in input.Whitelists?.Whitelists)
+                    {
+                        Assert(tokenWhiteList.Contains(whitelistInfo.PriceTag.Price.Symbol),
+                            $"Invalid price symbol {whitelistInfo.PriceTag.Price.Symbol} in whitelist priceTag");
+                    }
                 }
+
                 var extraInfoList = ConvertToExtraInfo(whitelists);
                 //Listed for the first time, create whitelist.
                 if (State.WhitelistIdMap[projectId] == null)

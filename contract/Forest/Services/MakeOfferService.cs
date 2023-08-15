@@ -73,8 +73,19 @@ internal class MakeOfferService
         var listedNftInfoList =
             _listedNFTInfoListMap[makeOfferInput.Symbol][
                 makeOfferInput.OfferTo ?? nftInfo.Issuer];
+        if (listedNftInfoList == null)
+        {
+            return DealStatus.NotDeal;
+        }
 
-        if (listedNftInfoList == null || listedNftInfoList.Value.All(i => i.ListType == ListType.NotListed))
+        var allNotListed = true;
+        foreach (var info in listedNftInfoList.Value)
+        {
+            if (info.ListType == ListType.NotListed) continue;
+            allNotListed = false;
+            break;
+        }
+        if (allNotListed)
         {
             // NFT not listed.
             return DealStatus.NotDeal;
@@ -97,18 +108,22 @@ internal class MakeOfferService
     private List<ListedNFTInfo> GetAffordableNftInfoList(MakeOfferInput makeOfferInput,
         ListedNFTInfoList listedNftInfoList)
     {
-        return listedNftInfoList.Value.Where(i =>
-            (i.Price.Symbol == makeOfferInput.Price.Symbol && i.Price.Amount <= makeOfferInput.Price.Amount ||
-             i.ListType != ListType.FixedPrice) &&
-            !IsListedNftTimedOut(i)).OrderBy(i => i.Price.Amount).ToList();
+        var affordableList = new List<ListedNFTInfo>();
+
+        foreach (var info in listedNftInfoList.Value)
+        {
+            var isAffordable = (info.Price.Symbol == makeOfferInput.Price.Symbol && info.Price.Amount <= makeOfferInput.Price.Amount) ||
+                               info.ListType != ListType.FixedPrice;
+            var isTimedOut = _context.CurrentBlockTime > info.Duration.StartTime.AddHours(info.Duration.DurationHours);
+            if (isAffordable && !isTimedOut)
+            {
+                affordableList.Add(info);
+            }
+        }
+        affordableList.Sort(new PriceAmountComparer());
+        return affordableList;
     }
     
-
-    private bool IsListedNftTimedOut(ListedNFTInfo listedNftInfo)
-    {
-        var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours);
-        return _context.CurrentBlockTime > expireTime;
-    }
 }
 
 public enum DealStatus
