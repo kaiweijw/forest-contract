@@ -22,6 +22,7 @@ public class ForestContractTest_Init : ForestContractTestBase
         {
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
+            WhitelistContractAddress = WhitelistContractAddress
         });
 
         await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);
@@ -177,7 +178,26 @@ public class ForestContractTest_Init : ForestContractTestBase
         #endregion
     }
 
-
+    [Fact]
+    public async Task InitTest()
+    {
+        var exception = await Assert.ThrowsAsync<Exception>(() => AdminForestContractStub.Initialize.SendAsync(new InitializeInput
+        {
+            ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
+            ServiceFeeRate = ServiceFeeRate,
+            WhitelistContractAddress = null
+        }));
+        exception.Message.ShouldContain("Empty WhitelistContractAddress");
+        
+        var res = await AdminForestContractStub.Initialize.SendAsync(new InitializeInput
+        {
+            ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
+            ServiceFeeRate = ServiceFeeRate,
+            WhitelistContractAddress = WhitelistContractAddress
+        });
+        res.ShouldNotBeNull();
+    }
+    
 
     [Fact]
     public async Task MethodFeeTest()
@@ -262,8 +282,8 @@ public class ForestContractTest_Init : ForestContractTestBase
 
         var bizConfig = await Seller1ForestContractStub.GetBizConfig.SendAsync(new Empty());
         bizConfig?.Output.ShouldNotBeNull();
-        bizConfig?.Output.MaxListCount.ShouldBe(100);
-        bizConfig?.Output.MaxOfferCount.ShouldBe(100);
+        bizConfig?.Output.MaxListCount.ShouldBe(60);
+        bizConfig?.Output.MaxOfferCount.ShouldBe(60);
         bizConfig?.Output.MaxTokenWhitelistCount.ShouldBe(20);
 
         await AdminForestContractStub.SetBizConfig.SendAsync(new BizConfig()
@@ -282,7 +302,7 @@ public class ForestContractTest_Init : ForestContractTestBase
         {
             //EMPTY
         }));
-        exception.Message.ShouldContain("should grater than 0");
+        exception.Message.ShouldContain("should greater than 0");
         
         exception = await Assert.ThrowsAsync<Exception>(() => AdminForestContractStub.SetBizConfig.SendAsync(new BizConfig()
         {
@@ -290,7 +310,7 @@ public class ForestContractTest_Init : ForestContractTestBase
             MaxOfferCount = 1,
             MaxTokenWhitelistCount = 1
         }));
-        exception.Message.ShouldContain("should grater than 0");
+        exception.Message.ShouldContain("should greater than 0");
         
         exception = await Assert.ThrowsAsync<Exception>(() => Seller1ForestContractStub.SetBizConfig.SendAsync(new BizConfig()
         {

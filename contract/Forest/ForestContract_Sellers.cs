@@ -40,7 +40,7 @@ public partial class ForestContract
             
             var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender] ?? new ListedNFTInfoList();
             Assert(listedNftInfoList.Value.Count < State.BizConfig.Value.MaxListCount, 
-                $"Too many listedNft, max count is {State.BizConfig.Value.MaxListCount}");
+                $"The current listings have reached the maximum ({State.BizConfig.Value.MaxListCount}).");
             Assert(listedNftInfoList.Value
                 .Where(i => i.Duration.StartTime.Seconds == duration.StartTime.Seconds)
                 .Count() == 0, "List info already exists");
@@ -135,13 +135,7 @@ public partial class ForestContract
             return new Empty();
         }
 
-        // public override Empty ListForFree(ListForFreeInput input)
-        // {
-        //     //TODO:List price is 0.
-        //     return base.ListForFree(input);
-        // }
-        
-        public override Empty Delist(DelistInput input)
+     public override Empty Delist(DelistInput input)
         {
             Assert(input.Quantity >0, "Quantity must be a positive integer.");
             var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];

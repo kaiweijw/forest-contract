@@ -25,6 +25,7 @@ public class ForestContractListTests : ForestContractTestBase
         {
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
+            WhitelistContractAddress = WhitelistContractAddress
         });
 
         await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);
@@ -596,31 +597,6 @@ public class ForestContractListTests : ForestContractTestBase
             });
             var exception = await Assert.ThrowsAsync<Exception>(act);
             exception.Message.ShouldContain("Contract not initialized.");
-        }
-    }
-
-    [Fact]
-    public async void ListWithFixedPrice14Test()
-    {
-        await AdminForestContractStub.Initialize.SendAsync(new InitializeInput
-        {
-            ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
-            ServiceFeeRate = ServiceFeeRate,
-        });
-
-        //await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);
-
-        var sellPrice = Elf(3);
-        {
-            Func<Task> act = () => Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
-            {
-                Symbol = NftSymbol,
-                Quantity = 1,
-                IsWhitelistAvailable = true,
-                Price = sellPrice
-            });
-            var exception = await Assert.ThrowsAsync<Exception>(act);
-            exception.Message.ShouldContain("Whitelist Contract not initialized.");
         }
     }
 

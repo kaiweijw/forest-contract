@@ -38,7 +38,7 @@ public partial class ForestContract
                 Symbol = input.Price.Symbol,
                 Owner = Context.Sender
             });
-            Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Price balance not enough");
+            Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Insufficient funds");
             
             var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
             Assert(tokenWhiteList.Contains(input.Price.Symbol), $"Price symbol {input.Price.Symbol} not available");
@@ -353,7 +353,7 @@ public partial class ForestContract
         {
             var offerList = State.OfferListMap[input.Symbol][Context.Sender] ?? new OfferList();
             Assert(offerList.Value.Count < State.BizConfig.Value.MaxOfferCount, 
-                $"Too many offers, max count is {State.BizConfig.Value.MaxOfferCount}");
+                $"The number of offers you can make on this NFT item has reached the maximum ({State.BizConfig.Value.MaxOfferCount}).");
             var expireTime = input.ExpireTime ?? Context.CurrentBlockTime.AddDays(DefaultExpireDays);
             var maybeSameOffer = offerList.Value.SingleOrDefault(o =>
                 o.Price.Symbol == input.Price.Symbol && o.Price.Amount == input.Price.Amount &&

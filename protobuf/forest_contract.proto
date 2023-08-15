@@ -28,12 +28,6 @@ service ForestContract {
     // For Sellers.
     rpc ListWithFixedPrice (ListWithFixedPriceInput) returns (google.protobuf.Empty) {
     }
-    rpc ListWithEnglishAuction (ListWithEnglishAuctionInput) returns (google.protobuf.Empty) {
-    }
-    rpc ListWithDutchAuction (ListWithDutchAuctionInput) returns (google.protobuf.Empty) {
-    }
-    rpc ListForFree(ListForFreeInput) returns (google.protobuf.Empty){
-    }
     rpc Deal (DealInput) returns (google.protobuf.Empty) {
     }
     rpc Delist (DelistInput) returns (google.protobuf.Empty) {
@@ -50,17 +44,7 @@ service ForestContract {
     }
     rpc SetTokenWhiteList (SetTokenWhiteListInput) returns (google.protobuf.Empty) {
     }
-    rpc SetCustomizeInfo (CustomizeInfo) returns (google.protobuf.Empty) {
-    }
-    rpc StakeForRequests (StakeForRequestsInput) returns (google.protobuf.Empty) {
-    }
-    rpc WithdrawStakingTokens (WithdrawStakingTokensInput) returns (google.protobuf.Empty) {
-    }
-    rpc HandleRequest (HandleRequestInput) returns (google.protobuf.Empty) {
-    }
-    rpc ClaimRemainDeposit (ClaimRemainDepositInput) returns (google.protobuf.Empty) {
-    }
-
+    
     // For Admin.
     rpc SetAdministrator(aelf.Address) returns (google.protobuf.Empty) {
     }
@@ -71,10 +55,6 @@ service ForestContract {
     rpc SetWhitelistContract(aelf.Address) returns (google.protobuf.Empty){
     }
     rpc SetBizConfig(BizConfig) returns (google.protobuf.Empty){
-    }
-
-    // For badges owners.
-    rpc MintBadge (MintBadgeInput) returns (google.protobuf.Empty) {
     }
 
     // Views.
@@ -91,34 +71,10 @@ service ForestContract {
     rpc GetOfferList (GetOfferListInput) returns (OfferList) {
         option (aelf.is_view) = true;
     }
-    rpc GetBidAddressList (GetAddressListInput) returns (AddressList) {
-        option (aelf.is_view) = true;
-    }
-    rpc GetBid (GetBidInput) returns (Bid) {
-        option (aelf.is_view) = true;
-    }
-    rpc GetBidList (GetBidListInput) returns (BidList) {
-        option (aelf.is_view) = true;
-    }
-    rpc GetCustomizeInfo (google.protobuf.StringValue) returns (CustomizeInfo) {
-        option (aelf.is_view) = true;
-    }
-    rpc GetRequestInfo (GetRequestInfoInput) returns (RequestInfo) {
-        option (aelf.is_view) = true;
-    }
-    rpc GetEnglishAuctionInfo (GetEnglishAuctionInfoInput) returns (EnglishAuctionInfo) {
-        option (aelf.is_view) = true;
-    }
-    rpc GetDutchAuctionInfo (GetDutchAuctionInfoInput) returns (DutchAuctionInfo) {
-        option (aelf.is_view) = true;
-    }
     rpc GetTokenWhiteList (google.protobuf.StringValue) returns (StringList) {
         option (aelf.is_view) = true;
     }
     rpc GetGlobalTokenWhiteList (google.protobuf.Empty) returns (StringList) {
-        option (aelf.is_view) = true;
-    }
-    rpc GetStakingTokens (google.protobuf.StringValue) returns (Price) {
         option (aelf.is_view) = true;
     }
     rpc GetRoyalty (GetRoyaltyInput) returns (RoyaltyInfo) {
@@ -159,15 +115,6 @@ message AddressList {
     repeated aelf.Address value = 1;
 }
 
-message CustomizeInfo {
-    string symbol = 1;
-    int32 deposit_rate = 2;
-    Price price = 3;
-    int64 work_hours = 4;
-    int64 white_list_hours = 5;
-    int64 staking_amount = 6;
-}
-
 message Price {
     string symbol = 1;
     int64 amount = 2;
@@ -185,22 +132,9 @@ message OfferList {
     repeated Offer value = 1;
 }
 
-message Bid {
-    aelf.Address from = 1;
-    aelf.Address to = 2;
-    Price price = 3;
-    google.protobuf.Timestamp expire_time = 4;
-}
-
-message BidList {
-    repeated Bid value = 1;
-}
-
 enum ListType {
     NOT_LISTED = 0;
     FIXED_PRICE = 1;
-    ENGLISH_AUCTION = 2;
-    DUTCH_AUCTION = 3;
 }
 
 message ListDuration {
@@ -216,41 +150,6 @@ message DealInfo {
     aelf.Address origin_owner = 5;
     aelf.Address new_owner = 6;
     google.protobuf.Timestamp deal_time = 7;
-}
-
-message RequestInfo {
-    string symbol = 1;
-    int32 deposit_rate = 2;
-    Price price = 3;
-    int64 work_hours = 4;
-    int64 white_list_hours = 5;
-    bool is_confirmed = 7;
-    google.protobuf.Timestamp expire_time = 8;
-    google.protobuf.Timestamp white_list_due_time = 9;
-    aelf.Address requester = 10;
-    google.protobuf.Timestamp confirm_time = 11;
-    google.protobuf.Timestamp list_time = 12;
-    int64 work_hours_from_customize_info = 13;
-}
-
-message EnglishAuctionInfo {
-    string symbol = 1;
-    int64 starting_price = 3;
-    string purchase_symbol = 4;
-    ListDuration duration = 5;
-    aelf.Address owner = 6;
-    int64 earnest_money = 7;
-    int64 deal_price = 8;
-    aelf.Address deal_to = 9;
-}
-
-message DutchAuctionInfo {
-    string symbol = 1;
-    int64 starting_price = 3;
-    int64 ending_price = 4;
-    string purchase_symbol = 5;
-    ListDuration duration = 6;
-    aelf.Address owner = 7;
 }
 
 message CertainNFTRoyaltyInfo {
@@ -297,29 +196,6 @@ message ListWithFixedPriceInput {
     bool is_whitelist_available = 8;
 }
 
-message ListForFreeInput{
-    string symbol = 1;
-    Price price = 3;
-    int64 quantity = 4;
-    ListDuration duration = 5;
-}
-
-message ListWithEnglishAuctionInput {
-    string symbol = 1;
-    int64 starting_price = 3;
-    string purchase_symbol = 4;
-    ListDuration duration = 5;
-    int64 earnest_money = 6;
-}
-
-message ListWithDutchAuctionInput {
-    string symbol = 1;
-    int64 starting_price = 3;
-    int64 ending_price = 4;
-    string purchase_symbol = 5;
-    ListDuration duration = 6;
-}
-
 message DelistInput {
     string symbol = 1;
     Price price = 2;
@@ -334,15 +210,10 @@ message MakeOfferInput {
     google.protobuf.Timestamp expire_time = 6;
 }
 
-message MintBadgeInput {
-    string symbol = 1;
-}
-
 message CancelOfferInput {
     string symbol = 1;
     Int32List index_list = 3;
     aelf.Address offer_from = 4;
-    bool is_cancel_bid = 5;
 }
 
 message Int32List {
@@ -359,10 +230,6 @@ message DealInput {
 message SetServiceFeeInput {
     int32 service_fee_rate = 1;
     aelf.Address service_fee_receiver = 2;
-}
-
-message NFTList {
-    repeated aelf.Hash value = 1;
 }
 
 message SetRoyaltyInput {
@@ -400,50 +267,9 @@ message GetOfferListInput {
     aelf.Address address = 3;
 }
 
-message HandleRequestInput {
-    string symbol = 1;
-    aelf.Address requester = 3;
-    bool is_confirm = 4;
-}
-
-message StakeForRequestsInput {
-    string symbol = 1;
-    int64 staking_amount = 2;
-}
-
-message WithdrawStakingTokensInput {
-    string symbol = 1;
-    int64 withdraw_amount = 2;
-}
-
-message GetRequestInfoInput {
-    string symbol = 1;
-}
-
 message GetWhiteListAddressPriceListInput {
     string symbol = 1;
     aelf.Address owner = 3;
-}
-
-message GetEnglishAuctionInfoInput {
-    string symbol = 1;
-}
-
-message GetDutchAuctionInfoInput {
-    string symbol = 1;
-}
-
-message GetBidInput {
-    string symbol = 1;
-    aelf.Address address = 3;
-}
-
-message GetBidListInput {
-    string symbol = 1;
-}
-
-message ClaimRemainDepositInput {
-    string symbol = 1;
 }
 
 message GetRoyaltyInput {
@@ -475,26 +301,6 @@ message FixedPriceNFTListed {
     aelf.Hash whitelist_id = 8;
 }
 
-message EnglishAuctionNFTListed {
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    aelf.Address owner = 3;
-    string purchase_symbol = 4;
-    int64 starting_price = 5;
-    ListDuration duration = 6;
-    int64 earnest_money = 7;
-}
-
-message DutchAuctionNFTListed {
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    aelf.Address owner = 3;
-    string purchase_symbol = 4;
-    int64 starting_price = 5;
-    int64 ending_price = 6;
-    ListDuration duration = 7;
-}
-
 message NFTDelisted {
     option (aelf.is_event) = true;
     string symbol = 1;
@@ -523,72 +329,12 @@ message OfferMade {
     google.protobuf.Timestamp expire_time = 7;
 }
 
-message BidPlaced {
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    aelf.Address offer_from = 3;
-    aelf.Address offer_to = 4;
-    Price price = 5;
-    google.protobuf.Timestamp expire_time = 7;
-}
-
 message OfferCanceled {
     option (aelf.is_event) = true;
     string symbol = 1;
     aelf.Address offer_from = 3;
     aelf.Address offer_to = 4;
     Int32List index_list = 5;
-}
-
-message BidCanceled {
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    aelf.Address bid_from = 3;
-    aelf.Address bid_to = 4;
-}
-
-message CustomizeInfoSet {
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    int32 deposit_rate = 2;
-    Price price = 3;
-    int64 work_hours = 4;
-    int64 white_list_hours = 5;
-    int64 staking_amount = 6;
-}
-
-message NewNFTRequested {
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    aelf.Address requester = 3;
-    Price price = 4;
-    int64 expected_work_hours = 5;
-}
-
-message NFTRequestCancelled {
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    aelf.Address requester = 3;
-}
-
-message NewNFTRequestConfirmed {
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    aelf.Address requester = 3;
-    Price price = 4;
-    int64 confirmed_work_hours = 5;
-}
-
-message StakingAmountChanged {
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    int64 staking_amount = 2;
-}
-
-message NewNFTRequestRejected {
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    aelf.Address requester = 3;
 }
 
 message Sold {

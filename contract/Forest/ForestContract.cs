@@ -16,6 +16,7 @@ namespace Forest
         public override Empty Initialize(InitializeInput input)
         {
             Assert(State.TokenContract.Value == null, "Already initialized.");
+            Assert(input.WhitelistContractAddress != null, "Empty WhitelistContractAddress");
             State.Admin.Value = input.AdminAddress ?? Context.Sender;
             State.ServiceFeeRate.Value = input.ServiceFeeRate == 0 ? DefaultServiceFeeRate : input.ServiceFeeRate;
             State.ServiceFeeReceiver.Value = input.ServiceFeeReceiver ?? State.Admin.Value;
@@ -89,7 +90,7 @@ namespace Forest
             AssertSenderIsAdmin();
             Assert(bizConfig != null, "Empty bizConfig");
             Assert(bizConfig?.MaxTokenWhitelistCount > 0 && bizConfig?.MaxListCount > 0 && bizConfig?.MaxOfferCount > 0, 
-                "Count config should grater than 0");
+                "Count config should greater than 0");
             State.BizConfig.Value = bizConfig;
             return new Empty();
         }

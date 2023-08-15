@@ -23,6 +23,7 @@ public class ForestContractTests_Security : ForestContractTestBase
         {
             ServiceFeeReceiver = MarketServiceFeeReceiverAddress,
             ServiceFeeRate = ServiceFeeRate,
+            WhitelistContractAddress = WhitelistContractAddress
         });
 
         await AdminForestContractStub.SetWhitelistContract.SendAsync(WhitelistContractAddress);
@@ -502,7 +503,6 @@ public class ForestContractTests_Security : ForestContractTestBase
                         Value = { 0 }
                     },
                     OfferFrom = User2Address,
-                    IsCancelBid = false
                 });
 
                 // never run this line
@@ -1290,7 +1290,7 @@ public class ForestContractTests_Security : ForestContractTestBase
                     DurationHours = 1,
                 }
             }));
-        exception.Message.ShouldContain("Too many");
+        exception.Message.ShouldContain("reached the maximum");
         
         #endregion
         
@@ -1350,7 +1350,7 @@ public class ForestContractTests_Security : ForestContractTestBase
             Price = offerPrice,
             ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
         }));
-        exception.Message.ShouldContain("Too many");
+        exception.Message.ShouldContain("reached the maximum");
         #endregion
     }
 }
