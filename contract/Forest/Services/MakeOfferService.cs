@@ -101,12 +101,13 @@ internal class MakeOfferService
         ListedNFTInfoList listedNftInfoList)
     {
         var blockTime = _context.CurrentBlockTime;
+        var maxDealCount = _bizConfig.Value.MaxOfferDealCount;
         return listedNftInfoList.Value.Where(i =>
             (i.Price.Symbol == makeOfferInput.Price.Symbol && i.Price.Amount <= makeOfferInput.Price.Amount ||
              i.ListType != ListType.FixedPrice) 
             && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours))
             .OrderBy(i => i.Price.Amount)
-            .Take(_bizConfig.Value?.MaxOfferDealCount ?? ForestContract.DefaultMaxOfferDealCount)
+            .Take(maxDealCount > 0 ? maxDealCount : ForestContract.DefaultMaxOfferDealCount)
             .ToList();
     }
     
