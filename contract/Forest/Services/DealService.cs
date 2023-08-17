@@ -19,8 +19,11 @@ public class DealService
         var dealResultList = new List<DealResult>();
         var needToDealQuantity = input.MakeOfferInput.Quantity;
         var currentIndex = 0;
+        var blockTime = _context.CurrentBlockTime;
         foreach (var listedNftInfo in input.ListedNftInfoList.Value.Where(i =>
-                     i.Price.Symbol == input.MakeOfferInput.Price.Symbol && IsTimeOk(i)).OrderBy(i => i.Price.Amount))
+                     i.Price.Symbol == input.MakeOfferInput.Price.Symbol 
+                     && blockTime >= i.Duration.StartTime 
+                     && blockTime >= i.Duration.PublicTime).OrderBy(i => i.Price.Amount))
         {
             if (listedNftInfo.Quantity >= needToDealQuantity)
             {
@@ -61,11 +64,6 @@ public class DealService
         }
 
         return dealResultList;
-    }
-
-    private bool IsTimeOk(ListedNFTInfo listedNftInfo)
-    {
-        return _context.CurrentBlockTime >= listedNftInfo.Duration.StartTime && _context.CurrentBlockTime >= listedNftInfo.Duration.PublicTime;
     }
 }
 

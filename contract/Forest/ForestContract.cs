@@ -32,7 +32,8 @@ namespace Forest
             {
                 MaxListCount = DefaultMaxListCount,
                 MaxOfferCount = DefaultMaxOfferCount,
-                MaxTokenWhitelistCount = DefaultMaxTokenWhiteListCount
+                MaxTokenWhitelistCount = DefaultMaxTokenWhiteListCount,
+                MaxOfferDealCount = DefaultMaxOfferDealCount
             };
             return new Empty();
         }
@@ -89,7 +90,10 @@ namespace Forest
         {
             AssertSenderIsAdmin();
             Assert(bizConfig != null, "Empty bizConfig");
-            Assert(bizConfig?.MaxTokenWhitelistCount > 0 && bizConfig?.MaxListCount > 0 && bizConfig?.MaxOfferCount > 0, 
+            Assert(bizConfig?.MaxTokenWhitelistCount > 0 
+                   && bizConfig?.MaxListCount > 0 
+                   && bizConfig?.MaxOfferCount > 0 
+                   && bizConfig?.MaxOfferDealCount > 0, 
                 "Count config should greater than 0");
             State.BizConfig.Value = bizConfig;
             return new Empty();

@@ -286,6 +286,7 @@ message BizConfig
     int32 maxListCount = 1;
     int32 maxOfferCount = 2;
     int32 maxTokenWhitelistCount = 3;
+    int32 maxOfferDealCount = 4;
 }
 
 // Events

@@ -116,12 +116,6 @@ public partial class ForestContract
             return duration;
         }
 
-        private bool IsListedNftTimedOut(ListedNFTInfo listedNftInfo)
-        {
-            var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours);
-            return Context.CurrentBlockTime > expireTime;
-        }
-
         private Hash CalculateProjectId(string symbol,Address sender)
         {
             return HashHelper.ComputeFrom($"{symbol}{sender}");
