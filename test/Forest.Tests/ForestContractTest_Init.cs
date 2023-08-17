@@ -290,13 +290,15 @@ public class ForestContractTest_Init : ForestContractTestBase
         {
             MaxListCount = 1,
             MaxOfferCount = 1,
-            MaxTokenWhitelistCount = 1
+            MaxTokenWhitelistCount = 1,
+            MaxOfferDealCount = 1
         });
         bizConfig = await Seller1ForestContractStub.GetBizConfig.SendAsync(new Empty());
         bizConfig?.Output.ShouldNotBeNull();
         bizConfig?.Output.MaxListCount.ShouldBe(1);
         bizConfig?.Output.MaxOfferCount.ShouldBe(1);
         bizConfig?.Output.MaxTokenWhitelistCount.ShouldBe(1);
+        bizConfig?.Output.MaxOfferDealCount.ShouldBe(1);
         
         var exception = await Assert.ThrowsAsync<Exception>(() => AdminForestContractStub.SetBizConfig.SendAsync(new BizConfig()
         {
@@ -308,7 +310,8 @@ public class ForestContractTest_Init : ForestContractTestBase
         {
             MaxListCount = 0,
             MaxOfferCount = 1,
-            MaxTokenWhitelistCount = 1
+            MaxTokenWhitelistCount = 1,
+            MaxOfferDealCount = 1
         }));
         exception.Message.ShouldContain("should greater than 0");
         
@@ -316,7 +319,8 @@ public class ForestContractTest_Init : ForestContractTestBase
         {
             MaxListCount = 0,
             MaxOfferCount = 1,
-            MaxTokenWhitelistCount = 1
+            MaxTokenWhitelistCount = 1,
+            MaxOfferDealCount = 1
         }));
         exception.Message.ShouldContain("No permission");
         

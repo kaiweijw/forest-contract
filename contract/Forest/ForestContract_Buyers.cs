@@ -51,6 +51,8 @@ public partial class ForestContract
                 input.OfferTo = nftInfo.Issuer;
             }
 
+            var blockTime = Context.CurrentBlockTime;
+            var sender = Context.Sender;
             var listedNftInfoList =
                 State.ListedNFTInfoListMap[input.Symbol][input.OfferTo];
 
@@ -63,7 +65,7 @@ public partial class ForestContract
                 if (price != null && price.Amount <= input.Price.Amount && price.Symbol == input.Price.Symbol)
                 {
                     var minStartList = listedNftInfoList.Value
-                        .Where(info => !IsListedNftTimedOut(info))
+                        .Where(info => blockTime <= info.Duration.StartTime.AddHours(info.Duration.DurationHours))
                         .OrderBy(i => i.Duration.StartTime)
                         .ToList();
                     if (minStartList.Count == 0)
@@ -71,7 +73,7 @@ public partial class ForestContract
                         PerformMakeOffer(input);
                         return new Empty();
                     }
-                    if (Context.CurrentBlockTime < minStartList[0].Duration.StartTime)
+                    if (blockTime < minStartList[0].Duration.StartTime)
                     {
                         PerformMakeOffer(input);
                         return new Empty();
@@ -148,7 +150,7 @@ public partial class ForestContract
             foreach (var dealResult in normalPriceDealResultList)
             {
                 var listedNftInfo = affordableNftInfoList[dealResult.Index];
-                if (!TryDealWithFixedPrice(input, dealResult, listedNftInfo, out var dealQuantity)) continue;
+                if (!TryDealWithFixedPrice(sender, input, dealResult, listedNftInfo, out var dealQuantity)) continue;
                 dealResult.Quantity = dealResult.Quantity.Sub(dealQuantity);
                 listedNftInfo.Quantity = listedNftInfo.Quantity.Sub(dealQuantity);
                 input.Quantity = input.Quantity.Sub(dealQuantity);
@@ -326,7 +328,7 @@ public partial class ForestContract
         /// <summary>
         /// Sender is buyer.
         /// </summary>
-        private bool TryDealWithFixedPrice(MakeOfferInput input, DealResult dealResult ,ListedNFTInfo listedNftInfo,out long actualQuantity)
+        private bool TryDealWithFixedPrice(Address sender, MakeOfferInput input, DealResult dealResult ,ListedNFTInfo listedNftInfo,out long actualQuantity)
         {
             var usePrice = input.Price.Clone();
             usePrice.Amount = Math.Min(input.Price.Amount, dealResult.PurchaseAmount);
@@ -336,7 +338,7 @@ public partial class ForestContract
             PerformDeal(new PerformDealInput
             {
                 NFTFrom = input.OfferTo,
-                NFTTo = Context.Sender,
+                NFTTo = sender,
                 NFTSymbol = input.Symbol,
                 NFTQuantity = actualQuantity,
                 PurchaseSymbol = usePrice.Symbol,

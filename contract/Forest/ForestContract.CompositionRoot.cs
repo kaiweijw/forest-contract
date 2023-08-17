@@ -13,7 +13,7 @@ public partial class ForestContract
     private MakeOfferService GetMakeOfferService(WhitelistManager whitelistManager = null)
     {
         return new MakeOfferService(State.TokenContract, State.WhitelistIdMap, State.ListedNFTInfoListMap,
-            whitelistManager ?? GetWhitelistManager(), Context);
+            whitelistManager ?? GetWhitelistManager(), State.BizConfig, Context);
     }
 
     private DealService GetDealService()
