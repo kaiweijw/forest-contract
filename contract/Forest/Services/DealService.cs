@@ -14,21 +14,23 @@ public class DealService
         _context = context;
     }
 
-    public IEnumerable<DealResult> GetDealResultList(GetDealResultListInput input)
+    public List<DealResult> GetDealResultList(GetDealResultListInput input)
     {
         var dealResultList = new List<DealResult>();
         var needToDealQuantity = input.MakeOfferInput.Quantity;
         var currentIndex = 0;
         var filteredListedNftInfos = new List<ListedNFTInfo>();
+        var blockTime = _context.CurrentBlockTime;
         foreach (var listedNftInfo in input.ListedNftInfoList.Value)
         {
             if (listedNftInfo.Price.Symbol != input.MakeOfferInput.Price.Symbol) continue;
-            var isInTime = _context.CurrentBlockTime >= listedNftInfo.Duration.StartTime && 
-                           _context.CurrentBlockTime >= listedNftInfo.Duration.PublicTime;
+            var isInTime = blockTime >= listedNftInfo.Duration.StartTime && 
+                           blockTime >= listedNftInfo.Duration.PublicTime;
             if (!isInTime) continue;
             filteredListedNftInfos.Add(listedNftInfo);
         }
-        filteredListedNftInfos.Sort(new PriceAmountComparer());
+
+        SortListedNftInfosByAmount(filteredListedNftInfos);
 
         foreach (var listedNftInfo in filteredListedNftInfos)        {
             if (listedNftInfo.Quantity >= needToDealQuantity)
@@ -71,22 +73,38 @@ public class DealService
 
         return dealResultList;
     }
-
-}
-
-public class PriceAmountComparer : IComparer<ListedNFTInfo>
-{
-    public int Compare(ListedNFTInfo info1, ListedNFTInfo info2)
+    
+    public static void SortListedNftInfosByAmount(List<ListedNFTInfo> infos)
     {
-        return info1.Price.Amount.CompareTo(info2.Price.Amount);
+        for (var i = 1; i < infos.Count; i++)
+        {
+            var key = infos[i];
+            var j = i - 1;
+
+            while (j >= 0 && infos[j].Price.Amount > key.Price.Amount)
+            {
+                infos[j + 1] = infos[j];
+                j = j - 1;
+            }
+            infos[j + 1] = key;
+        }
     }
-}
-public class StartTimeComparer : IComparer<ListedNFTInfo>
-{
-    public int Compare(ListedNFTInfo info1, ListedNFTInfo info2)
+    public static void SortListedNftInfosByStartTime(List<ListedNFTInfo> infos)
     {
-        return info1.Duration.StartTime.CompareTo(info2.Duration.StartTime);
+        for (var i = 1; i < infos.Count; i++)
+        {
+            var key = infos[i];
+            var j = i - 1;
+
+            while (j >= 0 && infos[j].Duration.StartTime > key.Duration.StartTime)
+            {
+                infos[j + 1] = infos[j];
+                j = j - 1;
+            }
+            infos[j + 1] = key;
+        }
     }
+
 }
 
 public class GetDealResultListInput

@@ -108,19 +108,21 @@ internal class MakeOfferService
     private List<ListedNFTInfo> GetAffordableNftInfoList(MakeOfferInput makeOfferInput,
         ListedNFTInfoList listedNftInfoList)
     {
+        var blockTime = _context.CurrentBlockTime;
         var affordableList = new List<ListedNFTInfo>();
 
         foreach (var info in listedNftInfoList.Value)
         {
             var isAffordable = (info.Price.Symbol == makeOfferInput.Price.Symbol && info.Price.Amount <= makeOfferInput.Price.Amount) ||
                                info.ListType != ListType.FixedPrice;
-            var isTimedOut = _context.CurrentBlockTime > info.Duration.StartTime.AddHours(info.Duration.DurationHours);
+            var isTimedOut = blockTime > info.Duration.StartTime.AddHours(info.Duration.DurationHours);
             if (isAffordable && !isTimedOut)
             {
                 affordableList.Add(info);
             }
         }
-        affordableList.Sort(new PriceAmountComparer());
+        
+        DealService.SortListedNftInfosByAmount(affordableList);
         return affordableList;
     }
     
