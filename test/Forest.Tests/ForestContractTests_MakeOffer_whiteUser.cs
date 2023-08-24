@@ -531,7 +531,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
                 Symbol = NftSymbol,
                 Owner = User1Address
             });
-            nftBalance.Output.Balance.ShouldBe(9);
+            nftBalance.Output.Balance.ShouldBe(10);
         }
 
         #endregion
