@@ -94,12 +94,12 @@ jobs:
         inputs:
           testRunner: VSTest
           testResultsFiles: '**/*.trx'
-#  - task: reportgenerator@5
-#    displayName: ReportGenerator
-#    inputs:
-#      reports: '$(Build.SourcesDirectory)/test/*/TestResults/*/coverage.cobertura.xml'
-#      targetdir: '$(Build.SourcesDirectory)/CodeCoverage'
-#      reporttypes: 'Cobertura'
-#      assemblyfilters: '-xunit*'
-#  - script: PowerShell.exe -file build.ps1 -target=Upload-Coverage-Azure
-#    displayName: 'Upload data to Codecov'
+  - task: reportgenerator@5
+    displayName: ReportGenerator
+    inputs:
+      reports: '$(Build.SourcesDirectory)/test/*/TestResults/*/coverage.cobertura.xml'
+      targetdir: '$(Build.SourcesDirectory)/CodeCoverage'
+      reporttypes: 'Cobertura'
+      assemblyfilters: '-xunit*'
+  - script: PowerShell.exe -file build.ps1 -target=Upload-Coverage-Azure
+    displayName: 'Upload data to Codecov'
