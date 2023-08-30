@@ -35,4 +35,10 @@
             <Link>Protobuf\Proto\whitelist_contract.proto</Link>
         </ContractCode>
     </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="coverlet.collector" Version="6.0.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+    </ItemGroup>
 </Project>
