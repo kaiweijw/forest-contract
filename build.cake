@@ -8,7 +8,8 @@ var srcPath      = rootPath + "src/";
 var contractPath = rootPath + "contract/";
 var testPath     = rootPath + "test/";
 var solution     = rootPath + "Forest.sln";
-
+var srcProjects  = GetFiles(srcPath + "**/*.csproj");
+var contractProjects  = GetFiles(contractPath + "**/*.csproj");
 Task("Clean")
     .Description("clean up project cache")
     .Does(() =>
@@ -93,11 +94,20 @@ Task("Run-Unit-Tests")
         DotNetCoreTest(testProject.FullPath, testSetting);
     }
 });
+Task("Upload-Coverage")
+    .Does(() =>
+{
+    var reports = GetFiles("./test/*.Tests/TestResults/*/coverage.cobertura.xml");
 
+    foreach(var report in reports)
+    {
+        Codecov(report.FullPath,"$CODECOV_TOKEN");
+    }
+});
 Task("Upload-Coverage-Azure")
     .Does(() =>
 {
-    Codecov("./CodeCoverage/Cobertura.xml",EnvironmentVariable("CODECOV_TOKEN"));
+    Codecov("./CodeCoverage/Cobertura.xml","$CODECOV_TOKEN");
 });
 
 RunTarget(target);
