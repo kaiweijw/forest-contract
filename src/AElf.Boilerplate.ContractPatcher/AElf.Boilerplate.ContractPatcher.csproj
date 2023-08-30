@@ -19,10 +19,6 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="CommandLineParser" Version="2.8.0" />
-        <PackageReference Include="coverlet.collector" Version="6.0.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Include="Volo.Abp.Core" Version="5.2.2" />
     </ItemGroup>
 

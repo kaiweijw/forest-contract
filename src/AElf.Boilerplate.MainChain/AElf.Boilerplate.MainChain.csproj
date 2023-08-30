@@ -10,10 +10,6 @@
         <PackageReference Include="AElf.Kernel.Core" Version="1.2.0" />
         <PackageReference Include="AElf.EconomicSystem" Version="1.2.0" />
         <PackageReference Include="AElf.GovernmentSystem" Version="1.2.0" />
-        <PackageReference Include="coverlet.collector" Version="6.0.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <ProjectReference Include="..\AElf.Boilerplate.SystemTransactionGenerator\AElf.Boilerplate.SystemTransactionGenerator.csproj" />
     </ItemGroup>
 

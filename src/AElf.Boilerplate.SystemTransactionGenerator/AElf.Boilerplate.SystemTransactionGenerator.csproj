@@ -10,10 +10,6 @@
         <PackageReference Include="AElf.Kernel.Consensus.Core" Version="1.2.0" />
         <PackageReference Include="AElf.Kernel.Core" Version="1.2.0" />
         <PackageReference Include="AElf.Kernel.SmartContract" Version="1.2.0" />
-        <PackageReference Include="coverlet.collector" Version="6.0.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
     </ItemGroup>
 
 </Project>
