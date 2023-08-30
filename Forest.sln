@@ -3,11 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "contract", "contract", "{5C980166-C987-470D-AEE0-3858A170A903}"
-	ProjectSection(SolutionItems) = preProject
-		contract\Directory.Build.props = contract\Directory.Build.props
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{21D85A91-5BB8-4912-8107-49435A461AAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DBC47323-E6A2-42A2-A624-CE2EE6139567}"
@@ -18,17 +13,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Boilerplate.TestBase",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Boilerplate.SystemTransactionGenerator", "src\AElf.Boilerplate.SystemTransactionGenerator\AElf.Boilerplate.SystemTransactionGenerator.csproj", "{217599C5-2CF0-411E-97B5-5657739CEE5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest", "contract\Forest\Forest.csproj", "{AC06E580-EFC8-4D3F-BA4A-B2D2D1F65B9F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Forest.Tests", "test\Forest.Tests\Forest.Tests.csproj", "{3631B538-C617-4FCE-9C9B-1D1B5F290A7F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Boilerplate.ContractPatcher", "src\AElf.Boilerplate.ContractPatcher\AElf.Boilerplate.ContractPatcher.csproj", "{DCC207EA-842A-4B54-858B-295CAA8947D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Whitelist", "contract\Forest.Whitelist\Forest.Whitelist.csproj", "{459C75F9-019E-4403-B8B9-43D622C187BE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Contracts.NFT", "contract\AElf.Contracts.NFT\AElf.Contracts.NFT.csproj", "{57D062AC-F184-4A74-A3CD-F200E1F1600A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Whitelist.Tests", "test\Forest.Whitelist.Tests\Forest.Whitelist.Tests.csproj", "{14132439-CA55-41F9-B9DF-DB3C799E1BEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest", "contract\Forest\Forest.csproj", "{93527EE1-C3FD-4210-A941-CD2DF38DC310}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "contract", "contract", "{83F5DA0A-BC4D-4B34-859D-EB0E3FE0AD2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Whitelist", "contract\Forest.Whitelist\Forest.Whitelist.csproj", "{DF6F5121-6092-472D-B89E-1E6C880AEE75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,10 +43,6 @@ Global
 		{9484A7A9-CA57-4FF4-9FD8-27BFEF92EDBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9484A7A9-CA57-4FF4-9FD8-27BFEF92EDBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9484A7A9-CA57-4FF4-9FD8-27BFEF92EDBC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AC06E580-EFC8-4D3F-BA4A-B2D2D1F65B9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC06E580-EFC8-4D3F-BA4A-B2D2D1F65B9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC06E580-EFC8-4D3F-BA4A-B2D2D1F65B9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC06E580-EFC8-4D3F-BA4A-B2D2D1F65B9F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{217599C5-2CF0-411E-97B5-5657739CEE5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{217599C5-2CF0-411E-97B5-5657739CEE5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{217599C5-2CF0-411E-97B5-5657739CEE5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -60,18 +51,18 @@ Global
 		{DCC207EA-842A-4B54-858B-295CAA8947D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCC207EA-842A-4B54-858B-295CAA8947D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCC207EA-842A-4B54-858B-295CAA8947D5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{459C75F9-019E-4403-B8B9-43D622C187BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{459C75F9-019E-4403-B8B9-43D622C187BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{459C75F9-019E-4403-B8B9-43D622C187BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{459C75F9-019E-4403-B8B9-43D622C187BE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{57D062AC-F184-4A74-A3CD-F200E1F1600A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{57D062AC-F184-4A74-A3CD-F200E1F1600A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{57D062AC-F184-4A74-A3CD-F200E1F1600A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{57D062AC-F184-4A74-A3CD-F200E1F1600A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{14132439-CA55-41F9-B9DF-DB3C799E1BEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{14132439-CA55-41F9-B9DF-DB3C799E1BEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14132439-CA55-41F9-B9DF-DB3C799E1BEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14132439-CA55-41F9-B9DF-DB3C799E1BEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93527EE1-C3FD-4210-A941-CD2DF38DC310}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93527EE1-C3FD-4210-A941-CD2DF38DC310}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93527EE1-C3FD-4210-A941-CD2DF38DC310}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93527EE1-C3FD-4210-A941-CD2DF38DC310}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF6F5121-6092-472D-B89E-1E6C880AEE75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF6F5121-6092-472D-B89E-1E6C880AEE75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF6F5121-6092-472D-B89E-1E6C880AEE75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF6F5121-6092-472D-B89E-1E6C880AEE75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,13 +70,12 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F5B9CE98-80B4-46F0-A040-1BE75C276411} = {21D85A91-5BB8-4912-8107-49435A461AAC}
 		{3631B538-C617-4FCE-9C9B-1D1B5F290A7F} = {DBC47323-E6A2-42A2-A624-CE2EE6139567}
-		{AC06E580-EFC8-4D3F-BA4A-B2D2D1F65B9F} = {5C980166-C987-470D-AEE0-3858A170A903}
 		{217599C5-2CF0-411E-97B5-5657739CEE5D} = {21D85A91-5BB8-4912-8107-49435A461AAC}
 		{F72731A8-5803-4362-834F-0C066E64D4CD} = {21D85A91-5BB8-4912-8107-49435A461AAC}
 		{DCC207EA-842A-4B54-858B-295CAA8947D5} = {21D85A91-5BB8-4912-8107-49435A461AAC}
-		{459C75F9-019E-4403-B8B9-43D622C187BE} = {5C980166-C987-470D-AEE0-3858A170A903}
-		{57D062AC-F184-4A74-A3CD-F200E1F1600A} = {5C980166-C987-470D-AEE0-3858A170A903}
 		{14132439-CA55-41F9-B9DF-DB3C799E1BEB} = {DBC47323-E6A2-42A2-A624-CE2EE6139567}
+		{93527EE1-C3FD-4210-A941-CD2DF38DC310} = {83F5DA0A-BC4D-4B34-859D-EB0E3FE0AD2A}
+		{DF6F5121-6092-472D-B89E-1E6C880AEE75} = {83F5DA0A-BC4D-4B34-859D-EB0E3FE0AD2A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D7426B41-E959-40E4-9ED8-ED8D9C50F133}

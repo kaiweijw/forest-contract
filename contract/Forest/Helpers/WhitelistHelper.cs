@@ -7,9 +7,9 @@ namespace Forest.Helpers;
 
 public static class WhitelistHelper
 {
-    internal static Hash CalculateProjectId(string symbol, long tokenId, Address sender)
+    internal static Hash CalculateProjectId(string symbol, Address sender)
     {
-        return HashHelper.ComputeFrom($"{symbol}{tokenId}{sender}");
+        return HashHelper.ComputeFrom($"{symbol}{sender}");
     }
 
     internal static Price DeserializedInfo(TagInfo tagInfo)
