@@ -24,6 +24,7 @@ namespace Forest.SymbolRegistrar
             State.Admin.Value = input.AdministratorAddress ?? Context.Sender;
             State.ReceivingAccount.Value = input.ReceivingAccount;
             State.SeedExpirationConfig.Value = SymbolRegistrarContractConstants.DefaultSeedExpirationTime;
+            State.AuctionContractAddress.Value = input.AuctionContractAddress;
 
             if (input.SpecialSeeds != null)
                 AddSpecialSeeds(input.SpecialSeeds);

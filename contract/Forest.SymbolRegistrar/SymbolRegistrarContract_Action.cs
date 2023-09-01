@@ -40,10 +40,10 @@ namespace Forest.SymbolRegistrar
                 Amount = price.Amount,
             });
 
-            CreateSeed(new CreateSeedInput()
+            IssueSeed(new IssueSeedInput()
             {
                 Symbol = input.Symbol,
-                To = issueTo,
+                To = issueTo
             });
 
             Context.Fire(new Bought()
@@ -85,18 +85,48 @@ namespace Forest.SymbolRegistrar
         
         public override Empty CreateSeed(CreateSeedInput input)
         {
-            // Todo Assert(State.CreateSeedAdminMap[Context.Sender], "No permission.");
-            CreateSeed(input.To, input.Symbol, 0);
+            // AssertSaleController();
+            CreateSeed(State.AuctionContractAddress.Value, input.Symbol, 0);
+            return new Empty();
+        }
+        
+        public override Empty IssueSeed(IssueSeedInput input)
+        {
+            // AssertSaleController();
+            IssueSeed(input.To, input.Symbol, 0);
             return new Empty();
         }
 
-        private void CreateSeed(Address to, string symbol, long expireTime)
+        private void IssueSeed(Address to, string symbol, long expireTime)
         {
-            var empty = new TokenInfo();
-            Assert(State.SymbolSeedMap[symbol] == null, "symbol seed existed");
-            var createTokenInfo = GetTokenInfo(symbol);
-            Assert(createTokenInfo == null || string.IsNullOrWhiteSpace(createTokenInfo.Symbol), "symbol " + symbol + " existed");
-            var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix + 0);
+            var createResult = CreateSeed(Context.Self, symbol, expireTime);
+            if (!createResult)
+            {
+                return;
+            }
+            var seedSymbol = State.SymbolSeedMap[symbol];
+            State.TokenContract.Issue.Send(
+                new IssueInput
+                {
+                    Amount = 1,
+                    Symbol = seedSymbol,
+                    To = to
+                });
+            var seedInfo = State.SeedInfoMap[seedSymbol];
+            seedInfo.To = to;
+            State.SeedInfoMap[seedSymbol] = seedInfo;
+            Context.Fire(new SeedCreated
+            {
+                Symbol = seedSymbol,
+                OwnedSymbol = symbol,
+                ExpireTime = expireTime,
+                To = to
+            });
+        }
+
+        private bool CreateSeed(Address issuer, string symbol, long expireTime)
+        {
+            var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix + SymbolRegistrarContractConstants.CollectionSymbolSuffix);
             Assert(seedCollection != null && seedCollection.Symbol == SymbolRegistrarContractConstants.SeedPrefix + 0, "seedCollection not existed");
             
             State.LastSeedId.Value = State.LastSeedId.Value.Add(1);
@@ -113,7 +143,7 @@ namespace Forest.SymbolRegistrar
             }
             if (seedTokenInfo != null && seedTokenInfo.Symbol == seedSymbol)
             {
-                return;
+                return false;
             }
 
             State.SymbolSeedMap[symbol] = seedSymbol;
@@ -125,8 +155,7 @@ namespace Forest.SymbolRegistrar
                 IsBurnable = true,
                 TotalSupply = 1,
                 Owner = seedCollection.Owner,
-                Issuer = Context.Self,
-                IssueChainId = Context.ChainId,
+                Issuer = issuer,
                 ExternalInfo = new ExternalInfo(),
                 LockWhiteList = { State.TokenContract.Value }
             };
@@ -143,30 +172,13 @@ namespace Forest.SymbolRegistrar
                     ProxyAccountHash = GetProxyAccountHash(),
                     Args = createInput.ToByteString()
                 });
-            
-            State.TokenContract.Issue.Send(
-                new IssueInput
-                {
-                    Amount = 1,
-                    Symbol = createInput.Symbol,
-                    To = to
-                });
-
-            State.SeedInfoMap[createInput.Symbol] = new SeedInfo
+            State.SeedInfoMap[seedSymbol] = new SeedInfo
             {
-                Symbol = createInput.Symbol,
+                Symbol = seedSymbol,
                 OwnedSymbol = symbol,
-                ExpireTime = expireTime,
-                To = to
+                ExpireTime = expireTime
             };
-            
-            Context.Fire(new SeedCreated
-            {
-                Symbol = createInput.Symbol,
-                OwnedSymbol = symbol,
-                ExpireTime = expireTime,
-                To = to
-            });
+            return true;
         }
 
         private Hash GetProxyAccountHash()

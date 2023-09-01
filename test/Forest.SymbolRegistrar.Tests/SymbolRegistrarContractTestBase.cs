@@ -44,6 +44,8 @@ namespace Forest.SymbolRegistrar
         internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User2SaleContractStub { get; set; }
         internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User3SaleContractStub { get; set; }
         
+        internal ProxyAccountContractContainer.ProxyAccountContractStub AdminProxyAccountContractStubContractStub { get; set; }
+        
         protected readonly IBlockTimeProvider BlockTimeProvider;
         
         protected SymbolRegistrarContractTestBase()
@@ -59,6 +61,8 @@ namespace Forest.SymbolRegistrar
             User1SaleContractStub = GetSaleContractStub(User1.KeyPair);
             User2SaleContractStub = GetSaleContractStub(User2.KeyPair);
             User3SaleContractStub = GetSaleContractStub(User3.KeyPair);
+
+            AdminProxyAccountContractStubContractStub = GetProxyAccountContractStub(Admin.KeyPair);
             
             BlockTimeProvider = GetRequiredService<IBlockTimeProvider>();
         }
