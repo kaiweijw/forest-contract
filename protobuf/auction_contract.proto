@@ -23,13 +23,10 @@ service AuctionContract {
     option (aelf.csharp_state) = "Forest.Contracts.Auction.AuctionContractState";
     
     // Action
-    rpc Initialize(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    rpc Initialize(InitializeInput) returns (google.protobuf.Empty) {
     }
     
     rpc SetAdmin(aelf.Address) returns (google.protobuf.Empty) {
-    }
-
-    rpc SetPaymentReceiverAddress(aelf.Address) returns (google.protobuf.Empty) {
     }
     
     rpc CreateAuction(CreateAuctionInput) returns (google.protobuf.Empty) {
@@ -42,16 +39,20 @@ service AuctionContract {
     }
     
     // View
-    rpc GetPaymentReceiverAddress(google.protobuf.Empty) returns (aelf.Address) {
+    rpc GetAuctionInfo(GetAuctionInfoInput) returns (AuctionInfo) {
         option (aelf.is_view) = true;
     }
 
-    rpc GetAuctionInfo(GetAuctionInfoInput) returns (AuctionInfo) {
+    rpc GetAdmin(google.protobuf.Empty) returns (aelf.Address) {
         option (aelf.is_view) = true;
     }
 }
 
 //Data structure
+message InitializeInput {
+    aelf.Address admin = 1;
+}
+
 enum AuctionType {
     UNKNOWN = 0;
     ENGLISH = 1;
@@ -71,15 +72,16 @@ message Price {
 }
 
 message CreateAuctionInput {
-    aelf.Hash auction_id = 1;
-    AuctionType auction_type = 2;
-    string symbol = 3;
-    int64 amount = 4;
-    AuctionConfig auction_config = 5;
+    AuctionType auction_type = 1;
+    string symbol = 2;
+    int64 amount = 3;
+    AuctionConfig auction_config = 4;
+    Price start_price = 5;
+    aelf.Address receiving_address = 6;
 }
 
 message PlaceBidInput {
-    string auction_id = 1;
+    aelf.Hash auction_id = 1;
     Price price = 2;
 }
 
@@ -103,6 +105,7 @@ message AuctionInfo{
     AuctionType auction_type = 9;
     BidInfo last_bid_info = 10;
     AuctionConfig auction_config = 11;
+    aelf.Address receiving_address = 12;
 }
 
 message BidInfo{
@@ -122,7 +125,9 @@ message AuctionCreated {
     google.protobuf.Timestamp max_end_time = 6;
     AuctionType auction_type = 7;
     string symbol = 8;
-    AuctionConfig auction_config = 9;
+    int64 amount = 9;
+    AuctionConfig auction_config = 10;
+    aelf.Address receiving_address = 11;
 }
 
 message BidPlaced {
@@ -138,6 +143,7 @@ message AuctionTimeUpdated{
     aelf.Hash auction_id = 1;
     google.protobuf.Timestamp start_time = 2;
     google.protobuf.Timestamp end_time = 3;
+    google.protobuf.Timestamp max_end_time = 4;
 }
 
 message Claimed {

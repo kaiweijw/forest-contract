@@ -7,11 +7,11 @@ public partial class AuctionContract
 {
     public override AuctionInfo GetAuctionInfo(GetAuctionInfoInput input)
     {
-        return base.GetAuctionInfo(input);
+        return State.AuctionInfoMap[input.AuctionId];
     }
 
-    public override Address GetPaymentReceiverAddress(Empty input)
+    public override Address GetAdmin(Empty input)
     {
-        return base.GetPaymentReceiverAddress(input);
+        return State.Admin.Value;
     }
 }
