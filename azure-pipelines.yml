@@ -1,3 +1,11 @@
+trigger:
+  branches:
+    include:
+      - master
+pr:
+  branches:
+    include:
+      - master
 jobs:
   # All tasks on macOS
   - job: build_all_darwin
