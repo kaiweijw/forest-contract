@@ -76,14 +76,14 @@ namespace Forest.SymbolRegistrar
                 }));
             SaleContractAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
             
-            // result = AsyncHelper.RunSync(async () => await zeroContractStub.DeploySmartContract.SendAsync(
-            //     new ContractDeploymentInput
-            //     {
-            //         Category = KernelConstants.CodeCoverageRunnerCategory,
-            //         Code = ByteString.CopyFrom(
-            //             File.ReadAllBytes(typeof(MockProxyAccountContract.MockProxyAccountContract).Assembly.Location))
-            //     }));
-            // ProxyAccountAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
+            result = AsyncHelper.RunSync(async () => await zeroContractStub.DeploySmartContract.SendAsync(
+                new ContractDeploymentInput
+                {
+                    Category = KernelConstants.CodeCoverageRunnerCategory,
+                    Code = ByteString.CopyFrom(
+                        File.ReadAllBytes(typeof(MockProxyAccountContract.MockProxyAccountContract).Assembly.Location))
+                }));
+            ProxyAccountAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
         }
         
         
