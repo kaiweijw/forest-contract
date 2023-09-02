@@ -1,4 +1,9 @@
+using System.Linq;
 using System.Threading.Tasks;
+using AElf.Contracts.MultiToken;
+using AElf.Types;
+using Google.Protobuf.WellKnownTypes;
+using Shouldly;
 using Xunit;
 
 namespace Forest.SymbolRegistrar
@@ -8,11 +13,127 @@ namespace Forest.SymbolRegistrar
         [Fact]
         public async Task InitializeContract()
         {
-            await AdminSaleContractStub.Initialize.SendAsync(new InitializeInput()
+            await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
                 ProxyAccountAddress = ProxyAccountAddress
             });
+        }
+        
+        [Fact]
+        public async Task SetSeedsPrice_success()
+        {
+            await InitializeContractIfNecessary();
+            
+            var result = await AdminSymbolRegistrarContractStub.SetSeedsPrice.SendAsync(new SeedsPriceInput
+            {
+                FtPriceList = MockPriceList(),
+                NftPriceList = MockPriceList()
+            });
+            
+            var log = result.TransactionResult.Logs.First(log => log.Name.Contains(nameof(SeedsPriceChanged)));
+            var seedsPriceChanged = SeedsPriceChanged.Parser.ParseFrom(log.NonIndexed);
+            seedsPriceChanged.NftPriceList.Value.Count.ShouldBe(30);
+            seedsPriceChanged.FtPriceList.Value.Count.ShouldBe(30);
+            
+            var priceList = await AdminSymbolRegistrarContractStub.GetSeedsPrice.CallAsync(new Empty());
+            priceList.FtPriceList.Value.Count.ShouldBe(30);
+            priceList.NftPriceList.Value.Count.ShouldBe(30);
+
+        }
+        
+        [Fact]
+        public async Task SetSpecialSeed_byProposal()
+        {
+            await InitializeContractIfNecessary();
+
+            // create proposal and approve
+            var result = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
+                new SpecialSeedList
+                {
+                    Value = { _specialUsd, _specialEth }
+                });
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+
+            // logs
+            var logEvent = result.TransactionResult.Logs.First(log => log.Name.Contains(nameof(SpecialSeedAdded)));
+            var specialSeedAdded = SpecialSeedAdded.Parser.ParseFrom(logEvent.NonIndexed);
+            specialSeedAdded.AddList.Value.Count.ShouldBe(2);
+
+            // query seed list and verify
+            var seedUsd = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
+            {
+                Value = _specialUsd.Symbol
+            });
+            seedUsd.Symbol.ShouldBe(_specialUsd.Symbol);
+
+
+            var seedEth = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
+            {
+                Value = _specialEth.Symbol
+            });
+            seedEth.Symbol.ShouldBe(_specialEth.Symbol);
+        }
+
+
+        internal async Task InitElfBalance(Address to)
+        {
+            await AdminTokenContractStub.Transfer.SendAsync(new TransferInput
+            {
+                Symbol = "ELF",
+                Amount = 10000_0000_0000,
+                To = to
+            });
+            
+        }
+
+        internal async Task InitializeContractIfNecessary()
+        {
+            var config = await AdminSymbolRegistrarContractStub.GetBizConfig.CallAsync(new Empty());
+            if (config.AdministratorAddress == null) await InitializeContract();
+        }
+
+        internal async Task ApproveMaxElfBalance(TokenContractContainer.TokenContractStub userTokenStub, Address spender)
+        {
+            // approve amount to SymbolRegistrarContract
+            await userTokenStub.Approve.SendAsync(new ApproveInput
+            {
+                Spender = spender,
+                Symbol = "ELF",
+                Amount = long.MaxValue
+            });
+        }
+
+        internal async Task InitSeed()
+        {
+            await AdminTokenContractStub.Create.SendAsync(
+                new CreateInput
+                {
+                    Owner = ProxyAccountAddress,
+                    Issuer = ProxyAccountAddress,
+                    Symbol = "SEED-0",
+                    TokenName = "TOKEN SEED-0",
+                    TotalSupply = 1,
+                    Decimals = 0,
+                    IsBurnable = false,
+                    LockWhiteList = { TokenContractAddress }
+                });
+        }
+
+        
+        internal static PriceList MockPriceList()
+        {
+            var priceList = new PriceList();
+            for (var i = 0 ; i < 30 ; i ++)
+            {
+                priceList.Value.Add(new PriceItem
+                {
+                    SymbolLength = i + 1,
+                    Symbol = "ELF",
+                    Amount = 50_0000_0000 - i * 1_0000_0000
+                });
+            }
+            return priceList;
         }
 
         internal SpecialSeed _specialUsd = new()

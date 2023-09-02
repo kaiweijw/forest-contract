@@ -40,11 +40,7 @@ namespace Forest.SymbolRegistrar
                 Amount = price.Amount,
             });
 
-            CreateSeed(new CreateSeedInput()
-            {
-                Symbol = input.Symbol,
-                To = issueTo,
-            });
+            CreateSeed(issueTo, input.Symbol);
 
             Context.Fire(new Bought()
             {
@@ -90,14 +86,14 @@ namespace Forest.SymbolRegistrar
             return new Empty();
         }
 
-        private void CreateSeed(Address to, string symbol, long expireTime)
+        private void CreateSeed(Address to, string symbol, long expireTime = 0)
         {
             var empty = new TokenInfo();
             Assert(State.SymbolSeedMap[symbol] == null, "symbol seed existed");
             var createTokenInfo = GetTokenInfo(symbol);
             Assert(createTokenInfo == null || string.IsNullOrWhiteSpace(createTokenInfo.Symbol), "symbol " + symbol + " existed");
             var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix + 0);
-            Assert(seedCollection != null && seedCollection.Symbol == SymbolRegistrarContractConstants.SeedPrefix + 0, "seedCollection not existed");
+            Assert(seedCollection.Symbol.Length > 0 && seedCollection.Symbol == SymbolRegistrarContractConstants.SeedPrefix + 0, "seedCollection not existed");
             
             State.LastSeedId.Value = State.LastSeedId.Value.Add(1);
             var seedSymbol = SymbolRegistrarContractConstants.SeedPrefix + State.LastSeedId.Value;

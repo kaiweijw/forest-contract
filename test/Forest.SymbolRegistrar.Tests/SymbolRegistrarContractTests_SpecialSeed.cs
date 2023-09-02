@@ -10,38 +10,7 @@ namespace Forest.SymbolRegistrar
 {
     public class SymbolRegistrarContractTests_SpecialSeed : SymbolRegistrarContractTests
     {
-        [Fact]
-        public async Task SetSpecialSeed_byProposal()
-        {
-            await InitializeContract();
 
-            // create proposal and approve
-            var result = await SubmitAndApproveProposalOfDefaultParliament(SaleContractAddress, "AddSpecialSeeds",
-                new SpecialSeedList
-                {
-                    Value = { _specialUsd, _specialEth }
-                });
-            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
-
-            // logs
-            var logEvent = result.TransactionResult.Logs.First(log => log.Name.Contains(nameof(SpecialSeedAdded)));
-            var specialSeedAdded = SpecialSeedAdded.Parser.ParseFrom(logEvent.NonIndexed);
-            specialSeedAdded.AddList.Value.Count.ShouldBe(2);
-
-            // query seed list and verify
-            var seedUsd = await AdminSaleContractStub.GetSpecialSeed.CallAsync(new StringValue
-            {
-                Value = _specialUsd.Symbol
-            });
-            seedUsd.Symbol.ShouldBe(_specialUsd.Symbol);
-
-
-            var seedEth = await AdminSaleContractStub.GetSpecialSeed.CallAsync(new StringValue
-            {
-                Value = _specialEth.Symbol
-            });
-            seedEth.Symbol.ShouldBe(_specialEth.Symbol);
-        }
 
         [Fact]
         public async Task SetSpecialSeed_removeSuccess()
@@ -49,13 +18,13 @@ namespace Forest.SymbolRegistrar
             await SetSpecialSeed_byProposal();
 
             // remove and add
-            var addResult = await SubmitAndApproveProposalOfDefaultParliament(SaleContractAddress, "AddSpecialSeeds",
+            var addResult = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
                 new SpecialSeedList
                 {
                     Value = { _specialBtc }
                 });
             addResult.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
-            var removeResult = await SubmitAndApproveProposalOfDefaultParliament(SaleContractAddress,
+            var removeResult = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
                 "RemoveSpecialSeeds", new SpecialSeedList
                 {
                     Value = { _specialUsd }
@@ -69,20 +38,20 @@ namespace Forest.SymbolRegistrar
             specialSeedRemoved.RemoveList.Value.Count.ShouldBe(1);
 
             // query seed list and verify
-            var seedUsd = await AdminSaleContractStub.GetSpecialSeed.CallAsync(new StringValue
+            var seedUsd = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
             {
                 Value = _specialUsd.Symbol
             });
             seedUsd.Symbol.ShouldBe(string.Empty);
 
 
-            var seedEth = await AdminSaleContractStub.GetSpecialSeed.CallAsync(new StringValue
+            var seedEth = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
             {
                 Value = _specialEth.Symbol
             });
             seedEth.Symbol.ShouldBe(_specialEth.Symbol);
 
-            var seedBtc = await AdminSaleContractStub.GetSpecialSeed.CallAsync(new StringValue
+            var seedBtc = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
             {
                 Value = _specialBtc.Symbol
             });
@@ -97,7 +66,7 @@ namespace Forest.SymbolRegistrar
 
             // Price symbol not exists
             var notExits = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SaleContractAddress, "AddSpecialSeeds", new SpecialSeedList
+                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds", new SpecialSeedList
                 {
                     Value = { _specialUsd_errorPrice, _specialEth }
                 })
@@ -106,7 +75,7 @@ namespace Forest.SymbolRegistrar
 
             // Invalid issue chain
             var invalidIssueChain = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SaleContractAddress, "AddSpecialSeeds", new SpecialSeedList
+                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds", new SpecialSeedList
                 {
                     Value = { _specialUsd, _specialEth_noIssueChainId }
                 })
@@ -116,7 +85,7 @@ namespace Forest.SymbolRegistrar
 
             // Invalid issue chain contract
             var invalidIssueChainContract = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SaleContractAddress, "AddSpecialSeeds", new SpecialSeedList
+                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds", new SpecialSeedList
                 {
                     Value = { _specialUsd, _specialEth_noIssueChainContractAddress }
                 })
@@ -125,7 +94,7 @@ namespace Forest.SymbolRegistrar
 
             // Invalid issue chain
             var duplicateSymbol = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SaleContractAddress, "AddSpecialSeeds", new SpecialSeedList
+                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds", new SpecialSeedList
                 {
                     Value = { _specialUsd, _specialUsd, _specialEth }
                 })

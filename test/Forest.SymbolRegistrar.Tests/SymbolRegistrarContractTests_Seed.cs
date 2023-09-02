@@ -10,34 +10,18 @@ namespace Forest.SymbolRegistrar
     public class SymbolRegistrarContractTests_Seed : SymbolRegistrarContractTests
     {
         
-        private async Task InitSeed()
-        {
-            await AdminTokenContractStub.Create.SendAsync(
-                new CreateInput
-                {
-                    Owner = ProxyAccountAddress,
-                    Issuer = ProxyAccountAddress,
-                    Symbol = "SEED-0",
-                    TokenName = "TOKEN SEED-0",
-                    TotalSupply = 1,
-                    Decimals = 0,
-                    IsBurnable = false,
-                    LockWhiteList = { TokenContractAddress }
-                });
-        }
-    
         [Fact]
         public async Task CreateSeedTest_Success()
         {
             await InitializeContract();
-            var result = await AdminSaleContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
+            var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
             });
             result.TransactionResult.Error.ShouldContain("seedCollection not existed");
             await InitSeed();
-            result = await AdminSaleContractStub.CreateSeed.SendAsync(new CreateSeedInput
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
@@ -50,7 +34,7 @@ namespace Forest.SymbolRegistrar
             seedCreated.To.ShouldBe(User1.Address);
             seedCreated.OwnedSymbol.ShouldBe("LUCK");
         
-            result = await AdminSaleContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
