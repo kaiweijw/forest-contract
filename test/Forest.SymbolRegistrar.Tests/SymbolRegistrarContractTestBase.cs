@@ -28,7 +28,7 @@ namespace Forest.SymbolRegistrar
         protected const int MinersCount = 1;
 
         internal Address ProxyAccountAddress { get; set; }
-        internal Address SaleContractAddress { get; set; }
+        internal Address SymbolRegistrarContractAddress { get; set; }
         internal Account Admin => Accounts[0];
         internal Account User1 => Accounts[1];
         internal Account User2 => Accounts[2];
@@ -39,11 +39,11 @@ namespace Forest.SymbolRegistrar
         internal TokenContractContainer.TokenContractStub User2TokenContractStub { get; set; }
         internal TokenContractContainer.TokenContractStub User3TokenContractStub { get; set; }
 
-        internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub AdminSaleContractStub { get; set; }
-        internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User1SaleContractStub { get; set; }
-        internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User2SaleContractStub { get; set; }
-        internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User3SaleContractStub { get; set; }
-        
+        internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub AdminSymbolRegistrarContractStub { get; set; }
+        internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User1SymbolRegistrarContractStub { get; set; }
+        internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User2SymbolRegistrarContractStub { get; set; }
+        internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User3SymbolRegistrarContractStub { get; set; }
+         
         internal ProxyAccountContractContainer.ProxyAccountContractStub AdminProxyAccountContractStubContractStub { get; set; }
         
         protected readonly IBlockTimeProvider BlockTimeProvider;
@@ -57,11 +57,11 @@ namespace Forest.SymbolRegistrar
             User2TokenContractStub = GetTokenContractStub(User2.KeyPair);
             User3TokenContractStub = GetTokenContractStub(User3.KeyPair);
 
-            AdminSaleContractStub = GetSaleContractStub(Admin.KeyPair);
-            User1SaleContractStub = GetSaleContractStub(User1.KeyPair);
-            User2SaleContractStub = GetSaleContractStub(User2.KeyPair);
-            User3SaleContractStub = GetSaleContractStub(User3.KeyPair);
-
+            AdminSymbolRegistrarContractStub = GetSymbolRetistrarStub(Admin.KeyPair);
+            User1SymbolRegistrarContractStub = GetSymbolRetistrarStub(User1.KeyPair);
+            User2SymbolRegistrarContractStub = GetSymbolRetistrarStub(User2.KeyPair);
+            User3SymbolRegistrarContractStub = GetSymbolRetistrarStub(User3.KeyPair);
+            
             AdminProxyAccountContractStubContractStub = GetProxyAccountContractStub(Admin.KeyPair);
             
             BlockTimeProvider = GetRequiredService<IBlockTimeProvider>();
@@ -71,16 +71,16 @@ namespace Forest.SymbolRegistrar
         private void DeploySaleContract(Account account)
         {
             var zeroContractStub = GetContractZeroTester(account.KeyPair);
-            var result = AsyncHelper.RunSync(async () => await zeroContractStub.DeploySmartContract.SendAsync(
+            var result = AsyncHelper.RunSync(() => zeroContractStub.DeploySmartContract.SendAsync(
                 new ContractDeploymentInput
                 {
                     Category = KernelConstants.CodeCoverageRunnerCategory,
                     Code = ByteString.CopyFrom(
                         File.ReadAllBytes(typeof(SymbolRegistrarContract).Assembly.Location))
                 }));
-            SaleContractAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
+            SymbolRegistrarContractAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
             
-            result = AsyncHelper.RunSync(async () => await zeroContractStub.DeploySmartContract.SendAsync(
+            result = AsyncHelper.RunSync(() => zeroContractStub.DeploySmartContract.SendAsync(
                 new ContractDeploymentInput
                 {
                     Category = KernelConstants.CodeCoverageRunnerCategory,
@@ -100,10 +100,10 @@ namespace Forest.SymbolRegistrar
         {
             return GetTester<ACS0Container.ACS0Stub>(BasicContractZeroAddress, senderKeyPair);
         }
-
-        internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub GetSaleContractStub(ECKeyPair keyPair)
+        
+        internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub GetSymbolRetistrarStub(ECKeyPair keyPair)
         {
-            return GetTester<SymbolRegistrarContractContainer.SymbolRegistrarContractStub>(SaleContractAddress, keyPair);
+            return GetTester<SymbolRegistrarContractContainer.SymbolRegistrarContractStub>(SymbolRegistrarContractAddress, keyPair);
         }
 
         internal ProxyAccountContractContainer.ProxyAccountContractStub GetProxyAccountContractStub(ECKeyPair keyPair)

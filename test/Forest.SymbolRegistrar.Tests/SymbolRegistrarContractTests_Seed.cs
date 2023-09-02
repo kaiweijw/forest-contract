@@ -36,13 +36,13 @@ namespace Forest.SymbolRegistrar
         {
             await InitializeContract();
             await InitSeed();
-            var result = await AdminSaleContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput()
+            var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput()
             {
                 Symbol = "LUCK"
             });
             result.TransactionResult.Error.ShouldContain("No sale controller permission.");
             await InitSaleController(Admin.Address);
-            result = await AdminSaleContractStub.CreateSeed.SendAsync(new CreateSeedInput()
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput()
             {
                 Symbol = "LUCK"
             });
@@ -58,14 +58,14 @@ namespace Forest.SymbolRegistrar
         {
             await InitializeContract();
             await InitSeed();
-            var result = await AdminSaleContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
+            var result = await AdminSymbolRegistrarContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
             });
             result.TransactionResult.Error.ShouldContain("No sale controller permission.");
             await InitSaleController(Admin.Address);
-            result = await AdminSaleContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            result = await AdminSymbolRegistrarContractStub.IssueSeed.SendAsync(new IssueSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
@@ -84,26 +84,26 @@ namespace Forest.SymbolRegistrar
         {
             await InitializeContract();
             await InitSaleController(Admin.Address);
-            var result = await AdminSaleContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput()
+            var result = await AdminSymbolRegistrarContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput()
             {
                 Symbol = "LUCK",
                 To = User1.Address
             });
             result.TransactionResult.Error.ShouldContain("seedCollection not existed");
             await InitSeed();
-            await AdminSaleContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            await AdminSymbolRegistrarContractStub.IssueSeed.SendAsync(new IssueSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
             });
 
-            result = await AdminSaleContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
+            result = await AdminSymbolRegistrarContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
             });
             result.TransactionResult.Error.ShouldContain("symbol seed existed");
-            result = await AdminSaleContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
+            result = await AdminSymbolRegistrarContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
             {
                 Symbol = "LUCK-0",
                 To = User1.Address
@@ -161,7 +161,7 @@ namespace Forest.SymbolRegistrar
                     ExternalInfo = new ExternalInfo(),
                     LockWhiteList = { TokenContractAddress }
                 });
-            var result = await AdminSaleContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
+            var result = await AdminSymbolRegistrarContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
@@ -212,14 +212,14 @@ namespace Forest.SymbolRegistrar
                     });
             }
             
-            var result = await AdminSaleContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            var result = await AdminSymbolRegistrarContractStub.IssueSeed.SendAsync(new IssueSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             result.TransactionResult.Logs.Count.ShouldBe(0);
-            result = await AdminSaleContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            result = await AdminSymbolRegistrarContractStub.IssueSeed.SendAsync(new IssueSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address

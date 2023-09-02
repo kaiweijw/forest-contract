@@ -77,7 +77,7 @@ namespace Forest.SymbolRegistrar
         private void AssertCanDeal(string symbol)
         {
             var tokenInfo = GetTokenInfo(symbol);
-            Assert(tokenInfo == null, "Symbol exists");
+            Assert(tokenInfo.Symbol.Length < 1, "Symbol exists");
             var seed = State.SymbolSeedMap[symbol];
             if (seed == null) return;
             var seedInfo = State.SeedInfoMap[seed];
