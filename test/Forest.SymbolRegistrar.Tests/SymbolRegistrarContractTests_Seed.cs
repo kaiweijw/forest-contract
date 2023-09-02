@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
 using AElf.Contracts.ProxyAccountContract;
 using AElf.Types;
-using Forest.MockProxyAccountContract;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
@@ -33,11 +32,40 @@ namespace Forest.SymbolRegistrar
         }
         
         [Fact]
+        public async Task CreateSeedTest_Success()
+        {
+            await InitializeContract();
+            await InitSeed();
+            var result = await AdminSaleContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput()
+            {
+                Symbol = "LUCK"
+            });
+            result.TransactionResult.Error.ShouldContain("No sale controller permission.");
+            await InitSaleController(Admin.Address);
+            result = await AdminSaleContractStub.CreateSeed.SendAsync(new CreateSeedInput()
+            {
+                Symbol = "LUCK"
+            });
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            var tokenCreated =
+                TokenCreated.Parser.ParseFrom(result.TransactionResult.Logs.First(e => e.Name == nameof(TokenCreated))
+                    .NonIndexed);
+            tokenCreated.Symbol.ShouldBe("SEED-1");
+        }
+        
+        [Fact]
         public async Task IssueSeedTest_Success()
         {
             await InitializeContract();
             await InitSeed();
-            var result = await AdminSaleContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            var result = await AdminSaleContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
+            {
+                Symbol = "LUCK",
+                To = User1.Address
+            });
+            result.TransactionResult.Error.ShouldContain("No sale controller permission.");
+            await InitSaleController(Admin.Address);
+            result = await AdminSaleContractStub.IssueSeed.SendAsync(new IssueSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
@@ -55,6 +83,7 @@ namespace Forest.SymbolRegistrar
         public async Task IssueSeedTest_Fail()
         {
             await InitializeContract();
+            await InitSaleController(Admin.Address);
             var result = await AdminSaleContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput()
             {
                 Symbol = "LUCK",
@@ -86,6 +115,7 @@ namespace Forest.SymbolRegistrar
         public async Task IssueSeedTest_TokenExisted_Fail()
         {
             await InitializeContract();
+            await InitSaleController(Admin.Address);
             await InitSeed();
             var createInput = new CreateInput
             {
@@ -100,12 +130,12 @@ namespace Forest.SymbolRegistrar
                 LockWhiteList = { TokenContractAddress }
             };
             
-            createInput.ExternalInfo.Value[SymbolRegistrarContractConstants.SeedOwnedSymbolExternalInfoKey] = "LUCK-0";
+            createInput.ExternalInfo.Value[SymbolRegistrarContractConstants.SeedOwnedSymbolExternalInfoKey] = "LUCK";
             var expireTime = DateTime.UtcNow.ToTimestamp().Seconds + 1000000000;
             createInput.ExternalInfo.Value[SymbolRegistrarContractConstants.SeedExpireTimeExternalInfoKey] = expireTime.ToString();
             
             await AdminProxyAccountContractStubContractStub.ForwardCall.SendAsync(
-                new AElf.Contracts.ProxyAccountContract.ForwardCallInput()
+                new ForwardCallInput()
                 {
                     ContractAddress = TokenContractAddress,
                     MethodName = nameof(AdminTokenContractStub.Create),
@@ -121,7 +151,7 @@ namespace Forest.SymbolRegistrar
             await User1TokenContractStub.Create.SendAsync(
                 new CreateInput
                 {
-                    Symbol = "LUCK-0",
+                    Symbol = "LUCK",
                     TokenName = "TOKEN LUCK",
                     Decimals = 0,
                     IsBurnable = true,
@@ -133,10 +163,74 @@ namespace Forest.SymbolRegistrar
                 });
             var result = await AdminSaleContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
             {
-                Symbol = "LUCK-0",
+                Symbol = "LUCK",
                 To = User1.Address
             });
             result.TransactionResult.Error.ShouldContain("Token already exists.");
+        }
+        
+         [Fact]
+        public async Task IssueSeedTest_SeedIndex()
+        {
+            await InitializeContract();
+            await InitSeed();
+            await InitSaleController(Admin.Address);
+            for (int i = 1; i <= 31; i++)
+            {
+                var createInput = new CreateInput
+                {
+                    Symbol = "SEED-" + i,
+                    TokenName = "TOKEN SEED-" + i,
+                    Decimals = 0,
+                    IsBurnable = true,
+                    TotalSupply = 1,
+                    Owner = ProxyAccountAddress,
+                    Issuer = Admin.Address,
+                    ExternalInfo = new ExternalInfo(),
+                    LockWhiteList = { TokenContractAddress }
+                };
+                var c = 'A' + (i-1) % 26;
+
+                if (i > 26)
+                {
+                    createInput.ExternalInfo.Value[SymbolRegistrarContractConstants.SeedOwnedSymbolExternalInfoKey] = "LUCKA" + (char)c;
+                }
+                else
+                {
+                    createInput.ExternalInfo.Value[SymbolRegistrarContractConstants.SeedOwnedSymbolExternalInfoKey] = "LUCK" + (char)c;
+                }
+                
+                var expireTime = DateTime.UtcNow.ToTimestamp().Seconds + 1000000000;
+                createInput.ExternalInfo.Value[SymbolRegistrarContractConstants.SeedExpireTimeExternalInfoKey] = expireTime.ToString();
+            
+                await AdminProxyAccountContractStubContractStub.ForwardCall.SendAsync(
+                    new ForwardCallInput()
+                    {
+                        ContractAddress = TokenContractAddress,
+                        MethodName = nameof(AdminTokenContractStub.Create),
+                        Args = createInput.ToByteString()
+                    });
+            }
+            
+            var result = await AdminSaleContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            {
+                Symbol = "LUCK",
+                To = User1.Address
+            });
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            result.TransactionResult.Logs.Count.ShouldBe(0);
+            result = await AdminSaleContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            {
+                Symbol = "LUCK",
+                To = User1.Address
+            });
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            var seedCreated =
+                SeedCreated.Parser.ParseFrom(result.TransactionResult.Logs.First(e => e.Name == nameof(SeedCreated))
+                    .NonIndexed);
+            seedCreated.Symbol.ShouldBe("SEED-32");
+            seedCreated.To.ShouldBe(User1.Address);
+            seedCreated.OwnedSymbol.ShouldBe("LUCK");
         }
         
     }

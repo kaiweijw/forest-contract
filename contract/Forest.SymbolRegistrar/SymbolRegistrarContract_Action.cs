@@ -85,14 +85,15 @@ namespace Forest.SymbolRegistrar
         
         public override Empty CreateSeed(CreateSeedInput input)
         {
-            // AssertSaleController();
+            AssertSaleController();
+            Assert(State.AuctionContractAddress.Value != null, "AuctionContractAddress not set");
             CreateSeed(State.AuctionContractAddress.Value, input.Symbol, 0);
             return new Empty();
         }
         
         public override Empty IssueSeed(IssueSeedInput input)
         {
-            // AssertSaleController();
+            AssertSaleController();
             IssueSeed(input.To, input.Symbol, 0);
             return new Empty();
         }
@@ -126,6 +127,7 @@ namespace Forest.SymbolRegistrar
 
         private bool CreateSeed(Address issuer, string symbol, long expireTime)
         {
+            CheckSymbolExisted(symbol);
             var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix + SymbolRegistrarContractConstants.CollectionSymbolSuffix);
             Assert(seedCollection != null && seedCollection.Symbol == SymbolRegistrarContractConstants.SeedPrefix + 0, "seedCollection not existed");
             

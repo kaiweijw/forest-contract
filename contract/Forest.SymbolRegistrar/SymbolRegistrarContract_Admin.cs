@@ -24,7 +24,12 @@ namespace Forest.SymbolRegistrar
             State.Admin.Value = input.AdministratorAddress ?? Context.Sender;
             State.ReceivingAccount.Value = input.ReceivingAccount;
             State.SeedExpirationConfig.Value = SymbolRegistrarContractConstants.DefaultSeedExpirationTime;
+            Assert(input.AuctionContractAddress != null && !input.AuctionContractAddress.Value.IsNullOrEmpty(),
+                "AuctionContractAddress required.");
             State.AuctionContractAddress.Value = input.AuctionContractAddress;
+            Assert(input.ProxyAccountAddress != null && !input.ProxyAccountAddress.Value.IsNullOrEmpty(),
+                "ProxyAccountAddress required.");
+            State.ProxyAccountContract.Value = input.ProxyAccountAddress;
 
             if (input.SpecialSeeds != null)
                 AddSpecialSeeds(input.SpecialSeeds);
@@ -36,7 +41,6 @@ namespace Forest.SymbolRegistrar
                 Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
             State.ParliamentContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.ParliamentContractSystemName);
-            State.ProxyAccountContract.Value = input.ProxyAccountAddress;
 
             InitializeAuctionConfig();
 
@@ -110,6 +114,10 @@ namespace Forest.SymbolRegistrar
             Assert(input != null && input.Addresses != null, "Invalid input.");
             Assert(input.Addresses.Controllers != null && input.Addresses.Controllers.Count > 0,
                 "Invalid input controllers");
+            if (State.SaleController.Value == null)
+            {
+                State.SaleController.Value = new ControllerList();
+            }
 
             if (State.SaleController.Value.Equals(input.Addresses))
             {

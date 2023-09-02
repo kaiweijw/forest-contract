@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using AElf.Types;
 using Xunit;
 
 namespace Forest.SymbolRegistrar
@@ -11,7 +12,19 @@ namespace Forest.SymbolRegistrar
             await AdminSaleContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = ProxyAccountAddress
+                ProxyAccountAddress = ProxyAccountAddress,
+                AuctionContractAddress = Admin.Address
+            });
+        }
+
+        public async Task InitSaleController(Address address)
+        {
+            await AdminSaleContractStub.AddSaleController.SendAsync(new AddSaleControllerInput()
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { address }
+                }
             });
         }
 

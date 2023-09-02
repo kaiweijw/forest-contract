@@ -133,7 +133,7 @@ namespace Forest.SymbolRegistrar
 
         private void AssertSaleController()
         {
-            Assert(State.SaleController.Value.Controllers.Contains(Context.Sender),
+            Assert(State.SaleController.Value != null && State.SaleController.Value.Controllers.Contains(Context.Sender),
                 "No sale controller permission.");
         }
 
@@ -146,19 +146,10 @@ namespace Forest.SymbolRegistrar
         {
             var symbols = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
             var tokenSymbol = symbols.First();
-            Assert(State.SymbolSeedMap[symbol] == null, "symbol seed existed");
-            CheckTokenExists(tokenSymbol);
+            Assert(State.SymbolSeedMap[tokenSymbol] == null, "symbol seed existed");
             var collectionSymbol = symbols.First() + SymbolRegistrarContractConstants.NFTSymbolSeparator +
                                    SymbolRegistrarContractConstants.CollectionSymbolSuffix;
             Assert(State.SymbolSeedMap[collectionSymbol] == null, "symbol seed existed");
-            CheckTokenExists(collectionSymbol);
-        }
-        
-        private void CheckTokenExists(string symbol)
-        {
-            var empty = new TokenInfo();
-            var existing = GetTokenInfo(symbol);
-            Assert(existing == null || existing.Equals(empty), "Token already exists.");
         }
     }
 }
