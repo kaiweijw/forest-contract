@@ -94,11 +94,11 @@ namespace Forest.SymbolRegistrar
         public override Empty IssueSeed(IssueSeedInput input)
         {
             AssertSaleController();
-            IssueSeed(input.To, input.Symbol, 0);
+            IssueSeed(input.To, input.Symbol);
             return new Empty();
         }
 
-        private void IssueSeed(Address to, string symbol, long expireTime)
+        private void IssueSeed(Address to, string symbol, long expireTime = 0)
         {
             var createResult = CreateSeed(Context.Self, symbol, expireTime);
             if (!createResult)
@@ -120,12 +120,12 @@ namespace Forest.SymbolRegistrar
             {
                 Symbol = seedSymbol,
                 OwnedSymbol = symbol,
-                ExpireTime = expireTime,
+                ExpireTime = seedInfo.ExpireTime,
                 To = to
             });
         }
 
-        private bool CreateSeed(Address issuer, string symbol, long expireTime)
+        private bool CreateSeed(Address issuer, string symbol, long expireTime = 0)
         {
             CheckSymbolExisted(symbol);
             var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix + SymbolRegistrarContractConstants.CollectionSymbolSuffix);
