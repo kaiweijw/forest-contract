@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Contracts.Auction", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Contracts.Auction.Tests", "test\Forest.Contracts.Auction.Tests\Forest.Contracts.Auction.Tests.csproj", "{A99BC3C5-B0CA-42FD-AF53-867B5CDAAEF7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.MockProxyAccountContract", "test\Forest.MockProxyAccountContract\Forest.MockProxyAccountContract.csproj", "{343D2CBE-68AF-47BE-956F-10631E93ED53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{A99BC3C5-B0CA-42FD-AF53-867B5CDAAEF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A99BC3C5-B0CA-42FD-AF53-867B5CDAAEF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A99BC3C5-B0CA-42FD-AF53-867B5CDAAEF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{343D2CBE-68AF-47BE-956F-10631E93ED53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{343D2CBE-68AF-47BE-956F-10631E93ED53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{343D2CBE-68AF-47BE-956F-10631E93ED53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{343D2CBE-68AF-47BE-956F-10631E93ED53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +110,7 @@ Global
 		{A99BC3C5-B0CA-42FD-AF53-867B5CDAAEF7} = {DBC47323-E6A2-42A2-A624-CE2EE6139567}
 		{46F0CDD6-FBFE-46BC-AD72-8C26E0FAE790} = {83F5DA0A-BC4D-4B34-859D-EB0E3FE0AD2A}
 		{D59D4816-F972-4DAD-B0B6-CD255AA72571} = {DBC47323-E6A2-42A2-A624-CE2EE6139567}
+		{343D2CBE-68AF-47BE-956F-10631E93ED53} = {DBC47323-E6A2-42A2-A624-CE2EE6139567}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D7426B41-E959-40E4-9ED8-ED8D9C50F133}
