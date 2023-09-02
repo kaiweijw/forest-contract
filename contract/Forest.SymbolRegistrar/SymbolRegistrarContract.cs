@@ -7,7 +7,7 @@ namespace Forest.SymbolRegistrar
     /// folder.
     /// Notice that it inherits from the protobuf generated code. 
     /// </summary>
-    public class SymbolRegistrarContract : SymbolRegistrarContractContainer.SymbolRegistrarContractBase
+    public partial class SymbolRegistrarContract : SymbolRegistrarContractContainer.SymbolRegistrarContractBase
     {
         
     }
