@@ -1,3 +1,4 @@
+using System.Linq;
 using AElf.Contracts.MultiToken;
 using AElf.Sdk.CSharp;
 using Google.Protobuf.WellKnownTypes;
@@ -132,13 +133,23 @@ namespace Forest.SymbolRegistrar
 
         private void AssertSaleController()
         {
-            Assert(State.SaleController.Value.Controllers.Contains(Context.Sender),
+            Assert(State.SaleController.Value != null && State.SaleController.Value.Controllers.Contains(Context.Sender),
                 "No sale controller permission.");
         }
 
         private void AssertInitialized()
         {
             Assert(State.Initialized.Value, "Contract not initialized.");
+        }
+
+        private void CheckSymbolExisted(string symbol)
+        {
+            var symbols = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
+            var tokenSymbol = symbols.First();
+            Assert(State.SymbolSeedMap[tokenSymbol] == null, "symbol seed existed");
+            var collectionSymbol = symbols.First() + SymbolRegistrarContractConstants.NFTSymbolSeparator +
+                                   SymbolRegistrarContractConstants.CollectionSymbolSuffix;
+            Assert(State.SymbolSeedMap[collectionSymbol] == null, "symbol seed existed");
         }
     }
 }

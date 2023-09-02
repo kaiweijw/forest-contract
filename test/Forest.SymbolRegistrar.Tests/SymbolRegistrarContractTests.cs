@@ -1,5 +1,5 @@
-using System.Linq;
 using System.Threading.Tasks;
+using System.Linq;
 using AElf.Contracts.MultiToken;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
@@ -10,13 +10,25 @@ namespace Forest.SymbolRegistrar
 {
     public class SymbolRegistrarContractTests : SymbolRegistrarContractTestBase
     {
+        public async Task InitSaleController(Address address)
+        {
+            await AdminSymbolRegistrarContractStub.AddSaleController.SendAsync(new AddSaleControllerInput()
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { address }
+                }
+            });
+        }
+        
         [Fact]
         public async Task InitializeContract()
         {
             await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = ProxyAccountAddress
+                ProxyAccountAddress = ProxyAccountAddress,
+				AuctionContractAddress = Admin.Address
             });
         }
         

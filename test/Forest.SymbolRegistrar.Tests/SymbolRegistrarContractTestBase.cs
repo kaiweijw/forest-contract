@@ -2,7 +2,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Boilerplate.TestBase;
-using AElf.Contracts.Genesis;
 using AElf.Contracts.MultiToken;
 using AElf.Contracts.Parliament;
 using AElf.ContractTestBase.ContractTestKit;
@@ -44,6 +43,8 @@ namespace Forest.SymbolRegistrar
         internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User1SymbolRegistrarContractStub { get; set; }
         internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User2SymbolRegistrarContractStub { get; set; }
         internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User3SymbolRegistrarContractStub { get; set; }
+         
+        internal ProxyAccountContractContainer.ProxyAccountContractStub AdminProxyAccountContractStubContractStub { get; set; }
         
         protected readonly IBlockTimeProvider BlockTimeProvider;
         
@@ -60,6 +61,8 @@ namespace Forest.SymbolRegistrar
             User1SymbolRegistrarContractStub = GetSymbolRetistrarStub(User1.KeyPair);
             User2SymbolRegistrarContractStub = GetSymbolRetistrarStub(User2.KeyPair);
             User3SymbolRegistrarContractStub = GetSymbolRetistrarStub(User3.KeyPair);
+            
+            AdminProxyAccountContractStubContractStub = GetProxyAccountContractStub(Admin.KeyPair);
             
             BlockTimeProvider = GetRequiredService<IBlockTimeProvider>();
         }
