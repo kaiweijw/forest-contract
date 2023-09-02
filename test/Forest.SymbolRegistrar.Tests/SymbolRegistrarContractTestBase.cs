@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Boilerplate.TestBase;
+using AElf.Contracts.Genesis;
 using AElf.Contracts.MultiToken;
 using AElf.Contracts.Parliament;
 using AElf.ContractTestBase.ContractTestKit;
@@ -67,7 +68,7 @@ namespace Forest.SymbolRegistrar
         private void DeploySaleContract(Account account)
         {
             var zeroContractStub = GetContractZeroTester(account.KeyPair);
-            var result = AsyncHelper.RunSync(async () => await zeroContractStub.DeploySmartContract.SendAsync(
+            var result = AsyncHelper.RunSync(() => zeroContractStub.DeploySmartContract.SendAsync(
                 new ContractDeploymentInput
                 {
                     Category = KernelConstants.CodeCoverageRunnerCategory,
@@ -76,7 +77,7 @@ namespace Forest.SymbolRegistrar
                 }));
             SaleContractAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
             
-            result = AsyncHelper.RunSync(async () => await zeroContractStub.DeploySmartContract.SendAsync(
+            result = AsyncHelper.RunSync(() => zeroContractStub.DeploySmartContract.SendAsync(
                 new ContractDeploymentInput
                 {
                     Category = KernelConstants.CodeCoverageRunnerCategory,
@@ -96,7 +97,7 @@ namespace Forest.SymbolRegistrar
         {
             return GetTester<ACS0Container.ACS0Stub>(BasicContractZeroAddress, senderKeyPair);
         }
-
+        
         internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub GetSaleContractStub(ECKeyPair keyPair)
         {
             return GetTester<SymbolRegistrarContractContainer.SymbolRegistrarContractStub>(SaleContractAddress, keyPair);
