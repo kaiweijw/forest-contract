@@ -6,7 +6,12 @@ public partial class AuctionContract
 {
     private void AssertAdmin()
     {
-        Assert(State.Admin.Value != null, "Not initialized.");
+        AssertInitialize();
         Assert(Context.Sender == State.Admin.Value, "No permission.");
+    }
+
+    private void AssertInitialize()
+    {
+        Assert(State.Initialized.Value, "Not initialized.");
     }
 }

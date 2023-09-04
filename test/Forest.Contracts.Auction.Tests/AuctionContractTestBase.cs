@@ -1,6 +1,7 @@
 using System.IO;
 using AElf.Boilerplate.TestBase;
 using AElf.Contracts.MultiToken;
+using AElf.ContractTestBase.ContractTestKit;
 using AElf.Cryptography.ECDSA;
 using AElf.Kernel;
 using AElf.Standards.ACS0;
@@ -17,6 +18,7 @@ namespace Forest.Contracts.Auction
         internal TokenContractContainer.TokenContractStub TokenContractStub { get; set; }
         internal TokenContractContainer.TokenContractStub TokenContractUserStub { get; set; }
         internal TokenContractContainer.TokenContractStub TokenContractUser2Stub { get; set; }
+        internal TokenContractContainer.TokenContractStub TokenContractReceivingStub { get; set; }
         internal ACS0Container.ACS0Stub ZeroContractStub { get; set; }
         internal AuctionContractContainer.AuctionContractStub AuctionContractStub { get; set; }
         internal AuctionContractContainer.AuctionContractStub AuctionContractUserStub { get; set; }
@@ -30,9 +32,16 @@ namespace Forest.Contracts.Auction
         
         protected ECKeyPair User2KeyPair => Accounts[2].KeyPair;
         protected Address User2Address => Accounts[2].Address;
+        
+        protected ECKeyPair ReceivingKeyPair => Accounts[5].KeyPair;
+        protected Address ReceivingAddress => Accounts[5].Address;
+        
+        protected readonly IBlockTimeProvider BlockTimeProvider;
 
         protected AuctionContractTestBase()
         {
+            BlockTimeProvider = GetRequiredService<IBlockTimeProvider>();
+            
             ZeroContractStub = GetContractZeroTester(DefaultKeyPair);
             var result = AsyncHelper.RunSync(async () => await ZeroContractStub.DeploySmartContract.SendAsync(
                 new ContractDeploymentInput
@@ -50,6 +59,7 @@ namespace Forest.Contracts.Auction
             TokenContractStub = GetTokenContractStub(DefaultKeyPair);
             TokenContractUserStub = GetTokenContractStub(UserKeyPair);
             TokenContractUser2Stub = GetTokenContractStub(User2KeyPair);
+            TokenContractReceivingStub = GetTokenContractStub(ReceivingKeyPair);
         }
         
         internal AuctionContractContainer.AuctionContractStub GetAuctionAccountContractStub(ECKeyPair senderKeyPair)

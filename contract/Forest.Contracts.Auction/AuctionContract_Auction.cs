@@ -3,7 +3,6 @@ using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
 using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
-using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Contracts.Auction;
@@ -13,18 +12,20 @@ public partial class AuctionContract
     public override Empty CreateAuction(CreateAuctionInput input)
     {
         Assert(input != null, "Invalid input.");
+        AssertInitialize();
         Assert(!string.IsNullOrWhiteSpace(input.Symbol), "Invalid input symbol.");
         Assert(input.Amount > 0, "Invalid input amount");
         Assert(input.ReceivingAddress == null || !input.ReceivingAddress.Value.IsNullOrEmpty(),
             "Invalid input receiving address.");
+        Assert(input.AuctionType == AuctionType.English, "Invalid input auction type.");
         AssertInputPrice(input.StartPrice);
         AssertAuctionConfig(input.AuctionConfig);
-        
+
         var auctionConfig = input.AuctionConfig;
         var currentBlockTime = Context.CurrentBlockTime;
 
         var auctionId = HashHelper.ConcatAndCompute(Context.TransactionId, HashHelper.ComputeFrom(input.Symbol));
-        
+
         var auctionInfo = new AuctionInfo
         {
             AuctionId = auctionId,
@@ -33,18 +34,20 @@ public partial class AuctionContract
             Symbol = input.Symbol,
             Amount = input.Amount,
             StartPrice = input.StartPrice,
-            ReceivingAddress = input.ReceivingAddress ?? Context.Sender
+            ReceivingAddress = input.ReceivingAddress ?? Context.Sender,
+            Creator = Context.Sender
         };
 
         if (input.AuctionConfig.StartImmediately)
         {
             auctionInfo.StartTime = currentBlockTime;
             auctionInfo.EndTime = currentBlockTime.AddSeconds(auctionConfig.Duration);
-            auctionInfo.MaxEndTime = currentBlockTime.AddSeconds(auctionConfig.Duration.Add(auctionConfig.MaxExtensionTime));
+            auctionInfo.MaxEndTime =
+                currentBlockTime.AddSeconds(auctionConfig.Duration.Add(auctionConfig.MaxExtensionTime));
         }
 
         State.AuctionInfoMap[auctionId] = auctionInfo;
-        
+
         TransferFromCreator(new Price
         {
             Amount = auctionInfo.Amount,
@@ -53,7 +56,7 @@ public partial class AuctionContract
 
         Context.Fire(new AuctionCreated
         {
-            Creator = Context.Sender,
+            Creator = auctionInfo.Creator,
             AuctionId = auctionInfo.AuctionId,
             StartPrice = auctionInfo.StartPrice,
             StartTime = auctionInfo.StartTime,
@@ -72,7 +75,7 @@ public partial class AuctionContract
     public override Empty PlaceBid(PlaceBidInput input)
     {
         Assert(input != null, "Invalid input.");
-        Assert(input.AuctionId != null && !input.AuctionId.Value.IsNullOrEmpty() , "Invalid input auction id.");
+        Assert(input.AuctionId != null && !input.AuctionId.Value.IsNullOrEmpty(), "Invalid input auction id.");
         AssertInputPrice(input.Price);
 
         var auctionInfo = State.AuctionInfoMap[input.AuctionId];
@@ -106,10 +109,13 @@ public partial class AuctionContract
 
         var auctionInfo = State.AuctionInfoMap[input.AuctionId];
         Assert(auctionInfo != null, "Auction not exist.");
+        Assert(auctionInfo.StartTime != null, "Auction not start yet.");
 
         var currentBlockTime = Context.CurrentBlockTime;
-        auctionInfo.FinishTime = currentBlockTime;
+        Assert(currentBlockTime >= auctionInfo.EndTime, "Auction not end yet.");
         
+        auctionInfo.FinishTime = currentBlockTime;
+
         TransferToBidder(auctionInfo);
         TransferToReceivingAccount(auctionInfo);
 
@@ -119,16 +125,15 @@ public partial class AuctionContract
             Bidder = auctionInfo.LastBidInfo.Bidder,
             FinishTime = currentBlockTime
         });
-        
+
         return new Empty();
     }
-    
+
     private void PlaceBidForEnglishAuction(PlaceBidInput input, AuctionInfo auctionInfo)
     {
         var auctionConfig = auctionInfo.AuctionConfig;
 
         var currentBlockTime = Context.CurrentBlockTime;
-        Assert(currentBlockTime < auctionInfo.EndTime, "Auction finished. Bid failed.");
 
         if (auctionInfo.StartTime == null)
         {
@@ -140,8 +145,10 @@ public partial class AuctionContract
             FireAuctionTimeUpdated(auctionInfo);
         }
 
+        Assert(currentBlockTime < auctionInfo.EndTime, "Auction finished. Bid failed.");
+
         var bidInfo = auctionInfo.LastBidInfo;
-        
+
         AssertBidPrice(
             bidInfo?.Bidder == null ? auctionInfo.StartPrice : bidInfo.Price, input.Price, auctionConfig.MinMarkup);
 
@@ -168,7 +175,7 @@ public partial class AuctionContract
         auctionInfo.LastBidInfo = bidInfo;
         State.AuctionInfoMap[input.AuctionId] = auctionInfo;
     }
-    
+
     private void Refund(BidInfo bidInfo)
     {
         if (bidInfo != null)
@@ -194,7 +201,7 @@ public partial class AuctionContract
             Memo = "Auction"
         });
     }
-    
+
     private void TransferFromBidder(BidInfo bidInfo)
     {
         State.TokenContract.TransferFrom.Send(new TransferFromInput
@@ -217,7 +224,7 @@ public partial class AuctionContract
             Memo = "Auction"
         });
     }
-    
+
     private void TransferToReceivingAccount(AuctionInfo auctionInfo)
     {
         State.TokenContract.Transfer.Send(new TransferInput
@@ -233,7 +240,7 @@ public partial class AuctionContract
     {
         Assert(inputPrice.Symbol == lastPrice.Symbol, "Invalid input price symbol.");
         Assert(inputPrice.Amount > lastPrice.Amount, "Bid price not high enough.");
-        
+
         var threshold = lastPrice.Amount.Mul(100 + minMarkup).Div(100);
         Assert(inputPrice.Amount >= threshold, "Bid price not high enough.");
     }
@@ -254,10 +261,10 @@ public partial class AuctionContract
         Assert(input != null && !string.IsNullOrWhiteSpace(input.Symbol) &&
                input.Amount > 0, "Invalid input price.");
     }
-    
+
     private void AssertAuctionConfig(AuctionConfig input)
     {
-        Assert(input != null, "Invalid input auction config");
+        Assert(input != null, "Invalid input auction config.");
         Assert(input.Duration > 0, "Invalid input duration.");
         Assert(input.CountdownTime >= 0, "Invalid input countdown time.");
         Assert(input.MaxExtensionTime >= 0, "Invalid input max extension time.");
