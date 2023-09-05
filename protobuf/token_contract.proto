@@ -57,10 +57,6 @@ service TokenContract {
     rpc Burn (BurnInput) returns (google.protobuf.Empty) {
     }
 
-    // Change the issuer of the specified token. Only the original issuer can change it.
-    rpc ChangeTokenIssuer (ChangeTokenIssuerInput) returns (google.protobuf.Empty) {
-    }
-
     // Set the primary token of side chain.
     rpc SetPrimaryTokenSymbol (SetPrimaryTokenSymbolInput) returns (google.protobuf.Empty) {
     }
@@ -87,6 +83,10 @@ service TokenContract {
 
     // Used to collect transaction fees.
     rpc ChargeTransactionFees (ChargeTransactionFeesInput) returns (ChargeTransactionFeesOutput) {
+    }
+
+    rpc ChargeUserContractTransactionFees(ChargeTransactionFeesInput) returns(ChargeTransactionFeesOutput){
+
     }
 
     // Check the token threshold.
@@ -127,12 +127,23 @@ service TokenContract {
     rpc InitializeAuthorizedController (google.protobuf.Empty) returns (google.protobuf.Empty){
     }
 
-    rpc ResetExternalInfo (ResetExternalInfoInput) returns (google.protobuf.Empty){
-    }
-
     rpc AddAddressToCreateTokenWhiteList (aelf.Address) returns (google.protobuf.Empty) {
     }
     rpc RemoveAddressFromCreateTokenWhiteList (aelf.Address) returns (google.protobuf.Empty) {
+    }
+
+    rpc SetTransactionFeeDelegations (SetTransactionFeeDelegationsInput) returns (SetTransactionFeeDelegationsOutput){
+    }
+
+    rpc RemoveTransactionFeeDelegator (RemoveTransactionFeeDelegatorInput) returns (google.protobuf.Empty){
+    }
+
+    rpc RemoveTransactionFeeDelegatee (RemoveTransactionFeeDelegateeInput) returns (google.protobuf.Empty){
+    }
+
+    // Get all delegatees' address of delegator from input
+    rpc GetTransactionFeeDelegatees (GetTransactionFeeDelegateesInput) returns (GetTransactionFeeDelegateesOutput) {
+        option (aelf.is_view) = true;
     }
 
     // Query token information.
@@ -208,10 +219,11 @@ service TokenContract {
     rpc IsTokenAvailableForMethodFee (google.protobuf.StringValue) returns (google.protobuf.BoolValue) {
         option (aelf.is_view) = true;
     }
-    rpc IsInCreateTokenWhiteList (aelf.Address) returns (google.protobuf.BoolValue) {
+    rpc GetReservedExternalInfoKeyList (google.protobuf.Empty) returns (StringList) {
         option (aelf.is_view) = true;
     }
-    rpc GetReservedExternalInfoKeyList (google.protobuf.Empty) returns (StringList) {
+
+    rpc GetTransactionFeeDelegationsOfADelegatee(GetTransactionFeeDelegationsOfADelegateeInput) returns(TransactionFeeDelegations){
         option (aelf.is_view) = true;
     }
 }
@@ -227,7 +239,7 @@ message TokenInfo {
     int64 total_supply = 4;
     // The precision of the token.
     int32 decimals = 5;
-    // The address that created the token.
+    // The address that has permission to issue the token.
     aelf.Address issuer = 6;
     // A flag indicating if this token is burnable.
     bool is_burnable = 7;
@@ -237,6 +249,8 @@ message TokenInfo {
     int64 issued = 9;
     // The external information of the token.
     ExternalInfo external_info = 10;
+    // The address that owns the token.
+    aelf.Address owner = 11;
 }
 
 message ExternalInfo {
@@ -252,7 +266,7 @@ message CreateInput {
     int64 total_supply = 3;
     // The precision of the token
     int32 decimals = 4;
-    // The address that created the token.
+    // The address that has permission to issue the token.
     aelf.Address issuer = 5;
     // A flag indicating if this token is burnable.
     bool is_burnable = 6;
@@ -262,6 +276,8 @@ message CreateInput {
     int32 issue_chain_id = 8;
     // The external information of the token.
     ExternalInfo external_info = 9;
+    // The address that owns the token.
+    aelf.Address owner = 10;
 }
 
 message SetPrimaryTokenSymbolInput {
@@ -365,6 +381,11 @@ message ChargeResourceTokenInput {
 message TransactionFeeBill {
     // The transaction fee dictionary, Symbol->fee.
     map<string, int64> fees_map = 1;
+}
+
+message TransactionFreeFeeAllowanceBill {
+    // The transaction free fee allowance dictionary, Symbol->fee.
+    map<string, int64> free_fee_allowances_map = 1;
 }
 
 message CheckThresholdInput {
@@ -628,6 +649,55 @@ message StringList {
     repeated string value = 1;
 }
 
+message TransactionFeeDelegations{
+    // delegation, symbols and its' amount
+    map<string, int64> delegations = 1;
+    // height when added
+    int64 block_height = 2;
+    //Whether to pay transaction fee continuously
+    bool isUnlimitedDelegate = 3;
+}
+
+message TransactionFeeDelegatees{
+    map<string,TransactionFeeDelegations> delegatees = 1;
+}
+
+message SetTransactionFeeDelegationsInput {
+    // the delegator address
+    aelf.Address delegator_address = 1;
+    // delegation, symbols and its' amount
+    map<string, int64> delegations = 2;
+}
+
+message SetTransactionFeeDelegationsOutput {
+    bool success = 1;
+}
+
+message RemoveTransactionFeeDelegatorInput{
+    // the delegator address
+    aelf.Address delegator_address = 1;
+}
+
+message RemoveTransactionFeeDelegateeInput {
+    // the delegatee address
+    aelf.Address delegatee_address = 1;
+}
+
+message GetTransactionFeeDelegationsOfADelegateeInput {
+    aelf.Address delegatee_address = 1;
+    aelf.Address delegator_address = 2;
+}
+
+message GetTransactionFeeDelegateesInput {
+    aelf.Address delegator_address = 1;
+}
+
+message GetTransactionFeeDelegateesOutput {
+    repeated aelf.Address delegatee_addresses = 1;
+}
+
+// Events
+
 message Transferred {
     option (aelf.is_event) = true;
     // The source address of the transferred token.
@@ -695,6 +765,10 @@ message RentalCharged {
     string symbol = 1;
     // The amount of rental fee charged.
     int64 amount = 2;
+    // The payer of rental fee.
+    aelf.Address payer = 3;
+    // The receiver of rental fee.
+    aelf.Address receiver = 4;
 }
 
 message RentalAccountBalanceInsufficient {
@@ -715,7 +789,7 @@ message TokenCreated {
     int64 total_supply = 3;
     // The precision of the token.
     int32 decimals = 4;
-    // The address that created the token.
+    // The address that has permission to issue the token.
     aelf.Address issuer = 5;
     // A flag indicating if this token is burnable.
     bool is_burnable = 6;
@@ -723,6 +797,8 @@ message TokenCreated {
     int32 issue_chain_id = 7;
     // The external information of the token.
     ExternalInfo external_info = 8;
+    // The address that owns the token.
+    aelf.Address owner = 9;
 }
 
 message Issued {
@@ -773,10 +849,26 @@ message CrossChainReceived {
     int32 issue_chain_id = 7;
     // The parent chain height of the transfer transaction.
     int64 parent_chain_height = 8;
+    // The id of transfer transaction.
+    aelf.Hash transfer_transaction_id =9;
 }
 
 message ExternalInfoChanged {
     option (aelf.is_event) = true;
     string symbol = 1;
     ExternalInfo external_info = 2;
+}
+
+message TransactionFeeDelegationAdded {
+    option (aelf.is_event) = true;
+    aelf.Address delegator = 1 [(aelf.is_indexed) = true];
+    aelf.Address delegatee = 2 [(aelf.is_indexed) = true];
+    aelf.Address caller = 3 [(aelf.is_indexed) = true];
+}
+
+message TransactionFeeDelegationCancelled {
+    option (aelf.is_event) = true;
+    aelf.Address delegator = 1 [(aelf.is_indexed) = true];
+    aelf.Address delegatee = 2 [(aelf.is_indexed) = true];
+    aelf.Address caller = 3 [(aelf.is_indexed) = true];
 }

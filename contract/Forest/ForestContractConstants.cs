@@ -2,10 +2,12 @@ namespace Forest;
 
 public partial class ForestContract
 {
-    private const int FeeDenominator = 10000;
-    private const int DefaultExpireDays = 100000;
-    private const int DefaultServiceFeeRate = 10;
-    private const int DefaultServiceFeeAmount = 1_00000000;
-    private const int DefaultDepositConfirmRate = FeeDenominator / 2;
-    private const string BadgeMintWhitelistIdMetadataKey = "aelf_badge_whitelist";
+    public const int FeeDenominator = 10000;
+    public const int DefaultExpireDays = 100000;
+    public const int DefaultServiceFeeRate = 10;
+    public const int DefaultServiceFeeAmount = 1_00000000;
+    public const int DefaultMaxListCount = 60;
+    public const int DefaultMaxOfferCount = 60;
+    public const int DefaultMaxTokenWhiteListCount = 20;
+    public const int DefaultMaxOfferDealCount = 10;
 }

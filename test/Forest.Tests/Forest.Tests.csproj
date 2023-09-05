@@ -11,16 +11,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AElf.Contracts.MultiToken" Version="1.2.0" />
-        <PackageReference Include="AElf.Contracts.Election" Version="1.2.0" />
-        <PackageReference Include="AElf.Contracts.Consensus.AEDPoS" Version="1.2.0" />
-        <PackageReference Include="AElf.EconomicSystem" Version="1.2.0" />
-        <PackageReference Include="AElf.GovernmentSystem" Version="1.2.0" />
-        <PackageReference Include="coverlet.msbuild" Version="3.1.2">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        <PackageReference Include="AElf.Contracts.MultiToken" Version="1.5.0" />
+        <PackageReference Include="AElf.Contracts.Election" Version="1.5.0" />
+        <PackageReference Include="AElf.Contracts.Consensus.AEDPoS" Version="1.5.0" />
+        <PackageReference Include="AElf.EconomicSystem" Version="1.5.0" />
+        <PackageReference Include="AElf.GovernmentSystem" Version="1.5.0" />
+        <PackageReference Include="coverlet.collector" Version="6.0.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="coverlet.collector" Version="3.1.2">
+        <PackageReference Include="coverlet.msbuild" Version="3.1.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -32,8 +32,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AElf.ContractTestKit" Version="1.2.0" />
-        <PackageReference Include="AElf.ContractTestBase" Version="1.2.0" />
+        <PackageReference Include="AElf.ContractTestKit" Version="1.5.0" />
+        <PackageReference Include="AElf.ContractTestBase" Version="1.5.0" />
     </ItemGroup>
     <ItemGroup>
         <ContractMessage Include="..\..\protobuf\authority_info.proto">
@@ -71,9 +71,6 @@
         <ContractStub Include="..\..\protobuf\parliament_contract_impl.proto">
             <Link>Protobuf\Proto\parliament_contract_impl.proto</Link>
         </ContractStub>
-        <ContractStub Include="..\..\protobuf\nft_contract.proto">
-            <Link>Protobuf\Proto\nft_contract.proto</Link>
-        </ContractStub>
         <ContractStub Include="..\..\protobuf\whitelist_contract.proto">
             <Link>Protobuf\Proto\whitelist_contract.proto</Link>
         </ContractStub>
@@ -89,11 +86,13 @@
         <ContractBase Include="..\..\protobuf\acs10.proto">
             <Link>Protobuf\Proto\base\acs10.proto</Link>
         </ContractBase>
+        <ContractBase Include="..\..\protobuf\acs12.proto">
+            <Link>Protobuf\Proto\base\acs12.proto</Link>
+        </ContractBase>
         
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\contract\AElf.Contracts.NFT\AElf.Contracts.NFT.csproj" />
         <ProjectReference Include="..\..\contract\Forest.Whitelist\Forest.Whitelist.csproj" />
         <ProjectReference Include="..\..\contract\Forest\Forest.csproj" />
         <ProjectReference Include="..\..\src\AElf.Boilerplate.TestBase\AElf.Boilerplate.TestBase.csproj" />

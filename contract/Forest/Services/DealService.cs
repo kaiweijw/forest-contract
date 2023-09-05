@@ -19,15 +19,17 @@ public class DealService
         var dealResultList = new List<DealResult>();
         var needToDealQuantity = input.MakeOfferInput.Quantity;
         var currentIndex = 0;
+        var blockTime = _context.CurrentBlockTime;
         foreach (var listedNftInfo in input.ListedNftInfoList.Value.Where(i =>
-                     i.Price.Symbol == input.MakeOfferInput.Price.Symbol && IsTimeOk(i)).OrderBy(i => i.Price.Amount))
+                     i.Price.Symbol == input.MakeOfferInput.Price.Symbol 
+                     && blockTime >= i.Duration.StartTime 
+                     && blockTime >= i.Duration.PublicTime).OrderBy(i => i.Price.Amount))
         {
             if (listedNftInfo.Quantity >= needToDealQuantity)
             {
                 var dealResult = new DealResult
                 {
                     Symbol = input.MakeOfferInput.Symbol,
-                    TokenId = input.MakeOfferInput.TokenId,
                     Quantity = needToDealQuantity,
                     PurchaseSymbol = input.MakeOfferInput.Price.Symbol,
                     PurchaseAmount = listedNftInfo.Price.Amount,
@@ -43,7 +45,6 @@ public class DealService
                 var dealResult = new DealResult
                 {
                     Symbol = input.MakeOfferInput.Symbol,
-                    TokenId = input.MakeOfferInput.TokenId,
                     Quantity = needToDealQuantity,
                     PurchaseSymbol = input.MakeOfferInput.Price.Symbol,
                     PurchaseAmount = listedNftInfo.Price.Amount,
@@ -64,11 +65,6 @@ public class DealService
 
         return dealResultList;
     }
-
-    private bool IsTimeOk(ListedNFTInfo listedNftInfo)
-    {
-        return _context.CurrentBlockTime >= listedNftInfo.Duration.StartTime && _context.CurrentBlockTime >= listedNftInfo.Duration.PublicTime;
-    }
 }
 
 public class GetDealResultListInput
@@ -81,10 +77,8 @@ public class GetDealResultListInput
 public class DealResult
 {
     internal string Symbol { get; set; }
-    internal long TokenId{ get; set; }
     internal long Quantity{ get; set; }
     internal string PurchaseSymbol{ get; set; }
-    internal long PurchaseTokenId{ get; set; }
     internal long PurchaseAmount{ get; set; }
     internal ListDuration Duration { get; set; }
     internal int Index { get; set; }

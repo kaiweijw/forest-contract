@@ -7,7 +7,6 @@ using AElf.Boilerplate.TestBase.SmartContractNameProviders;
 using AElf.Contracts.Consensus.AEDPoS;
 using AElf.Contracts.Election;
 using AElf.Contracts.MultiToken;
-using AElf.Contracts.NFT;
 using AElf.Contracts.Parliament;
 using AElf.Cryptography.ECDSA;
 using AElf.CSharp.Core.Extension;
@@ -56,27 +55,26 @@ namespace Forest
         
         internal TokenContractImplContainer.TokenContractImplStub TokenContractStub;
         internal TokenContractImplContainer.TokenContractImplStub UserTokenContractStub;
+        internal TokenContractImplContainer.TokenContractImplStub User2TokenContractStub;
+        internal TokenContractImplContainer.TokenContractImplStub User3TokenContractStub;
         internal TokenContractImplContainer.TokenContractImplStub NFTBuyerTokenContractStub;
         internal TokenContractImplContainer.TokenContractImplStub NFTBuyer2TokenContractStub;
-        
-        internal NFTContractContainer.NFTContractStub NFTContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub ForestContractStub { get; set; }
         internal WhitelistContractContainer.WhitelistContractStub WhitelistContractStub { get; set; }
         
         internal ForestContractContainer.ForestContractStub SellerForestContractStub { get; set; }
-    
+        internal ForestContractContainer.ForestContractStub Seller1ForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub Seller2ForestContractStub { get; set; }
+        internal ForestContractContainer.ForestContractStub Seller3ForestContractStub { get; set; }
+        
         internal ForestContractContainer.ForestContractStub BuyerForestContractStub { get; set; }
+        internal ForestContractContainer.ForestContractStub Buyer1ForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub Buyer2ForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub Buyer3ForestContractStub { get; set; }
+        
         internal ForestContractContainer.ForestContractStub CreatorForestContractStub { get; set; }
         internal ForestContractContainer.ForestContractStub AdminForestContractStub { get; set; }
-        
-        internal NFTContractContainer.NFTContractStub MinterNFTContractStub { get; set; }
-        internal NFTContractContainer.NFTContractStub NFT2ContractStub { get; set; }
-        
-        
-        internal Address NFTContractAddress => GetAddress(NFTSmartContractAddressNameProvider.StringName);
+
         internal Address ForestContractAddress => GetAddress(ForestSmartContractAddressNameProvider.StringName);
         internal Address WhitelistContractAddress => GetAddress(WhitelistSmartContractAddressNameProvider.StringName);
 
@@ -88,22 +86,26 @@ namespace Forest
                 GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, DefaultKeyPair);
             UserTokenContractStub =
                 GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User1KeyPair);
+            User2TokenContractStub =
+                GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User2KeyPair);
+            User3TokenContractStub =
+                GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User3KeyPair);
             NFTBuyerTokenContractStub =
                 GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User2KeyPair);
             NFTBuyer2TokenContractStub =
                 GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, User3KeyPair);
-            MinterNFTContractStub = GetTester<NFTContractContainer.NFTContractStub>(NFTContractAddress, MinterKeyPair);
 
             AdminForestContractStub =GetForestContractStub(DefaultKeyPair);
             ForestContractStub = GetForestContractStub(DefaultKeyPair);
             SellerForestContractStub = GetForestContractStub(DefaultKeyPair);
+            Seller1ForestContractStub = GetForestContractStub(User1KeyPair);
             Seller2ForestContractStub = GetForestContractStub(User2KeyPair);
+            Seller3ForestContractStub = GetForestContractStub(User3KeyPair);
             BuyerForestContractStub = GetForestContractStub(User2KeyPair);
+            Buyer1ForestContractStub = GetForestContractStub(User1KeyPair);
             Buyer2ForestContractStub = GetForestContractStub(User3KeyPair);
             Buyer3ForestContractStub = GetForestContractStub(DefaultKeyPair);
             CreatorForestContractStub = GetForestContractStub(DefaultKeyPair);
-            NFTContractStub = GetNFTContractStub(DefaultKeyPair);
-            NFT2ContractStub = GetTester<NFTContractContainer.NFTContractStub>(NFTContractAddress, User2KeyPair);
             WhitelistContractStub = GetWhitelistContractStub(DefaultKeyPair);
             ParliamentContractStub = GetTester<ParliamentContractImplContainer.ParliamentContractImplStub>(
                 ParliamentContractAddress, DefaultKeyPair);
@@ -111,8 +113,6 @@ namespace Forest
                 ElectionContractAddress, DefaultKeyPair);
             ConsensusContractStub = GetTester<AEDPoSContractImplContainer.AEDPoSContractImplStub>(
                 ConsensusContractAddress, DefaultKeyPair);
-            AsyncHelper.RunSync(SetNFTContractAddress);
-
         }
 
         internal ParliamentContractImplContainer.ParliamentContractImplStub GetParliamentContractTester(
@@ -126,24 +126,11 @@ namespace Forest
         {
             return GetTester<ForestContractContainer.ForestContractStub>(ForestContractAddress, senderKeyPair);
         }
-        internal NFTContractContainer.NFTContractStub GetNFTContractStub(ECKeyPair senderKeyPair)
-        {
-            return GetTester<NFTContractContainer.NFTContractStub>(NFTContractAddress, senderKeyPair);
-        }
         internal WhitelistContractContainer.WhitelistContractStub GetWhitelistContractStub(ECKeyPair senderKeyPair)
         {
             return GetTester<WhitelistContractContainer.WhitelistContractStub>(WhitelistContractAddress, senderKeyPair);
         }
         
-        private async Task SetNFTContractAddress()
-        {
-            var defaultParliament = await ParliamentContractStub.GetDefaultOrganizationAddress.CallAsync(new Empty());
-            var proposalId = await CreateProposalAsync(TokenContractAddress,
-                defaultParliament, nameof(TokenContractStub.AddAddressToCreateTokenWhiteList),
-                NFTContractAddress);
-            await ApproveWithMinersAsync(proposalId);
-            await ParliamentContractStub.Release.SendAsync(proposalId);
-        }
         private async Task<Hash> CreateProposalAsync(Address contractAddress, Address organizationAddress,
             string methodName, IMessage input)
         {
@@ -172,6 +159,48 @@ namespace Forest
             //     await tester.Approve.SendAsync(proposalId);
             // }
         }
+        
+        protected async Task CreateSeedCollection() 
+        {
+            await TokenContractStub.Create.SendAsync(new CreateInput()
+            {
+                Symbol = "SEED-0",
+                TokenName = "SEED—collection",
+                TotalSupply = 1,
+                Decimals = 0,
+                Issuer = DefaultAddress,
+                IsBurnable = false,
+                IssueChainId = 0,
+                ExternalInfo = new ExternalInfo()
+            });
+        }
+
+        protected async Task CreateSeed(string seed, string forNFTSymbol)
+        {
+            await TokenContractStub.Create.SendAsync(new CreateInput()
+            {
+                Symbol = seed,
+                TokenName = seed,
+                TotalSupply = 1,
+                Decimals = 0,
+                Issuer = DefaultAddress,
+                IsBurnable = true,
+                IssueChainId = 0,
+                ExternalInfo = new ExternalInfo()
+                {
+                    Value = { 
+                        new Dictionary<string, string>()
+                        {
+                            ["__seed_owned_symbol"] = forNFTSymbol,
+                            ["__seed_exp_time"] = "9992145642"
+                        }
+                    }
+                }
+            });
+
+        }
+        
     }
+    
     
 }
