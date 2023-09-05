@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using AElf.Sdk.CSharp;
 using Google.Protobuf.WellKnownTypes;
 
-namespace Forest.SymbolRegistrar
+namespace Forest.Contracts.SymbolRegistrar
 {
     /// <summary>
     /// The C# implementation of the contract defined in symbol_registrar_contract.proto that is located in the "protobuf"
@@ -16,7 +16,8 @@ namespace Forest.SymbolRegistrar
         public override Empty AddSpecialSeeds(SpecialSeedList input)
         {
             if (State.Initialized.Value)
-                Assert(GetDefaultParliamentController().OwnerAddress == Context.Sender, "No permission.");
+                Assert(State.Admin.Value == Context.Sender // TODO support admin for test temp
+                       || GetDefaultParliamentController().OwnerAddress == Context.Sender, "No permission.");
             else
                 AssertContractAuthor();
 

@@ -1,12 +1,12 @@
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
 
-namespace Forest.SymbolRegistrar
+namespace Forest.Contracts.SymbolRegistrar
 {
     public class SymbolRegistrarContractTests : SymbolRegistrarContractTestBase
     {

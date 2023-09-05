@@ -6,7 +6,7 @@ using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
 
-namespace Forest.SymbolRegistrar
+namespace Forest.Contracts.SymbolRegistrar
 {
     public class SymbolRegistrarContractTests_SpecialSeed : SymbolRegistrarContractTests
     {

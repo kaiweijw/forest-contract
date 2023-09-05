@@ -1,14 +1,12 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using AElf.ContractTestBase.ContractTestKit;
 using AElf.Types;
-using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
 
-namespace Forest.SymbolRegistrar
+namespace Forest.Contracts.SymbolRegistrar
 {
     public class SymbolRegistrarContractTests_Admin : SymbolRegistrarContractTests
     {
@@ -97,6 +95,8 @@ namespace Forest.SymbolRegistrar
             var result = await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
+                AuctionContractAddress = Admin.Address,
+                ProxyAccountAddress = Admin.Address,
                 SpecialSeeds = new SpecialSeedList
                 {
                     Value = { _specialUsd, _specialEth }

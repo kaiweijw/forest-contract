@@ -1,4 +1,4 @@
-namespace Forest.SymbolRegistrar;
+namespace Forest.Contracts.SymbolRegistrar;
 
 public class SymbolRegistrarContractConstants
 {

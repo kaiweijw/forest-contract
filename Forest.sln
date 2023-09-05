@@ -25,15 +25,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "contract", "contract", "{83
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Whitelist", "contract\Forest.Whitelist\Forest.Whitelist.csproj", "{DF6F5121-6092-472D-B89E-1E6C880AEE75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.SymbolRegistrar", "contract\Forest.SymbolRegistrar\Forest.SymbolRegistrar.csproj", "{46F0CDD6-FBFE-46BC-AD72-8C26E0FAE790}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Contracts.SymbolRegistrar", "contract\Forest.Contracts.SymbolRegistrar\Forest.Contracts.SymbolRegistrar.csproj", "{46F0CDD6-FBFE-46BC-AD72-8C26E0FAE790}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.SymbolRegistrar.Tests", "test\Forest.SymbolRegistrar.Tests\Forest.SymbolRegistrar.Tests.csproj", "{D59D4816-F972-4DAD-B0B6-CD255AA72571}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Contracts.SymbolRegistrar.Tests", "test\Forest.Contracts.SymbolRegistrar.Tests\Forest.Contracts.SymbolRegistrar.Tests.csproj", "{D59D4816-F972-4DAD-B0B6-CD255AA72571}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Contracts.Auction", "contract\Forest.Contracts.Auction\Forest.Contracts.Auction.csproj", "{E2F16D67-D7FA-42E7-83ED-D67FE43F0478}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Contracts.Auction.Tests", "test\Forest.Contracts.Auction.Tests\Forest.Contracts.Auction.Tests.csproj", "{A99BC3C5-B0CA-42FD-AF53-867B5CDAAEF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.MockProxyAccountContract", "test\Forest.MockProxyAccountContract\Forest.MockProxyAccountContract.csproj", "{343D2CBE-68AF-47BE-956F-10631E93ED53}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Contracts.MockProxyAccountContract", "test\Forest.Contracts.MockProxyAccountContract\Forest.Contracts.MockProxyAccountContract.csproj", "{343D2CBE-68AF-47BE-956F-10631E93ED53}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

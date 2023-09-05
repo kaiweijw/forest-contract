@@ -10,7 +10,7 @@ using Shouldly;
 using Xunit;
 using CreateInput = AElf.Contracts.MultiToken.CreateInput;
 
-namespace Forest.SymbolRegistrar
+namespace Forest.Contracts.SymbolRegistrar
 {
     public class SymbolRegistrarContractTests_Seed : SymbolRegistrarContractTests
     {

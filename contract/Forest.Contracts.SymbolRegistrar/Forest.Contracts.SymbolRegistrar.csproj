@@ -2,7 +2,6 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <!-- The root namespace -->
-        <RootNamespace>Forest.SymbolRegistrar</RootNamespace>
         <!-- Mark this project as a contract -->
         <IsContract>true</IsContract>
     </PropertyGroup>

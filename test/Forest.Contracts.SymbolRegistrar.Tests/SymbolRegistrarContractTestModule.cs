@@ -1,14 +1,10 @@
-using System.Collections.Generic;
-using System.IO;
 using AElf.Boilerplate.TestBase;
-using AElf.ContractTestBase;
 using AElf.Kernel.SmartContract;
 using AElf.Kernel.SmartContract.Application;
 using Microsoft.Extensions.DependencyInjection;
-using Volo.Abp;
 using Volo.Abp.Modularity;
 
-namespace Forest.SymbolRegistrar
+namespace Forest.Contracts.SymbolRegistrar
 {
     [DependsOn(typeof(MainChainDAppContractTestModule))]
     public class SymbolRegistrarContractTestModule : MainChainDAppContractTestModule

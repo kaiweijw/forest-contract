@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>Forest.SymbolRegistrar</RootNamespace>
+    <RootNamespace>Forest.Contracts.SymbolRegistrar</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -100,9 +100,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\contract\Forest.SymbolRegistrar\Forest.SymbolRegistrar.csproj" />
+    <ProjectReference Include="..\..\contract\Forest.Contracts.SymbolRegistrar\Forest.Contracts.SymbolRegistrar.csproj" />
     <ProjectReference Include="..\..\src\AElf.Boilerplate.TestBase\AElf.Boilerplate.TestBase.csproj" />
-    <ProjectReference Include="..\Forest.MockProxyAccountContract\Forest.MockProxyAccountContract.csproj" />
+    <ProjectReference Include="..\Forest.Contracts.MockProxyAccountContract\Forest.Contracts.MockProxyAccountContract.csproj" />
   </ItemGroup>
 
 </Project>

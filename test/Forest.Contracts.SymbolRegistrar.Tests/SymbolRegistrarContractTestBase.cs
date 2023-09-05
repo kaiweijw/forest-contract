@@ -16,10 +16,9 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Volo.Abp.Threading;
-using Xunit;
 using ProxyAccountContractContainer = AElf.Contracts.ProxyAccountContract.ProxyAccountContractContainer;
 
-namespace Forest.SymbolRegistrar
+namespace Forest.Contracts.SymbolRegistrar
 {
     public class SymbolRegistrarContractTestBase : DAppContractTestBase<SymbolRegistrarContractTestModule>
     {

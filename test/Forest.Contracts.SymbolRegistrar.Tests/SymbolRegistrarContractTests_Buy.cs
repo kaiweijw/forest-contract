@@ -2,12 +2,10 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
-using AElf.Kernel.Token;
-using AElf.Types;
 using Shouldly;
 using Xunit;
 
-namespace Forest.SymbolRegistrar
+namespace Forest.Contracts.SymbolRegistrar
 {
     public class SymbolRegistrarContractTests_Buy : SymbolRegistrarContractTests
     {

@@ -8,7 +8,7 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using CreateInput = AElf.Contracts.MultiToken.CreateInput;
 
-namespace Forest.SymbolRegistrar
+namespace Forest.Contracts.SymbolRegistrar
 {
     /// <summary>
     /// The C# implementation of the contract defined in symbol_registrar_contract.proto that is located in the "protobuf"
@@ -40,11 +40,7 @@ namespace Forest.SymbolRegistrar
                 Amount = price.Amount,
             });
 
-            IssueSeed(new IssueSeedInput()
-            {
-                Symbol = input.Symbol,
-                To = issueTo
-            });
+            IssueSeed(issueTo, input.Symbol);
 
             Context.Fire(new Bought()
             {

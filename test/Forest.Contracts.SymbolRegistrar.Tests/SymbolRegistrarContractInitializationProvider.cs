@@ -3,7 +3,7 @@ using AElf.Boilerplate.TestBase;
 using AElf.Kernel.SmartContract.Application;
 using AElf.Types;
 
-namespace Forest.SymbolRegistrar
+namespace Forest.Contracts.SymbolRegistrar
 {
     public class SymbolRegistrarContractInitializationProvider : IContractInitializationProvider
     {

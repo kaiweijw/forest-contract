@@ -1,8 +1,8 @@
 using AElf.Contracts.MultiToken;
 using AElf.Sdk.CSharp.State;
-using Forest.SymbolRegistrar;
+using Forest.Contracts.SymbolRegistrar;
 
-namespace Forest.MockProxyAccountContract
+namespace Forest.Contracts.MockProxyAccountContract
 {
     /// <summary>
     /// The state class of the contract, it inherits from the AElf.Sdk.CSharp.State.ContractState type. 

@@ -21,13 +21,13 @@ import "google/protobuf/empty.proto";
 
 // the name of the C# namespace in which the contract code will be,
 // generated code will also be in this namespace.
-option csharp_namespace = "Forest.MockProxyAccountContract";
+option csharp_namespace = "Forest.Contracts.MockProxyAccountContract";
 
 // the contract definition: a gRPC service definition.
 service MockProxyAccountContract {
 
     // the full name of the C# class that will contain the state (here <namespace>.<state-class-name> format).
-    option (aelf.csharp_state) = "Forest.MockProxyAccountContract.MockProxyAccountContractState";
+    option (aelf.csharp_state) = "Forest.Contracts.MockProxyAccountContract.MockProxyAccountContractState";
 
 
     // Action

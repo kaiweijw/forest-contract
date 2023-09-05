@@ -1,9 +1,10 @@
 using AElf.Contracts.MultiToken;
 using AElf.Sdk.CSharp;
 using AElf.Types;
+using Forest.Contracts.MockProxyAccountContract;
 using Google.Protobuf.WellKnownTypes;
 
-namespace Forest.MockProxyAccountContract
+namespace Forest.Contracts.MockProxyAccountContract
 {
     /// <summary>
     /// The C# implementation of the contract defined in mock_proxy_account_contract.proto that is located in the "protobuf"
