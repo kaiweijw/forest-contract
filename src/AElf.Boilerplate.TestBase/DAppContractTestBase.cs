@@ -35,4 +35,8 @@ namespace AElf.Boilerplate.TestBase
             return address;
         }
     }
+    
+    
+    
+    
 }

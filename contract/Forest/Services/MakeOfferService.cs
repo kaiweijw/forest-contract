@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using AElf.Contracts.NFT;
+using AElf.Contracts.MultiToken;
+using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
 using AElf.Sdk.CSharp.State;
@@ -14,24 +15,28 @@ namespace Forest.Services;
 
 internal class MakeOfferService
 {
-    private readonly NFTContractContainer.NFTContractReferenceState _nftContract;
+    private readonly TokenContractContainer.TokenContractReferenceState _tokenContract;
     private readonly WhitelistContractContainer.WhitelistContractReferenceState _whitelistContract;
     private readonly MappedState<Hash, Hash> _whitelistIdMap;
-    private readonly MappedState<string, long, Address, ListedNFTInfoList> _listedNFTInfoListMap;
+    private readonly MappedState<string, Address, ListedNFTInfoList> _listedNFTInfoListMap;
     private readonly WhitelistManager _whitelistManager;
     private readonly CSharpSmartContractContext _context;
+    private readonly SingletonState<BizConfig> _bizConfig;
 
-    public MakeOfferService(NFTContractContainer.NFTContractReferenceState nftContract,
+    public MakeOfferService(
+        TokenContractContainer.TokenContractReferenceState tokenContract,
         MappedState<Hash, Hash> whitelistIdMap,
-        MappedState<string, long, Address, ListedNFTInfoList> listedNFTInfoListMap,
+        MappedState<string, Address, ListedNFTInfoList> listedNFTInfoListMap,
         WhitelistManager whitelistManager,
+        SingletonState<BizConfig> bizConfig,
         CSharpSmartContractContext context)
     {
-        _nftContract = nftContract;
+        _tokenContract = tokenContract;
         _whitelistIdMap = whitelistIdMap;
         _listedNFTInfoListMap = listedNFTInfoListMap;
         _whitelistManager = whitelistManager;
         _context = context;
+        _bizConfig = bizConfig;
     }
 
     public void ValidateOffer(MakeOfferInput makeOfferInput)
@@ -45,7 +50,7 @@ internal class MakeOfferService
     public bool IsSenderInWhitelist(MakeOfferInput makeOfferInput,out Hash whitelistId)
     {
         var projectId =
-            WhitelistHelper.CalculateProjectId(makeOfferInput.Symbol, makeOfferInput.TokenId, makeOfferInput.OfferTo);
+            WhitelistHelper.CalculateProjectId(makeOfferInput.Symbol, makeOfferInput.OfferTo);
         whitelistId = _whitelistIdMap[projectId];
         return whitelistId != null && _whitelistManager.IsAddressInWhitelist(_context.Sender, whitelistId);
     }
@@ -53,26 +58,24 @@ internal class MakeOfferService
     public DealStatus GetDealStatus(MakeOfferInput makeOfferInput, out List<ListedNFTInfo> affordableNftInfoList)
     {
         affordableNftInfoList = new List<ListedNFTInfo>();
-        var nftInfo = _nftContract.GetNFTInfo.Call(new GetNFTInfoInput
+        var nftInfo = _tokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = makeOfferInput.Symbol,
-            TokenId = makeOfferInput.TokenId
         });
-        var protocolInfo = _nftContract.GetNFTProtocolInfo.Call(new StringValue { Value = makeOfferInput.Symbol });
-        if (nftInfo.Quantity == 0 && !protocolInfo.IsTokenIdReuse && makeOfferInput.Quantity == 1)
+        if (nftInfo.Supply == 0 && makeOfferInput.Quantity == 1)
         {
             // NFT not minted.
             return DealStatus.NFTNotMined;
         }
 
-        if (nftInfo.Quantity <= 0)
+        if (nftInfo.Supply <= 0)
         {
             throw new AssertionException("NFT does not exist.");
         }
 
         var listedNftInfoList =
-            _listedNFTInfoListMap[makeOfferInput.Symbol][makeOfferInput.TokenId][
-                makeOfferInput.OfferTo ?? nftInfo.Creator];
+            _listedNFTInfoListMap[makeOfferInput.Symbol][
+                makeOfferInput.OfferTo ?? nftInfo.Issuer];
 
         if (listedNftInfoList == null || listedNftInfoList.Value.All(i => i.ListType == ListType.NotListed))
         {
@@ -97,18 +100,17 @@ internal class MakeOfferService
     private List<ListedNFTInfo> GetAffordableNftInfoList(MakeOfferInput makeOfferInput,
         ListedNFTInfoList listedNftInfoList)
     {
+        var blockTime = _context.CurrentBlockTime;
+        var maxDealCount = _bizConfig.Value.MaxOfferDealCount;
         return listedNftInfoList.Value.Where(i =>
             (i.Price.Symbol == makeOfferInput.Price.Symbol && i.Price.Amount <= makeOfferInput.Price.Amount ||
-             i.ListType != ListType.FixedPrice) &&
-            !IsListedNftTimedOut(i)).OrderBy(i => i.Price.Amount).ToList();
+             i.ListType != ListType.FixedPrice) 
+            && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours))
+            .OrderBy(i => i.Price.Amount)
+            .Take(maxDealCount > 0 ? maxDealCount : ForestContract.DefaultMaxOfferDealCount)
+            .ToList();
     }
     
-
-    private bool IsListedNftTimedOut(ListedNFTInfo listedNftInfo)
-    {
-        var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours);
-        return _context.CurrentBlockTime > expireTime;
-    }
 }
 
 public enum DealStatus
