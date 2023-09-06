@@ -1,3 +1,4 @@
+using AElf;
 using AElf.Contracts.MultiToken;
 using AElf.Contracts.ProxyAccountContract;
 using AElf.CSharp.Core;
@@ -82,6 +83,8 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty CreateSeed(CreateSeedInput input)
         {
             AssertSaleController();
+            Assert(input.Issuer != null && !input.Issuer.Value.IsNullOrEmpty(), "Issuer required.");
+            Assert(input.IssueChainId >= 0, "invalid issueChainId.");
             CreateSeed(input.Issuer, input.Symbol, input.IssueChainId);
             return new Empty();
         }
