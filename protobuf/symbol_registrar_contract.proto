@@ -130,6 +130,8 @@ message BizConfig {
 
 message CreateSeedInput {
     string symbol = 1;
+    aelf.Address issuer = 2;
+    int32 issue_chain_id = 3;
 }
 
 message IssueSeedInput {

@@ -38,13 +38,15 @@ namespace Forest.Contracts.SymbolRegistrar
             await InitSeed();
             var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput()
             {
-                Symbol = "LUCK"
+                Symbol = "LUCK",
+                Issuer = Admin.Address
             });
             result.TransactionResult.Error.ShouldContain("No sale controller permission.");
             await InitSaleController(Admin.Address);
             result = await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput()
             {
-                Symbol = "LUCK"
+                Symbol = "LUCK",
+                Issuer = Admin.Address
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             var tokenCreated =
