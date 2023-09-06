@@ -82,8 +82,7 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty CreateSeed(CreateSeedInput input)
         {
             AssertSaleController();
-            Assert(State.AuctionContractAddress.Value != null, "AuctionContractAddress not set");
-            CreateSeed(State.AuctionContractAddress.Value, input.Symbol, 0);
+            CreateSeed(input.Issuer, input.Symbol, input.IssueChainId);
             return new Empty();
         }
         
@@ -96,7 +95,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
         private void IssueSeed(Address to, string symbol, long expireTime = 0)
         {
-            var createResult = CreateSeed(Context.Self, symbol, expireTime);
+            var createResult = CreateSeed(Context.Self, symbol, Context.ChainId, expireTime);
             if (!createResult)
             {
                 return;
@@ -121,7 +120,7 @@ namespace Forest.Contracts.SymbolRegistrar
             });
         }
 
-        private bool CreateSeed(Address issuer, string symbol, long expireTime = 0)
+        private bool CreateSeed(Address issuer, string symbol, int issueChainId, long expireTime = 0)
         {
             CheckSymbolExisted(symbol);
             var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix + SymbolRegistrarContractConstants.CollectionSymbolSuffix);
@@ -154,6 +153,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 TotalSupply = 1,
                 Owner = seedCollection.Owner,
                 Issuer = issuer,
+                IssueChainId = issueChainId,
                 ExternalInfo = new ExternalInfo(),
                 LockWhiteList = { State.TokenContract.Value }
             };
