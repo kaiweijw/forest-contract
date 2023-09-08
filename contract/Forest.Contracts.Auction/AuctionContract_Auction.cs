@@ -114,7 +114,7 @@ public partial class AuctionContract
         
         auctionInfo.FinishTime = currentBlockTime;
 
-        TransferToBidder(auctionInfo);
+        TransferTokenToBidder(auctionInfo);
         TransferToReceivingAccount(auctionInfo);
 
         Context.Fire(new Claimed
@@ -209,7 +209,7 @@ public partial class AuctionContract
         });
     }
 
-    private void TransferToBidder(AuctionInfo auctionInfo)
+    private void TransferTokenToBidder(AuctionInfo auctionInfo)
     {
         State.TokenContract.Transfer.Send(new TransferInput
         {
