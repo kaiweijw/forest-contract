@@ -114,10 +114,10 @@ message InitializeInput {
 
 
 message AuctionConfig {
-    int64 duration = 1; // 竞拍持续时间
-    int32 min_markup = 2; // 最小加价，可选，如果不填比上次高即可
-    int64 countdown_time = 3; // 阈值内，每次延长时间
-    int64 max_extension_time = 4; // 最大延长时间
+    int64 duration = 1;
+    int32 min_markup = 2;
+    int64 countdown_time = 3;
+    int64 max_extension_time = 4;
     bool start_immediately = 5;
 }
 
