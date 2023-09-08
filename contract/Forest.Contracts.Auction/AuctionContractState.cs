@@ -7,7 +7,6 @@ namespace Forest.Contracts.Auction
     {
         public SingletonState<bool> Initialized { get; set; }
         public SingletonState<Address> Admin { get; set; }
-        public SingletonState<Address> ReceivingAccount { get; set; }
         
         // Auction Id -> Auction
         public MappedState<Hash, AuctionInfo> AuctionInfoMap { get; set; }

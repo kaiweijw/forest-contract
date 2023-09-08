@@ -183,10 +183,7 @@ namespace Forest.Contracts.Auction
                     Symbol = "ELF",
                     Amount = 100
                 },
-                AuctionConfig = new AuctionConfig
-                {
-                    
-                }
+                AuctionConfig = new AuctionConfig()
             });
             result.TransactionResult.Error.ShouldContain("Invalid input duration.");
             
@@ -396,9 +393,7 @@ namespace Forest.Contracts.Auction
         [Fact]
         public async Task ClaimTests_Fail()
         {
-            var result = await AuctionContractStub.Claim.SendWithExceptionAsync(new ClaimInput
-            {
-            });
+            var result = await AuctionContractStub.Claim.SendWithExceptionAsync(new ClaimInput());
             result.TransactionResult.Error.ShouldContain("Invalid input auction id.");
             
             result = await AuctionContractStub.Claim.SendWithExceptionAsync(new ClaimInput

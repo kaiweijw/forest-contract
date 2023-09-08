@@ -22,9 +22,10 @@ public partial class AuctionContract
         AssertAuctionConfig(input.AuctionConfig);
 
         var auctionConfig = input.AuctionConfig;
-        var currentBlockTime = Context.CurrentBlockTime;
 
         var auctionId = HashHelper.ConcatAndCompute(Context.TransactionId, HashHelper.ComputeFrom(input.Symbol));
+        
+        Assert(State.AuctionInfoMap[auctionId] == null, "Auction already exist.");
 
         var auctionInfo = new AuctionInfo
         {
@@ -40,10 +41,7 @@ public partial class AuctionContract
 
         if (input.AuctionConfig.StartImmediately)
         {
-            auctionInfo.StartTime = currentBlockTime;
-            auctionInfo.EndTime = currentBlockTime.AddSeconds(auctionConfig.Duration);
-            auctionInfo.MaxEndTime =
-                currentBlockTime.AddSeconds(auctionConfig.Duration.Add(auctionConfig.MaxExtensionTime));
+            InitAuctionConfig(auctionInfo);
         }
 
         State.AuctionInfoMap[auctionId] = auctionInfo;
@@ -93,10 +91,10 @@ public partial class AuctionContract
 
         Context.Fire(new BidPlaced
         {
-            AuctionId = input.AuctionId,
-            Bidder = Context.Sender,
-            Price = input.Price,
-            BidTime = Context.CurrentBlockTime
+            AuctionId = auctionInfo.AuctionId,
+            Bidder = auctionInfo.LastBidInfo.Bidder,
+            Price = auctionInfo.LastBidInfo.Price,
+            BidTime = auctionInfo.LastBidInfo.BidTime
         });
 
         return new Empty();
@@ -137,10 +135,7 @@ public partial class AuctionContract
 
         if (auctionInfo.StartTime == null)
         {
-            auctionInfo.StartTime = currentBlockTime;
-            auctionInfo.EndTime = currentBlockTime.AddSeconds(auctionConfig.Duration);
-            auctionInfo.MaxEndTime =
-                currentBlockTime.AddSeconds(auctionConfig.Duration.Add(auctionConfig.MaxExtensionTime));
+            InitAuctionConfig(auctionInfo);
 
             FireAuctionTimeUpdated(auctionInfo);
         }
@@ -269,5 +264,16 @@ public partial class AuctionContract
         Assert(input.CountdownTime >= 0, "Invalid input countdown time.");
         Assert(input.MaxExtensionTime >= 0, "Invalid input max extension time.");
         Assert(input.MinMarkup > 0, "Invalid input min markup.");
+    }
+
+    private void InitAuctionConfig(AuctionInfo auctionInfo)
+    {
+        var currentBlockTime = Context.CurrentBlockTime;
+        var auctionConfig = auctionInfo.AuctionConfig;
+        
+        auctionInfo.StartTime = currentBlockTime;
+        auctionInfo.EndTime = currentBlockTime.AddSeconds(auctionConfig.Duration);
+        auctionInfo.MaxEndTime =
+            currentBlockTime.AddSeconds(auctionConfig.Duration.Add(auctionConfig.MaxExtensionTime));
     }
 }
