@@ -1,0 +1,108 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Forest.Contracts.SymbolRegistrar</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>0436</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AElf.Contracts.Association" Version="1.5.0" />
+    <PackageReference Include="AElf.Contracts.Genesis" Version="1.5.0" />
+    <PackageReference Include="AElf.EconomicSystem" Version="1.5.0" />
+    <PackageReference Include="AElf.GovernmentSystem" Version="1.5.0" />
+    <PackageReference Include="coverlet.msbuild" Version="3.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
+    <PackageReference Include="Shouldly" Version="4.0.3" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.console" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AElf.ContractTestKit" Version="1.5.0" />
+    <PackageReference Include="AElf.ContractTestBase" Version="1.5.0" />
+    <PackageReference Include="AElf.Contracts.MultiToken" Version="1.5.0" />
+    <PackageReference Include="AElf.Contracts.Parliament" Version="1.5.0" />
+    <PackageReference Include="AElf.Contracts.Consensus.AEDPoS" Version="1.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ContractMessage Include="..\..\protobuf\authority_info.proto">
+      <Link>Protobuf\Proto\authority_info.proto</Link>
+    </ContractMessage>
+  </ItemGroup>
+  <ItemGroup>
+    <ContractStub Include="..\..\protobuf\acs0.proto">
+      <Link>Protobuf\Proto\acs0.proto</Link>
+    </ContractStub>
+    <ContractBase Include="..\..\protobuf\acs1.proto">
+      <Link>Protobuf\Proto\acs1.proto</Link>
+    </ContractBase>
+    <ContractBase Include="..\..\protobuf\acs3.proto">
+      <Link>Protobuf\Proto\acs3.proto</Link>
+    </ContractBase>
+    <ContractBase Include="..\..\protobuf\acs4.proto">
+      <Link>Protobuf\Proto\acs4.proto</Link>
+    </ContractBase>
+    <ContractBase Include="..\..\protobuf\acs6.proto">
+      <Link>Protobuf\Proto\acs6.proto</Link>
+    </ContractBase>
+    <ContractBase Include="..\..\protobuf\acs10.proto">
+      <Link>Protobuf\Proto\acs10.proto</Link>
+    </ContractBase>
+    <ContractBase Include="..\..\protobuf\acs12.proto">
+      <Link>Protobuf\Proto\acs12.proto</Link>
+    </ContractBase>
+    <ContentMessage Include="..\..\protobuf\basic_contract_zero.proto">
+      <Link>Protobuf\Proto\basic_contract_zero.proto</Link>
+    </ContentMessage>
+    <ContractStub Include="..\..\protobuf\basic_contract_zero.proto">
+      <Link>Protobuf\Proto\basic_contract_zero.proto</Link>
+    </ContractStub>
+    <ContractStub Include="..\..\protobuf\basic_contract_zero_impl.proto">
+      <Link>Protobuf\Proto\basic_contract_zero_impl.proto</Link>
+    </ContractStub>
+    <ContractStub Include="..\..\protobuf\aedpos_contract.proto">
+      <Link>Protobuf\Proto\aedpos_contract.proto</Link>
+    </ContractStub>
+    <ContractStub Include="..\..\protobuf\aedpos_contract_impl.proto">
+      <Link>Protobuf\Proto\aedpos_contract_impl.proto</Link>
+    </ContractStub>
+    <ContractStub Include="..\..\protobuf\symbol_registrar_contract.proto">
+      <Link>Protobuf\Proto\symbol_registrar_contract.proto</Link>
+    </ContractStub>
+    <ContractStub Include="..\..\protobuf\token_contract.proto">
+      <Link>Protobuf\Proto\token_contract.proto</Link>
+    </ContractStub>
+    <ContractStub Include="..\..\protobuf\token_contract_impl.proto">
+      <Link>Protobuf\Proto\token_contract_impl.proto</Link>
+    </ContractStub>
+    <ContractStub Include="..\..\protobuf\parliament_contract.proto">
+      <Link>Protobuf\Proto\parliament_contract.proto</Link>
+    </ContractStub>
+    <ContractStub Include="..\..\protobuf\parliament_contract_impl.proto">
+      <Link>Protobuf\Proto\parliament_contract_impl.proto</Link>
+    </ContractStub>
+    <ContractStub Include="..\..\protobuf\proxy_account_contract.proto">
+      <Link>Protobuf\Proto\proxy_account_contract.proto</Link>
+    </ContractStub>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\contract\Forest.Contracts.SymbolRegistrar\Forest.Contracts.SymbolRegistrar.csproj" />
+    <ProjectReference Include="..\..\src\AElf.Boilerplate.TestBase\AElf.Boilerplate.TestBase.csproj" />
+    <ProjectReference Include="..\Forest.Contracts.MockProxyAccountContract\Forest.Contracts.MockProxyAccountContract.csproj" />
+  </ItemGroup>
+
+</Project>

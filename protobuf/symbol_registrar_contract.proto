@@ -13,14 +13,14 @@ import "google/protobuf/timestamp.proto";
 
 // the name of the C# namespace in which the contract code will be,
 // generated code will also be in this namespace.
-option csharp_namespace = "Forest.SymbolRegistrar";
+option csharp_namespace = "Forest.Contracts.SymbolRegistrar";
 
 // the contract definition: a gRPC service definition.
 service SymbolRegistrarContract {
 
     // the full name of the C# class that will contain the state (here <namespace>.<state-class-name> format).
     option (aelf.base) = "acs12.proto";
-    option (aelf.csharp_state) = "Forest.SymbolRegistrar.SymbolRegistrarContractState";
+    option (aelf.csharp_state) = "Forest.Contracts.SymbolRegistrar.SymbolRegistrarContractState";
 
 
     // Action
@@ -29,8 +29,21 @@ service SymbolRegistrarContract {
 
     rpc CreateSeed (CreateSeedInput) returns (google.protobuf.Empty) {
     }
+    
+    rpc IssueSeed (IssueSeedInput) returns (google.protobuf.Empty) {
+    }
 
     rpc Buy(BuyInput) returns (google.protobuf.Empty){
+    }
+
+    // for Parliament contract
+    // when proposal has been approved special-seeds will be add
+    rpc AddSpecialSeeds(SpecialSeedList) returns (google.protobuf.Empty) {
+    }
+
+    // for Parliament contract
+    // when proposal has been approved special-seeds will be remove
+    rpc RemoveSpecialSeeds(SpecialSeedList) returns (google.protobuf.Empty) {
     }
     
     // Admin
@@ -45,9 +58,17 @@ service SymbolRegistrarContract {
 
     rpc SetSeedsPrice(SeedsPriceInput) returns (google.protobuf.Empty) {
     }
-    
-    rpc SetAuction(AuctionConfig) returns(google.protobuf.Empty) {
-        
+
+    rpc SetAuctionConfig(AuctionConfig) returns (google.protobuf.Empty) {
+    }
+
+    rpc AddSaleController(AddSaleControllerInput) returns (google.protobuf.Empty) {
+    }
+
+    rpc RemoveSaleController(RemoveSaleControllerInput) returns (google.protobuf.Empty) {
+    }
+
+    rpc SetSeedExpirationConfig(SeedExpirationConfig) returns (google.protobuf.Empty) {
     }
 
     // View
@@ -69,6 +90,14 @@ service SymbolRegistrarContract {
         option (aelf.is_view) = true;
     }
 
+    rpc GetAuctionConfig(google.protobuf.Empty) returns (AuctionConfig) {
+        option (aelf.is_view) = true;
+    }
+    
+    rpc GetSaleController(google.protobuf.Empty) returns (ControllerList) {
+        option (aelf.is_view) = true;
+    }
+
 }
 
 
@@ -80,6 +109,7 @@ message InitializeInput {
     SeedsPriceInput seeds_prices = 4;
     aelf.Address proxy_account_address = 5;
     AuctionConfig auctionConfig = 6;
+    aelf.Address auction_contract_address = 7;
 }
 
 
@@ -99,6 +129,12 @@ message BizConfig {
 }
 
 message CreateSeedInput {
+    string symbol = 1;
+    aelf.Address issuer = 2;
+    int32 issue_chain_id = 3;
+}
+
+message IssueSeedInput {
     string symbol = 1;
     aelf.Address to = 2;
 }
@@ -182,6 +218,19 @@ message BuyInput{
     aelf.Address issue_to = 2;
 }
 
+message ControllerList{
+    repeated aelf.Address controllers = 1;
+}
+
+message AddSaleControllerInput{
+    ControllerList addresses = 1;
+}
+
+message RemoveSaleControllerInput{
+    ControllerList addresses = 1;
+}
+
+
 message SpecialSeedList {
     // seeds to add
     repeated SpecialSeed value = 1;
@@ -231,38 +280,14 @@ message Bought {
     Price price = 4;
 }
 
-message AuctionCreated{
+message SaleControllerAdded {
     option (aelf.is_event) = true;
-    string symbol = 1;
-    Price start_price = 2;
-    google.protobuf.Timestamp start_time = 3;
-    google.protobuf.Timestamp end_time = 4;
-    google.protobuf.Timestamp max_end_time = 5;
-    AuctionType auction_type = 6;
-    AuctionConfig auction_config = 7;
-    SeedExpirationConfig seed_expiration_config = 8;
-    int64 auction_count = 9;
+    ControllerList addresses = 1;
 }
 
-message BidPlaced{
+message SaleControllerRemoved {
     option (aelf.is_event) = true;
-    string symbol = 1;
-    Price start_price = 2;
-    google.protobuf.Timestamp start_time = 3;
-    google.protobuf.Timestamp end_time = 4;
-    google.protobuf.Timestamp max_end_time = 5;
-    aelf.Address bidder = 6;
-    Price price = 7;
-    google.protobuf.Timestamp bid_time = 8;
-}
-
-message AuctionFinished{
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    google.protobuf.Timestamp finish_time = 2;
-    aelf.Address bidder = 3;
-    Price price = 4;
-    google.protobuf.Timestamp bid_time = 5;
+    ControllerList addresses = 1;
 }
 
 message SymbolAuthorInput{
