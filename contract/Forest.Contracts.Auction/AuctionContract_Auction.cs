@@ -41,12 +41,12 @@ public partial class AuctionContract
 
         if (input.AuctionConfig.StartImmediately)
         {
-            InitAuctionConfig(auctionInfo);
+            InitAuctionTime(auctionInfo);
         }
 
         State.AuctionInfoMap[auctionId] = auctionInfo;
 
-        TransferFromCreator(new Price
+        TransferTokenFromCreator(new Price
         {
             Amount = auctionInfo.Amount,
             Symbol = auctionInfo.Symbol
@@ -135,7 +135,7 @@ public partial class AuctionContract
 
         if (auctionInfo.StartTime == null)
         {
-            InitAuctionConfig(auctionInfo);
+            InitAuctionTime(auctionInfo);
 
             FireAuctionTimeUpdated(auctionInfo);
         }
@@ -185,7 +185,7 @@ public partial class AuctionContract
         }
     }
 
-    private void TransferFromCreator(Price price)
+    private void TransferTokenFromCreator(Price price)
     {
         State.TokenContract.TransferFrom.Send(new TransferFromInput
         {
@@ -266,7 +266,7 @@ public partial class AuctionContract
         Assert(input.MinMarkup > 0, "Invalid input min markup.");
     }
 
-    private void InitAuctionConfig(AuctionInfo auctionInfo)
+    private void InitAuctionTime(AuctionInfo auctionInfo)
     {
         var currentBlockTime = Context.CurrentBlockTime;
         var auctionConfig = auctionInfo.AuctionConfig;
