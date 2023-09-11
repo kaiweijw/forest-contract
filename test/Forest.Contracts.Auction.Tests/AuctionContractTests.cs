@@ -27,6 +27,18 @@ namespace Forest.Contracts.Auction
         }
 
         [Fact]
+        public async Task InitializeTests_AuctionController()
+        {
+            await AuctionContractStub.Initialize.SendAsync(new InitializeInput
+            {
+                AuctionController = { DefaultAddress, UserAddress, User2Address }
+            });
+            
+            var result = await AuctionContractStub.GetAuctionController.CallAsync(new Empty());
+            result.Controllers.Count.ShouldBe(3);
+        } 
+
+        [Fact]
         public async Task InitializeTests_Fail()
         {
             var result = await AuctionContractStub.Initialize.SendWithExceptionAsync(new InitializeInput
@@ -46,7 +58,6 @@ namespace Forest.Contracts.Auction
         public async Task<Hash> CreateAuctionTests()
         {
             const string symbol = "SEED-1";
-            const long amount = 1;
             const long duration = 100;
             const long maxExtensionTime = 100;
             const long countdownTime = 50;
@@ -64,7 +75,6 @@ namespace Forest.Contracts.Auction
 
             var result = await AuctionContractStub.CreateAuction.SendAsync(new CreateAuctionInput
             {
-                Amount = amount,
                 Symbol = symbol,
                 AuctionConfig = new AuctionConfig
                 {
@@ -95,7 +105,6 @@ namespace Forest.Contracts.Auction
             output.AuctionConfig.CountdownTime.ShouldBe(countdownTime);
             output.AuctionConfig.MinMarkup.ShouldBe(minMarkup);
             output.Symbol.ShouldBe(symbol);
-            output.Amount.ShouldBe(amount);
             output.AuctionType.ShouldBe(AuctionType.English);
             output.ReceivingAddress.ShouldBe(ReceivingAddress);
             output.StartPrice.Symbol.ShouldBe("ELF");
@@ -125,6 +134,9 @@ namespace Forest.Contracts.Auction
 
             await Initialize();
             
+            result = await AuctionContractUserStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput());
+            result.TransactionResult.Error.ShouldContain("No sale controller permission.");
+            
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput());
             result.TransactionResult.Error.ShouldContain("Invalid input symbol.");
             
@@ -144,26 +156,26 @@ namespace Forest.Contracts.Auction
             {
                 Symbol = "SEED-1"
             });
-            result.TransactionResult.Error.ShouldContain("Invalid input amount.");
+            result.TransactionResult.Error.ShouldContain("Token not found.");
+
+            await InitSeed();
+            await InitSeed_Wrong();
             
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
-                Symbol = "SEED-1",
-                Amount = 0
+                Symbol = "SEED-2"
             });
-            result.TransactionResult.Error.ShouldContain("Invalid input amount.");
+            result.TransactionResult.Error.ShouldContain("Only support 721 type NFT.");
             
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
-                Symbol = "SEED-1",
-                Amount = 1
+                Symbol = "SEED-1"
             });
             result.TransactionResult.Error.ShouldContain("Invalid input auction type.");
             
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
                 Symbol = "SEED-1",
-                Amount = 1,
                 AuctionType = AuctionType.English
             });
             result.TransactionResult.Error.ShouldContain("Invalid input price.");
@@ -171,7 +183,6 @@ namespace Forest.Contracts.Auction
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
                 Symbol = "SEED-1",
-                Amount = 1,
                 AuctionType = AuctionType.English,
                 ReceivingAddress = new Address()
             });
@@ -180,7 +191,6 @@ namespace Forest.Contracts.Auction
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
                 Symbol = "SEED-1",
-                Amount = 1,
                 AuctionType = AuctionType.English,
                 ReceivingAddress = ReceivingAddress
             });
@@ -189,7 +199,6 @@ namespace Forest.Contracts.Auction
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
                 Symbol = "SEED-1",
-                Amount = 1,
                 AuctionType = AuctionType.English,
                 StartPrice = new Price
                 {
@@ -202,7 +211,6 @@ namespace Forest.Contracts.Auction
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
                 Symbol = "SEED-1",
-                Amount = 1,
                 AuctionType = AuctionType.English,
                 StartPrice = new Price
                 {
@@ -216,24 +224,6 @@ namespace Forest.Contracts.Auction
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
                 Symbol = "SEED-1",
-                Amount = 1,
-                AuctionType = AuctionType.English,
-                StartPrice = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 100
-                },
-                AuctionConfig = new AuctionConfig
-                {
-                    Duration = 100
-                }
-            });
-            result.TransactionResult.Error.ShouldContain("Invalid input min markup.");
-            
-            result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
-            {
-                Symbol = "SEED-1",
-                Amount = 1,
                 AuctionType = AuctionType.English,
                 StartPrice = new Price
                 {
@@ -243,10 +233,10 @@ namespace Forest.Contracts.Auction
                 AuctionConfig = new AuctionConfig
                 {
                     Duration = 100,
-                    MinMarkup = 10
+                    MinMarkup = -1
                 }
             });
-            result.TransactionResult.Error.ShouldContain("Token is not found.");
+            result.TransactionResult.Error.ShouldContain("Invalid input min markup.");
         }
 
         [Fact]
@@ -518,6 +508,42 @@ namespace Forest.Contracts.Auction
                 Symbol = "SEED-1"
             });
         }
+        
+        private async Task InitSeed_Wrong()
+        {
+            var externalInfo = new ExternalInfo();
+            externalInfo.Value.Add("__seed_exp_time",
+                BlockTimeProvider.GetBlockTime().AddSeconds(1000).Seconds.ToString());
+            externalInfo.Value.Add("__seed_owned_symbol", "TEST");
+
+            await TokenContractStub.Create.SendAsync(new CreateInput
+            {
+                Owner = DefaultAddress,
+                Issuer = DefaultAddress,
+                Symbol = "SEED-2",
+                TokenName = "SEED-TEST",
+                TotalSupply = 2,
+                Decimals = 0,
+                IsBurnable = true,
+                LockWhiteList = { TokenContractAddress },
+                ExternalInfo = externalInfo
+            });
+
+            await TokenContractStub.Issue.SendAsync(new IssueInput
+            {
+                Amount = 1,
+                Symbol = "SEED-2",
+                Memo = "test",
+                To = DefaultAddress
+            });
+
+            await TokenContractStub.Approve.SendAsync(new ApproveInput
+            {
+                Amount = 1,
+                Spender = AuctionContractAddress,
+                Symbol = "SEED-2"
+            });
+        }
 
         private async Task InitToken(Address address, long amount)
         {
@@ -548,6 +574,118 @@ namespace Forest.Contracts.Auction
             });
 
             return output.Balance;
+        }
+        
+        [Fact]
+        public async Task AddAuctionControllerTests()
+        {
+            await Initialize();
+            await AuctionContractStub.AddAuctionController.SendAsync(new AddAuctionControllerInput
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { DefaultAddress }
+                }
+            });
+            await AuctionContractStub.AddAuctionController.SendAsync(new AddAuctionControllerInput
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { UserAddress }
+                }
+            });
+
+            var output = await AuctionContractStub.GetAuctionController.CallAsync(new Empty());
+            output.Controllers.Count.ShouldBe(2);
+            output.Controllers.First().ShouldBe(DefaultAddress);
+            output.Controllers.Last().ShouldBe(UserAddress);
+        }
+
+        [Fact]
+        public async Task AddAuctionControllerTests_Fail()
+        {
+            var result = await AuctionContractStub.AddAuctionController.SendWithExceptionAsync(new AddAuctionControllerInput
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { UserAddress }
+                }
+            });
+            result.TransactionResult.Error.ShouldContain("Not initialized.");
+
+            await Initialize();
+
+            result = await AuctionContractUserStub.AddAuctionController.SendWithExceptionAsync(new AddAuctionControllerInput
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { UserAddress }
+                }
+            });
+            result.TransactionResult.Error.ShouldContain("No permission.");
+        }
+
+        [Fact]
+        public async Task RemoveAuctionControllerTests()
+        {
+            await Initialize();
+            await AuctionContractStub.AddAuctionController.SendAsync(new AddAuctionControllerInput
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { UserAddress }
+                }
+            });
+
+            var output = await AuctionContractStub.GetAuctionController.CallAsync(new Empty());
+            output.Controllers.Count.ShouldBe(2);
+            output.Controllers.First().ShouldBe(DefaultAddress);
+            output.Controllers.Last().ShouldBe(UserAddress);
+
+            await AuctionContractStub.RemoveAuctionController.SendAsync(new RemoveAuctionControllerInput
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { UserAddress }
+                }
+            });
+
+            await AuctionContractStub.RemoveAuctionController.SendAsync(new RemoveAuctionControllerInput
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { UserAddress }
+                }
+            });
+
+            output = await AuctionContractStub.GetAuctionController.CallAsync(new Empty());
+            output.Controllers.Count.ShouldBe(1);
+            output.Controllers.Last().ShouldBe(DefaultAddress);
+        }
+
+        [Fact]
+        public async Task RemoveAuctionControllerTests_Fail()
+        {
+            var result = await AuctionContractStub.RemoveAuctionController.SendWithExceptionAsync(
+                new RemoveAuctionControllerInput
+                {
+                    Addresses = new ControllerList
+                    {
+                        Controllers = { UserAddress }
+                    }
+                });
+            result.TransactionResult.Error.ShouldContain("Not initialized.");
+
+            await Initialize();
+            result = await AuctionContractUserStub.RemoveAuctionController.SendWithExceptionAsync(
+                new RemoveAuctionControllerInput
+                {
+                    Addresses = new ControllerList
+                    {
+                        Controllers = { DefaultAddress }
+                    }
+                });
+            result.TransactionResult.Error.ShouldContain("No permission.");
         }
     }
 }

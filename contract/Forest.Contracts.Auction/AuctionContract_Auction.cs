@@ -11,11 +11,11 @@ public partial class AuctionContract
 {
     public override Empty CreateAuction(CreateAuctionInput input)
     {
-        Assert(input != null, "Invalid input.");
         AssertInitialize();
+        AssertAuctionController();
+        Assert(input != null, "Invalid input.");
         Assert(!string.IsNullOrWhiteSpace(input.Symbol), "Invalid input symbol.");
-        AssertInputSymbol(input.Symbol);
-        Assert(input.Amount > 0, "Invalid input amount.");
+        AssertSymbol(input.Symbol);
         Assert(input.ReceivingAddress == null || !input.ReceivingAddress.Value.IsNullOrEmpty(),
             "Invalid input receiving address.");
         Assert(input.AuctionType == AuctionType.English, "Invalid input auction type.");
@@ -34,7 +34,6 @@ public partial class AuctionContract
             AuctionConfig = auctionConfig,
             AuctionType = input.AuctionType,
             Symbol = input.Symbol,
-            Amount = input.Amount,
             StartPrice = input.StartPrice,
             ReceivingAddress = input.ReceivingAddress ?? Context.Sender,
             Creator = Context.Sender
@@ -49,7 +48,7 @@ public partial class AuctionContract
 
         TransferTokenFromCreator(new Price
         {
-            Amount = auctionInfo.Amount,
+            Amount = AuctionContractConstants.DefaultAmount,
             Symbol = auctionInfo.Symbol
         });
 
@@ -63,7 +62,6 @@ public partial class AuctionContract
             MaxEndTime = auctionInfo.MaxEndTime,
             AuctionType = auctionInfo.AuctionType,
             Symbol = auctionInfo.Symbol,
-            Amount = auctionInfo.Amount,
             AuctionConfig = auctionInfo.AuctionConfig,
             ReceivingAddress = auctionInfo.ReceivingAddress
         });
@@ -215,7 +213,7 @@ public partial class AuctionContract
         State.TokenContract.Transfer.Send(new TransferInput
         {
             Symbol = auctionInfo.Symbol,
-            Amount = auctionInfo.Amount,
+            Amount = AuctionContractConstants.DefaultAmount,
             To = auctionInfo.LastBidInfo.Bidder,
             Memo = "Auction"
         });
@@ -258,7 +256,7 @@ public partial class AuctionContract
         Assert(input.Duration > 0, "Invalid input duration.");
         Assert(input.CountdownTime >= 0, "Invalid input countdown time.");
         Assert(input.MaxExtensionTime >= 0, "Invalid input max extension time.");
-        Assert(input.MinMarkup > 0, "Invalid input min markup.");
+        Assert(input.MinMarkup >= 0, "Invalid input min markup.");
     }
 
     private void InitAuctionTime(AuctionInfo auctionInfo)

@@ -1,5 +1,6 @@
 using System.Linq;
 using AElf;
+using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
 using AElf.Types;
 
@@ -24,11 +25,18 @@ public partial class AuctionContract
                input.Amount > 0, "Invalid input price.");
     }
 
-    private void AssertInputSymbol(string symbol)
+    private void AssertSymbol(string symbol)
     {
         var words = symbol.Split(AuctionContractConstants.NFTSymbolSeparator);
         Assert(words[0].Length > 0 && words[0].All(IsValidCreateSymbolChar), "Invalid input symbol.");
-        Assert(words.Length == 2 && words[1].Length > 0 && words[1].All(IsValidItemIdChar) && words[1] != AuctionContractConstants.NFTSymbolSuffix, "Only support NFT.");
+        Assert(words.Length == 2 && words[1].Length > 0 && words[1].All(IsValidItemIdChar) && words[1] != AuctionContractConstants.CollectionSymbolSuffix, "Only support NFT.");
+
+        var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        {
+            Symbol = symbol
+        });
+        Assert(!string.IsNullOrWhiteSpace(tokenInfo.Symbol), "Token not found.");
+        Assert(tokenInfo.TotalSupply == 1, "Only support 721 type NFT.");
     }
     
     private bool IsValidItemIdChar(char character)
@@ -48,5 +56,11 @@ public partial class AuctionContract
 
         return HashHelper.ConcatAndCompute(Context.OriginTransactionId,
             HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(symbol), HashHelper.ComputeFrom(counter)));
+    }
+
+    private void AssertAuctionController()
+    {
+        Assert(State.AuctionController.Value != null && State.AuctionController.Value.Controllers.Contains(Context.Sender),
+            "No sale controller permission.");
     }
 }
