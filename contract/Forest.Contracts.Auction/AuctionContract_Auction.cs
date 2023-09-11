@@ -15,7 +15,7 @@ public partial class AuctionContract
         AssertInitialize();
         Assert(!string.IsNullOrWhiteSpace(input.Symbol), "Invalid input symbol.");
         AssertInputSymbol(input.Symbol);
-        Assert(input.Amount > 0, "Invalid input amount");
+        Assert(input.Amount > 0, "Invalid input amount.");
         Assert(input.ReceivingAddress == null || !input.ReceivingAddress.Value.IsNullOrEmpty(),
             "Invalid input receiving address.");
         Assert(input.AuctionType == AuctionType.English, "Invalid input auction type.");

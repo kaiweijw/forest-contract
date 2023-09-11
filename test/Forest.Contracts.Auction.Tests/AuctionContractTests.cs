@@ -130,16 +130,28 @@ namespace Forest.Contracts.Auction
             
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
+                Symbol = "SEED"
+            });
+            result.TransactionResult.Error.ShouldContain("Only support NFT.");
+            
+            result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
+            {
+                Symbol = "SEED-0"
+            });
+            result.TransactionResult.Error.ShouldContain("Only support NFT.");
+            
+            result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
+            {
                 Symbol = "SEED-1"
             });
-            result.TransactionResult.Error.ShouldContain("Invalid input amount");
+            result.TransactionResult.Error.ShouldContain("Invalid input amount.");
             
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
                 Symbol = "SEED-1",
                 Amount = 0
             });
-            result.TransactionResult.Error.ShouldContain("Invalid input amount");
+            result.TransactionResult.Error.ShouldContain("Invalid input amount.");
             
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
             {
