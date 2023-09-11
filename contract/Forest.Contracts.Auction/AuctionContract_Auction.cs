@@ -14,6 +14,7 @@ public partial class AuctionContract
         Assert(input != null, "Invalid input.");
         AssertInitialize();
         Assert(!string.IsNullOrWhiteSpace(input.Symbol), "Invalid input symbol.");
+        AssertInputSymbol(input.Symbol);
         Assert(input.Amount > 0, "Invalid input amount");
         Assert(input.ReceivingAddress == null || !input.ReceivingAddress.Value.IsNullOrEmpty(),
             "Invalid input receiving address.");
@@ -23,7 +24,7 @@ public partial class AuctionContract
 
         var auctionConfig = input.AuctionConfig;
 
-        var auctionId = HashHelper.ConcatAndCompute(Context.TransactionId, HashHelper.ComputeFrom(input.Symbol));
+        var auctionId = GenerateAuctionId(input.Symbol);
         
         Assert(State.AuctionInfoMap[auctionId] == null, "Auction already exist.");
 
@@ -249,12 +250,6 @@ public partial class AuctionContract
             EndTime = auctionInfo.EndTime,
             MaxEndTime = auctionInfo.MaxEndTime
         });
-    }
-
-    private void AssertInputPrice(Price input)
-    {
-        Assert(input != null && !string.IsNullOrWhiteSpace(input.Symbol) &&
-               input.Amount > 0, "Invalid input price.");
     }
 
     private void AssertAuctionConfig(AuctionConfig input)

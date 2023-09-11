@@ -14,4 +14,9 @@ public partial class AuctionContract
     {
         return State.Admin.Value;
     }
+
+    public override Int64Value GetCurrentCounter(StringValue input)
+    {
+        return new Int64Value { Value = State.SymbolCounterMap[input.Value] };
+    }
 }

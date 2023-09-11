@@ -10,5 +10,7 @@ namespace Forest.Contracts.Auction
         
         // Auction Id -> Auction
         public MappedState<Hash, AuctionInfo> AuctionInfoMap { get; set; }
+        
+        public MappedState<string, long> SymbolCounterMap { get; set; }
     }
 }

@@ -56,6 +56,12 @@ namespace Forest.Contracts.Auction
             await Initialize();
             await InitSeed();
 
+            var counter = await AuctionContractStub.GetCurrentCounter.CallAsync(new StringValue
+            {
+                Value = "SEED-1"
+            });
+            counter.Value.ShouldBe(0);
+
             var result = await AuctionContractStub.CreateAuction.SendAsync(new CreateAuctionInput
             {
                 Amount = amount,
@@ -76,6 +82,7 @@ namespace Forest.Contracts.Auction
                     Symbol = "ELF"
                 }
             });
+            
             var log = AuctionCreated.Parser.ParseFrom(result.TransactionResult.Logs.First().NonIndexed);
             var output = await AuctionContractStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
             {
@@ -99,6 +106,13 @@ namespace Forest.Contracts.Auction
             output.MaxEndTime.ShouldBeNull();
             output.FinishTime.ShouldBeNull();
             output.LastBidInfo.ShouldBeNull();
+            output.AuctionId.ShouldBe(HashHelper.ConcatAndCompute(result.TransactionResult.TransactionId, HashHelper.ConcatAndCompute(HashHelper.ComputeFrom("SEED-1"), HashHelper.ComputeFrom(counter.Value))));
+
+            counter = await AuctionContractStub.GetCurrentCounter.CallAsync(new StringValue
+            {
+                Value = "SEED-1"
+            });
+            counter.Value.ShouldBe(1);
 
             return output.AuctionId;
         }

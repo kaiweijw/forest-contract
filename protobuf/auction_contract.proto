@@ -46,6 +46,10 @@ service AuctionContract {
     rpc GetAdmin(google.protobuf.Empty) returns (aelf.Address) {
         option (aelf.is_view) = true;
     }
+
+    rpc GetCurrentCounter(google.protobuf.StringValue) returns (google.protobuf.Int64Value) {
+        option (aelf.is_view) = true;
+    }
 }
 
 //Data structure
