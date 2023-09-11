@@ -24,9 +24,6 @@ namespace Forest.Contracts.SymbolRegistrar
             State.Admin.Value = input.AdministratorAddress ?? Context.Sender;
             State.ReceivingAccount.Value = input.ReceivingAccount;
             State.SeedExpirationConfig.Value = SymbolRegistrarContractConstants.DefaultSeedExpirationTime;
-            Assert(input.AuctionContractAddress != null && !input.AuctionContractAddress.Value.IsNullOrEmpty(),
-                "AuctionContractAddress required.");
-            State.AuctionContractAddress.Value = input.AuctionContractAddress;
             Assert(input.ProxyAccountAddress != null && !input.ProxyAccountAddress.Value.IsNullOrEmpty(),
                 "ProxyAccountAddress required.");
             State.ProxyAccountContract.Value = input.ProxyAccountAddress;
