@@ -30,7 +30,26 @@ namespace Forest.Contracts.SymbolRegistrar
                     LockWhiteList = { TokenContractAddress }
                 });
         }
-        
+
+        private async Task InitializeContractWithSpecialSeed()
+        {
+            await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
+            {
+                ReceivingAccount = Admin.Address,
+                ProxyAccountAddress = ProxyAccountAddress,
+                SpecialSeeds = new SpecialSeedList()
+                {
+                    Value = { new SpecialSeed()
+                    {
+                        Symbol = "LUCK",
+                        SeedType = SeedType.Disable,
+                        PriceSymbol = "ELF",
+                        PriceAmount = 100
+                    } }
+                }
+            });
+        }
+
         [Fact]
         public async Task CreateSeedTest_Success()
         {
@@ -39,35 +58,11 @@ namespace Forest.Contracts.SymbolRegistrar
             var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput()
             {
                 Symbol = "LUCK",
-                Issuer = Admin.Address
-            });
-            result.TransactionResult.Error.ShouldContain("No sale controller permission.");
-            await InitSaleController(Admin.Address);
-            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput()
-            {
-                Symbol = "LUCK",
-                Issuer = Admin.Address
-            });
-            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
-            var tokenCreated =
-                TokenCreated.Parser.ParseFrom(result.TransactionResult.Logs.First(e => e.Name == nameof(TokenCreated))
-                    .NonIndexed);
-            tokenCreated.Symbol.ShouldBe("SEED-1");
-        }
-        
-        [Fact]
-        public async Task IssueSeedTest_Success()
-        {
-            await InitializeContract();
-            await InitSeed();
-            var result = await AdminSymbolRegistrarContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
-            {
-                Symbol = "LUCK",
                 To = User1.Address
             });
             result.TransactionResult.Error.ShouldContain("No sale controller permission.");
             await InitSaleController(Admin.Address);
-            result = await AdminSymbolRegistrarContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
@@ -80,32 +75,46 @@ namespace Forest.Contracts.SymbolRegistrar
             seedCreated.To.ShouldBe(User1.Address);
             seedCreated.OwnedSymbol.ShouldBe("LUCK");
         }
-        
+
         [Fact]
-        public async Task IssueSeedTest_Fail()
+        public async Task CreateSeedTest_SeedNotSupport_Fail()
+        {
+            await InitializeContractWithSpecialSeed();
+            await InitSaleController(Admin.Address);
+            await InitSeed();
+            var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput()
+            {
+                Symbol = "LUCK",
+                To = User1.Address
+            });
+            result.TransactionResult.Error.ShouldContain("Seed LUCK not support create.");
+        }
+
+        [Fact]
+        public async Task CreateSeedTest_Fail()
         {
             await InitializeContract();
             await InitSaleController(Admin.Address);
-            var result = await AdminSymbolRegistrarContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput()
+            var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput()
             {
                 Symbol = "LUCK",
                 To = User1.Address
             });
             result.TransactionResult.Error.ShouldContain("seedCollection not existed");
             await InitSeed();
-            await AdminSymbolRegistrarContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
             });
 
-            result = await AdminSymbolRegistrarContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
             });
             result.TransactionResult.Error.ShouldContain("symbol seed existed");
-            result = await AdminSymbolRegistrarContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
             {
                 Symbol = "LUCK-0",
                 To = User1.Address
@@ -114,7 +123,7 @@ namespace Forest.Contracts.SymbolRegistrar
         }
         
         [Fact]
-        public async Task IssueSeedTest_TokenExisted_Fail()
+        public async Task CreateSeedTest_TokenExisted_Fail()
         {
             await InitializeContract();
             await InitSaleController(Admin.Address);
@@ -163,7 +172,7 @@ namespace Forest.Contracts.SymbolRegistrar
                     ExternalInfo = new ExternalInfo(),
                     LockWhiteList = { TokenContractAddress }
                 });
-            var result = await AdminSymbolRegistrarContractStub.IssueSeed.SendWithExceptionAsync(new IssueSeedInput
+            var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
@@ -172,7 +181,7 @@ namespace Forest.Contracts.SymbolRegistrar
         }
         
          [Fact]
-        public async Task IssueSeedTest_SeedIndex()
+        public async Task CreateSeedTest_SeedIndex()
         {
             await InitializeContract();
             await InitSeed();
@@ -214,14 +223,14 @@ namespace Forest.Contracts.SymbolRegistrar
                     });
             }
             
-            var result = await AdminSymbolRegistrarContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             result.TransactionResult.Logs.Count.ShouldBe(0);
-            result = await AdminSymbolRegistrarContractStub.IssueSeed.SendAsync(new IssueSeedInput
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput
             {
                 Symbol = "LUCK",
                 To = User1.Address

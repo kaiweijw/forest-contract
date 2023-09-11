@@ -29,9 +29,6 @@ service SymbolRegistrarContract {
 
     rpc CreateSeed (CreateSeedInput) returns (google.protobuf.Empty) {
     }
-    
-    rpc IssueSeed (IssueSeedInput) returns (google.protobuf.Empty) {
-    }
 
     rpc Buy(BuyInput) returns (google.protobuf.Empty){
     }
@@ -109,7 +106,6 @@ message InitializeInput {
     SeedsPriceInput seeds_prices = 4;
     aelf.Address proxy_account_address = 5;
     AuctionConfig auctionConfig = 6;
-    aelf.Address auction_contract_address = 7;
 }
 
 
@@ -129,12 +125,6 @@ message BizConfig {
 }
 
 message CreateSeedInput {
-    string symbol = 1;
-    aelf.Address issuer = 2;
-    int32 issue_chain_id = 3;
-}
-
-message IssueSeedInput {
     string symbol = 1;
     aelf.Address to = 2;
 }

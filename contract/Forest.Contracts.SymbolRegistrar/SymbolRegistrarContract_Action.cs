@@ -41,7 +41,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 Amount = price.Amount,
             });
 
-            IssueSeed(issueTo, input.Symbol);
+            CreateSeed(issueTo, input.Symbol);
 
             Context.Fire(new Bought()
             {
@@ -79,26 +79,19 @@ namespace Forest.Contracts.SymbolRegistrar
 
             return new Empty();
         }
-        
+
         public override Empty CreateSeed(CreateSeedInput input)
         {
             AssertSaleController();
-            Assert(input.Issuer != null && !input.Issuer.Value.IsNullOrEmpty(), "Issuer required.");
-            Assert(input.IssueChainId >= 0, "invalid issueChainId.");
-            CreateSeed(input.Issuer, input.Symbol, input.IssueChainId);
-            return new Empty();
-        }
-        
-        public override Empty IssueSeed(IssueSeedInput input)
-        {
-            AssertSaleController();
-            IssueSeed(input.To, input.Symbol);
+            var specialSeed = State.SpecialSeedMap[input.Symbol];
+            Assert(specialSeed == null || specialSeed.SeedType != SeedType.Disable, "seed " + input.Symbol + " not support create.");
+            CreateSeed(input.To, input.Symbol);
             return new Empty();
         }
 
-        private void IssueSeed(Address to, string symbol, long expireTime = 0)
+        private void CreateSeed(Address to, string symbol, long expireTime = 0)
         {
-            var createResult = CreateSeed(Context.Self, symbol, Context.ChainId, expireTime);
+            var createResult = CreateSeedToken(Context.Self, symbol, expireTime);
             if (!createResult)
             {
                 return;
@@ -123,7 +116,7 @@ namespace Forest.Contracts.SymbolRegistrar
             });
         }
 
-        private bool CreateSeed(Address issuer, string symbol, int issueChainId, long expireTime = 0)
+        private bool CreateSeedToken(Address issuer, string symbol, long expireTime = 0)
         {
             CheckSymbolExisted(symbol);
             var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix + SymbolRegistrarContractConstants.CollectionSymbolSuffix);
@@ -156,7 +149,6 @@ namespace Forest.Contracts.SymbolRegistrar
                 TotalSupply = 1,
                 Owner = seedCollection.Owner,
                 Issuer = issuer,
-                IssueChainId = issueChainId,
                 ExternalInfo = new ExternalInfo(),
                 LockWhiteList = { State.TokenContract.Value }
             };
@@ -196,6 +188,7 @@ namespace Forest.Contracts.SymbolRegistrar
             });
             Assert(tokenInfo != null && tokenInfo.Owner != null, "seed nft collection not existed");
             var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(tokenInfo.Owner);
+            Assert(proxyAccount != null && proxyAccount.ProxyAccountHash != null, "ProxyAccountHash not existed.");
             State.SeedNftCollectionProxyAccountHash.Value = proxyAccount.ProxyAccountHash;
             return State.SeedNftCollectionProxyAccountHash.Value;
         }

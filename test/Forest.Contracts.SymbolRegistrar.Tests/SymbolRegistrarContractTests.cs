@@ -27,8 +27,7 @@ namespace Forest.Contracts.SymbolRegistrar
             await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = ProxyAccountAddress,
-				AuctionContractAddress = Admin.Address
+                ProxyAccountAddress = ProxyAccountAddress
             });
         }
         
