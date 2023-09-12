@@ -40,7 +40,7 @@ service SymbolRegistrarContract {
 
     // for Parliament contract
     // when proposal has been approved special-seeds will be remove
-    rpc RemoveSpecialSeeds(SpecialSeedList) returns (google.protobuf.Empty) {
+    rpc RemoveSpecialSeeds(RemoveSpecialSeedInput) returns (google.protobuf.Empty) {
     }
     
     // Admin
@@ -220,6 +220,10 @@ message RemoveSaleControllerInput{
     ControllerList addresses = 1;
 }
 
+
+message RemoveSpecialSeedInput{
+    repeated string symbols = 1;
+}
 
 message SpecialSeedList {
     // seeds to add

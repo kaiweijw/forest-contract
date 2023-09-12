@@ -24,10 +24,11 @@ namespace Forest.Contracts.SymbolRegistrar
                     Value = { _specialBtc }
                 });
             addResult.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            
             var removeResult = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
-                "RemoveSpecialSeeds", new SpecialSeedList
+                "RemoveSpecialSeeds", new RemoveSpecialSeedInput
                 {
-                    Value = { _specialUsd }
+                    Symbols = { _specialUsd.Symbol }
                 });
             removeResult.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
 

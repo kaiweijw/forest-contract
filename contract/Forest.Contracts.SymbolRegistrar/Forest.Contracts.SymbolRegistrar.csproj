@@ -2,8 +2,12 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <!-- The root namespace -->
+        <RootNamespace>Forest.Contracts.SymbolRegistrar</RootNamespace>
         <!-- Mark this project as a contract -->
         <IsContract>true</IsContract>
+        <PackageId>Forest.Contracts.SymbolRegistrar</PackageId>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Description>SymbolRegistrar Contract</Description>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>

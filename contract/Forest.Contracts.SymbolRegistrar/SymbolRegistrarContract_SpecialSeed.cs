@@ -17,7 +17,7 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             if (State.Initialized.Value)
                 Assert(State.Admin.Value == Context.Sender // TODO support admin for test temp
-                       || GetDefaultParliamentController().OwnerAddress == Context.Sender, "No permission.");
+                       || GetDefaultParliamentController().OwnerAddress == Context.Sender, $"No permission.({GetDefaultParliamentController().OwnerAddress},{Context.Sender})");
             else
                 AssertContractAuthor();
 
@@ -52,24 +52,27 @@ namespace Forest.Contracts.SymbolRegistrar
             return new Empty();
         }
 
-        public override Empty RemoveSpecialSeeds(SpecialSeedList input)
+        public override Empty RemoveSpecialSeeds(RemoveSpecialSeedInput input)
         {
             Assert(GetDefaultParliamentController().OwnerAddress == Context.Sender, "No permission.");
 
-            var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
             var exists = new HashSet<string>();
-
-            for (var index = 0; index < input?.Value?.Count; index++)
+            var removedList = new SpecialSeedList();
+            for (var index = 0; index < input?.Symbols.Count; index++)
             {
-                var item = input.Value[index];
-                Assert(!exists.Contains(item.Symbol), "Duplicate symbol " + item.Symbol);
-                exists.Add(item.Symbol);
-                State.SpecialSeedMap.Remove(item.Symbol);
+                var symbol = input.Symbols[index];
+                Assert(!exists.Contains(symbol), "Duplicate symbol " + symbol);
+                exists.Add(symbol);
+
+                var itemData = State.SpecialSeedMap[symbol];
+                if (itemData == null) continue;
+                removedList.Value.Add(itemData);
+                State.SpecialSeedMap.Remove(symbol);
             }
 
             Context.Fire(new SpecialSeedRemoved
             {
-                RemoveList = input
+                RemoveList = removedList
             });
             return new Empty();
         }
