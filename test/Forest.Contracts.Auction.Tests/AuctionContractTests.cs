@@ -19,6 +19,7 @@ namespace Forest.Contracts.Auction
             var admin = await AuctionContractStub.GetAdmin.CallAsync(new Empty());
             admin.ShouldBe(DefaultAddress);
 
+            // initialize twice
             var result = await AuctionContractStub.Initialize.SendWithExceptionAsync(new InitializeInput
             {
                 Admin = DefaultAddress
@@ -41,12 +42,14 @@ namespace Forest.Contracts.Auction
         [Fact]
         public async Task InitializeTests_Fail()
         {
+            // empty address
             var result = await AuctionContractStub.Initialize.SendWithExceptionAsync(new InitializeInput
             {
                 Admin = new Address()
             });
             result.TransactionResult.Error.ShouldContain("Invalid input admin.");
 
+            // sender != author
             result = await AuctionContractUserStub.Initialize.SendWithExceptionAsync(new InitializeInput
             {
                 Admin = UserAddress
@@ -124,6 +127,176 @@ namespace Forest.Contracts.Auction
             counter.Value.ShouldBe(1);
 
             return output.AuctionId;
+        }
+
+        [Fact]
+        public async Task CreateAuctionTests_Other()
+        {
+            await Initialize();
+            await InitSeed();
+
+            await AuctionContractStub.AddAuctionController.SendAsync(new AddAuctionControllerInput
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { UserAddress }
+                }
+            });
+
+            var counter = await AuctionContractStub.GetCurrentCounter.CallAsync(new StringValue
+            {
+                Value = "SEED-1"
+            });
+            counter.Value.ShouldBe(0);
+
+            var result = await AuctionContractStub.CreateAuction.SendAsync(new CreateAuctionInput
+            {
+                Symbol = "SEED-1",
+                AuctionConfig = new AuctionConfig
+                {
+                    Duration = 10,
+                    MaxExtensionTime = 10,
+                    CountdownTime = 10,
+                    MinMarkup = 0,
+                    StartImmediately = true
+                },
+                AuctionType = AuctionType.English,
+                StartPrice = new Price
+                {
+                    Amount = 100,
+                    Symbol = "ELF"
+                }
+            });
+            
+            var log = AuctionCreated.Parser.ParseFrom(result.TransactionResult.Logs.First().NonIndexed);
+            var output = await AuctionContractStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
+            {
+                AuctionId = log.AuctionId
+            });
+            
+            output.ReceivingAddress.ShouldBe(DefaultAddress);
+            
+            var currentBlockTime = BlockTimeProvider.GetBlockTime();
+            
+            output.StartTime.ShouldBe(currentBlockTime);
+            
+            await InitToken(UserAddress, 500);
+            await Approve(TokenContractUserStub);
+            
+            // bid price <= start price
+            result = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
+            {
+                AuctionId = log.AuctionId,
+                Price = new Price
+                {
+                    Symbol = "ELF",
+                    Amount = 100
+                }
+            });
+            result.TransactionResult.Error.ShouldContain("Bid price not high enough.");
+
+            await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
+            {
+                AuctionId = log.AuctionId,
+                Price = new Price
+                {
+                    Symbol = "ELF",
+                    Amount = 101
+                }
+            });
+            
+            await InitToken(User2Address, 500);
+            await Approve(TokenContractUser2Stub);
+            
+            // two bidder bid at same price
+            result = await AuctionContractUser2Stub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
+            {
+                AuctionId = log.AuctionId,
+                Price = new Price
+                {
+                    Symbol = "ELF",
+                    Amount = 101
+                }
+            });
+            result.TransactionResult.Error.ShouldContain("Bid price not high enough.");
+            
+            output = await AuctionContractStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
+            {
+                AuctionId = log.AuctionId
+            });
+            
+            output.EndTime.ShouldBe(output.MaxEndTime);
+            
+            BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(5));
+            
+            await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
+            {
+                AuctionId = log.AuctionId,
+                Price = new Price
+                {
+                    Symbol = "ELF",
+                    Amount = 102
+                }
+            });
+            
+            output = await AuctionContractStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
+            {
+                AuctionId = log.AuctionId
+            });
+  
+            output.EndTime.ShouldBe(output.MaxEndTime);
+            
+            BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(20));
+            
+            // bid after max extension time
+            result = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
+            {
+                AuctionId = log.AuctionId,
+                Price = new Price
+                {
+                    Symbol = "ELF",
+                    Amount = 103
+                }
+            });
+            result.TransactionResult.Error.ShouldContain("Auction finished. Bid failed.");
+
+            await AuctionContractUserStub.Claim.SendAsync(new ClaimInput
+            {
+                AuctionId = log.AuctionId
+            });
+
+            var balance = await GetBalance("SEED-1", UserAddress);
+            balance.ShouldBe(1);
+
+            await TokenContractUserStub.Approve.SendAsync(new ApproveInput
+            {
+                Amount = 1,
+                Spender = AuctionContractAddress,
+                Symbol = "SEED-1"
+            });
+            
+            result = await AuctionContractUserStub.CreateAuction.SendAsync(new CreateAuctionInput
+            {
+                Symbol = "SEED-1",
+                AuctionConfig = new AuctionConfig
+                {
+                    Duration = 10,
+                    MaxExtensionTime = 0,
+                    CountdownTime = 0,
+                    MinMarkup = 0,
+                    StartImmediately = true
+                },
+                AuctionType = AuctionType.English,
+                ReceivingAddress = ReceivingAddress,
+                StartPrice = new Price
+                {
+                    Amount = 100,
+                    Symbol = "ELF"
+                }
+            });
+            
+            log = AuctionCreated.Parser.ParseFrom(result.TransactionResult.Logs.First().NonIndexed);
+            log.ShouldNotBeNull();
         }
         
         [Fact]
@@ -237,6 +410,43 @@ namespace Forest.Contracts.Auction
                 }
             });
             result.TransactionResult.Error.ShouldContain("Invalid input min markup.");
+            
+            result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
+            {
+                Symbol = "SEED-1",
+                AuctionType = AuctionType.English,
+                StartPrice = new Price
+                {
+                    Symbol = "ELF",
+                    Amount = 100
+                },
+                AuctionConfig = new AuctionConfig
+                {
+                    Duration = 100,
+                    MinMarkup = 0,
+                    MaxExtensionTime = -1
+                }
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid input max extension time.");
+            
+            result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput
+            {
+                Symbol = "SEED-1",
+                AuctionType = AuctionType.English,
+                StartPrice = new Price
+                {
+                    Symbol = "ELF",
+                    Amount = 100
+                },
+                AuctionConfig = new AuctionConfig
+                {
+                    Duration = 100,
+                    MinMarkup = 0,
+                    MaxExtensionTime = 0,
+                    CountdownTime = -1
+                }
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid input countdown time.");
         }
 
         [Fact]
@@ -244,10 +454,9 @@ namespace Forest.Contracts.Auction
         {
             const long userInitBalance = 500;
             const long user2InitBalance = 500;
-            const long userBid = 200;
-            const long user2Bid = 300;
-            const long userAfterBalance = 300;
-            const long user2AfterBalance = 200;
+            const long userBid = 110;
+            const long userBid2 = 150;
+            const long user2Bid = 200;
 
             const long duration = 100;
             const long maxExtensionTime = 100;
@@ -290,10 +499,26 @@ namespace Forest.Contracts.Auction
             output.EndTime.ShouldBe(currentBlockTime.AddSeconds(duration));
             output.MaxEndTime.ShouldBe(currentBlockTime.AddSeconds(duration + maxExtensionTime));
 
-            GetBalance("ELF", UserAddress).Result.ShouldBe(userAfterBalance);
+            GetBalance("ELF", UserAddress).Result.ShouldBe(userInitBalance - userBid);
             GetBalance("ELF", AuctionContractAddress).Result.ShouldBe(userBid);
             
-            BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(60));
+            BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(30));
+            currentBlockTime = BlockTimeProvider.GetBlockTime();
+            
+            await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
+            {
+                AuctionId = auctionId,
+                Price = new Price
+                {
+                    Symbol = "ELF",
+                    Amount = userBid2
+                }
+            });
+
+            GetBalance("ELF", UserAddress).Result.ShouldBe(userInitBalance - userBid2);
+            GetBalance("ELF", AuctionContractAddress).Result.ShouldBe(userBid2);
+            
+            BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(30));
             currentBlockTime = BlockTimeProvider.GetBlockTime();
 
             await AuctionContractUser2Stub.PlaceBid.SendAsync(new PlaceBidInput
@@ -307,7 +532,7 @@ namespace Forest.Contracts.Auction
             });
 
             GetBalance("ELF", UserAddress).Result.ShouldBe(userInitBalance);
-            GetBalance("ELF", User2Address).Result.ShouldBe(user2AfterBalance);
+            GetBalance("ELF", User2Address).Result.ShouldBe(user2InitBalance - user2Bid);
             GetBalance("ELF", AuctionContractAddress).Result.ShouldBe(user2Bid);
             
             output = await AuctionContractStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
@@ -333,8 +558,32 @@ namespace Forest.Contracts.Auction
             });
             output.TransactionResult.Error.ShouldContain("Invalid input price.");
             
-            await InitToken(UserAddress, 500);
+            output = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
+            {
+                AuctionId = auctionId,
+                Price = new Price
+                {
+                    Symbol = "TEST",
+                    Amount = 200
+                }
+            });
+            output.TransactionResult.Error.ShouldContain("Invalid input price symbol.");
+            
             await Approve(TokenContractUserStub);
+            
+            // not have enough balance
+            output = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
+            {
+                AuctionId = auctionId,
+                Price = new Price
+                {
+                    Symbol = "ELF",
+                    Amount = 200
+                }
+            });
+            output.TransactionResult.Error.ShouldContain("Insufficient balance");
+            
+            await InitToken(UserAddress, 500);
             
             output = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
             {
@@ -359,6 +608,8 @@ namespace Forest.Contracts.Auction
 
             var currentBlockTime = BlockTimeProvider.GetBlockTime();
             BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(100));
+            
+            // place bid at end time
             output = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
@@ -403,7 +654,7 @@ namespace Forest.Contracts.Auction
             
             GetBalance("SEED-1", User2Address).Result.ShouldBe(1);
             GetBalance("SEED-1", AuctionContractAddress).Result.ShouldBe(0);
-            GetBalance("ELF", ReceivingAddress).Result.ShouldBe(300);
+            GetBalance("ELF", ReceivingAddress).Result.ShouldBe(200);
         }
         
         [Fact]
@@ -428,6 +679,7 @@ namespace Forest.Contracts.Auction
             await InitToken(UserAddress, 500);
             await Approve(TokenContractUserStub);
             
+            // claim during auction
             await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
@@ -447,10 +699,7 @@ namespace Forest.Contracts.Auction
 
         private async Task Initialize()
         {
-            await AuctionContractStub.Initialize.SendAsync(new InitializeInput
-            {
-                Admin = DefaultAddress
-            });
+            await AuctionContractStub.Initialize.SendAsync(new InitializeInput());
         }
 
         private async Task InitSeed()
@@ -686,6 +935,43 @@ namespace Forest.Contracts.Auction
                     }
                 });
             result.TransactionResult.Error.ShouldContain("No permission.");
+        }
+
+        [Fact]
+        public async Task SetAdminTests()
+        {
+            await Initialize();
+            var output = await AuctionContractStub.GetAdmin.CallAsync(new Empty());
+            output.ShouldBe(DefaultAddress);
+            
+            var result = await AuctionContractStub.SetAdmin.SendAsync(DefaultAddress);
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            
+            await AuctionContractStub.SetAdmin.SendAsync(UserAddress);
+            output = await AuctionContractStub.GetAdmin.CallAsync(new Empty());
+            output.ShouldBe(UserAddress);
+        }
+        
+        [Fact]
+        public async Task SetAdminTests_Fail()
+        {
+            await Initialize();
+            
+            var result = await AuctionContractStub.SetAdmin.SendWithExceptionAsync(new Address());
+            result.TransactionResult.Error.ShouldContain("Invalid input.");
+            
+            result = await AuctionContractUserStub.SetAdmin.SendWithExceptionAsync(UserAddress);
+            result.TransactionResult.Error.ShouldContain("No permission.");
+        }
+
+        [Fact]
+        public async Task GetCurrentCounter_NotExists()
+        {
+            var output = await AuctionContractStub.GetCurrentCounter.CallAsync(new StringValue
+            {
+                Value = "TEST"
+            });
+            output.Value.ShouldBe(0);
         }
     }
 }
