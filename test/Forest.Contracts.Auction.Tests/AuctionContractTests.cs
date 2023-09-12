@@ -260,7 +260,7 @@ namespace Forest.Contracts.Auction
             });
             result.TransactionResult.Error.ShouldContain("Auction finished. Bid failed.");
 
-            await AuctionContractUserStub.Claim.SendAsync(new ClaimInput
+            await AuctionContractUser2Stub.Claim.SendAsync(new ClaimInput
             {
                 AuctionId = log.AuctionId
             });
