@@ -1,8 +1,8 @@
 using AElf.Boilerplate.TestBase;
 using AElf.Kernel.SmartContract;
 using AElf.Kernel.SmartContract.Application;
-using Microsoft.Extensions.DependencyInjection;
 using Forest.Contracts.Auction.ContractInitializationProvider;
+using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Modularity;
 
 namespace Forest.Contracts.Auction

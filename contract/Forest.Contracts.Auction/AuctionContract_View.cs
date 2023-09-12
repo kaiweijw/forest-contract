@@ -19,7 +19,7 @@ public partial class AuctionContract
     {
         return new Int64Value { Value = State.SymbolCounterMap[input.Value] };
     }
-    
+
     public override ControllerList GetAuctionController(Empty input)
     {
         return State.AuctionController.Value;

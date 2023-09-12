@@ -7,12 +7,12 @@ namespace Forest.Contracts.Auction
     {
         public SingletonState<bool> Initialized { get; set; }
         public SingletonState<Address> Admin { get; set; }
-        
+
         // Auction Id -> Auction
         public MappedState<Hash, AuctionInfo> AuctionInfoMap { get; set; }
-        
+
         public MappedState<string, long> SymbolCounterMap { get; set; }
-        
+
         public SingletonState<ControllerList> AuctionController { get; set; }
     }
 }

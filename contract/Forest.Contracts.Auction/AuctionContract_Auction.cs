@@ -25,7 +25,7 @@ public partial class AuctionContract
         var auctionConfig = input.AuctionConfig;
 
         var auctionId = GenerateAuctionId(input.Symbol);
-        
+
         Assert(State.AuctionInfoMap[auctionId] == null, "Auction already exist.");
 
         var auctionInfo = new AuctionInfo
@@ -110,7 +110,7 @@ public partial class AuctionContract
 
         var currentBlockTime = Context.CurrentBlockTime;
         Assert(currentBlockTime >= auctionInfo.EndTime, "Auction not end yet.");
-        
+
         auctionInfo.FinishTime = currentBlockTime;
 
         TransferTokenToBidder(auctionInfo);
@@ -263,7 +263,7 @@ public partial class AuctionContract
     {
         var currentBlockTime = Context.CurrentBlockTime;
         var auctionConfig = auctionInfo.AuctionConfig;
-        
+
         auctionInfo.StartTime = currentBlockTime;
         auctionInfo.EndTime = currentBlockTime.AddSeconds(auctionConfig.Duration);
         auctionInfo.MaxEndTime =

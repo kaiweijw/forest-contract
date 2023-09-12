@@ -25,7 +25,8 @@ namespace Forest.Contracts.Auction
 
             if (input.AuctionController.Count > 0)
             {
-                State.AuctionController.Value.Controllers.AddRange(input.AuctionController.Distinct().Where(t => t != State.Admin.Value));
+                State.AuctionController.Value.Controllers.AddRange(input.AuctionController.Distinct()
+                    .Where(t => t != State.Admin.Value));
             }
 
             State.TokenContract.Value =
