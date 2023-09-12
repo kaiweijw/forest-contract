@@ -2,8 +2,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using AElf;
 using AElf.Contracts.MultiToken;
+using AElf.CSharp.Core;
 using AElf.CSharp.Core.Extension;
 using AElf.Types;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
@@ -95,8 +97,7 @@ namespace Forest.Contracts.Auction
                     Symbol = "ELF"
                 }
             });
-
-            var log = AuctionCreated.Parser.ParseFrom(result.TransactionResult.Logs.First().NonIndexed);
+            var log = GetLogEvent<AuctionCreated>(result.TransactionResult);
             var output = await AuctionContractStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
             {
                 AuctionId = log.AuctionId
@@ -169,7 +170,7 @@ namespace Forest.Contracts.Auction
                 }
             });
 
-            var log = AuctionCreated.Parser.ParseFrom(result.TransactionResult.Logs.First().NonIndexed);
+            var log = GetLogEvent<AuctionCreated>(result.TransactionResult);
             var output = await AuctionContractStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
             {
                 AuctionId = log.AuctionId
@@ -261,10 +262,13 @@ namespace Forest.Contracts.Auction
             });
             result.TransactionResult.Error.ShouldContain("Auction finished. Bid failed.");
 
-            await AuctionContractUser2Stub.Claim.SendAsync(new ClaimInput
+            result = await AuctionContractUser2Stub.Claim.SendAsync(new ClaimInput
             {
                 AuctionId = log.AuctionId
             });
+
+            var claimed = GetLogEvent<Claimed>(result.TransactionResult);
+            claimed.Bidder.ShouldBe(UserAddress);
 
             var balance = await GetBalance("SEED-1", UserAddress);
             balance.ShouldBe(1);
@@ -296,8 +300,10 @@ namespace Forest.Contracts.Auction
                 }
             });
 
-            log = AuctionCreated.Parser.ParseFrom(result.TransactionResult.Logs.First().NonIndexed);
-            log.ShouldNotBeNull();
+            currentBlockTime = BlockTimeProvider.GetBlockTime();
+            
+            log = GetLogEvent<AuctionCreated>(result.TransactionResult);
+            log.StartTime.ShouldBe(currentBlockTime);
         }
 
         [Fact]
@@ -474,7 +480,7 @@ namespace Forest.Contracts.Auction
             GetBalance("ELF", User2Address).Result.ShouldBe(user2InitBalance);
             GetBalance("ELF", AuctionContractAddress).Result.ShouldBe(0);
 
-            await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
+            var result = await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
                 Price = new Price
@@ -484,11 +490,27 @@ namespace Forest.Contracts.Auction
                 }
             });
 
+            var currentBlockTime = BlockTimeProvider.GetBlockTime();
+
+            {
+                var log = GetLogEvent<BidPlaced>(result.TransactionResult);
+                log.AuctionId.ShouldBe(auctionId);
+                log.Bidder.ShouldBe(UserAddress);
+                log.BidTime.ShouldBe(currentBlockTime);
+                log.Price.Amount.ShouldBe(userBid);
+            }
+
+            {
+                var log = GetLogEvent<AuctionTimeUpdated>(result.TransactionResult);
+                log.StartTime.ShouldBe(currentBlockTime);
+                log.AuctionId.ShouldBe(auctionId);
+            }
+
             var output = await AuctionContractStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
             {
                 AuctionId = auctionId
             });
-            var currentBlockTime = BlockTimeProvider.GetBlockTime();
+
             output.LastBidInfo.Bidder.ShouldBe(UserAddress);
             output.LastBidInfo.BidTime.ShouldBe(currentBlockTime);
             output.LastBidInfo.Price.ShouldBe(new Price
@@ -506,7 +528,7 @@ namespace Forest.Contracts.Auction
             BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(30));
             currentBlockTime = BlockTimeProvider.GetBlockTime();
 
-            await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
+            result = await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
                 Price = new Price
@@ -516,13 +538,20 @@ namespace Forest.Contracts.Auction
                 }
             });
 
+            {
+                var log = GetLogEvent<BidPlaced>(result.TransactionResult);
+                log.Bidder.ShouldBe(UserAddress);
+                log.BidTime.ShouldBe(currentBlockTime);
+                log.Price.Amount.ShouldBe(userBid2);
+            }
+
             GetBalance("ELF", UserAddress).Result.ShouldBe(userInitBalance - userBid2);
             GetBalance("ELF", AuctionContractAddress).Result.ShouldBe(userBid2);
 
             BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(30));
             currentBlockTime = BlockTimeProvider.GetBlockTime();
 
-            await AuctionContractUser2Stub.PlaceBid.SendAsync(new PlaceBidInput
+            result = await AuctionContractUser2Stub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
                 Price = new Price
@@ -531,6 +560,15 @@ namespace Forest.Contracts.Auction
                     Amount = user2Bid
                 }
             });
+
+            {
+                var log = GetLogEvent<BidPlaced>(result.TransactionResult);
+                log.Bidder.ShouldBe(User2Address);
+            }
+            {
+                var log = GetLogEvent<AuctionTimeUpdated>(result.TransactionResult);
+                log.EndTime.ShouldBe(currentBlockTime.AddSeconds(duration - 60 + countdownTime));
+            }
 
             GetBalance("ELF", UserAddress).Result.ShouldBe(userInitBalance);
             GetBalance("ELF", User2Address).Result.ShouldBe(user2InitBalance - user2Bid);
@@ -641,12 +679,18 @@ namespace Forest.Contracts.Auction
             var currentBlockTime = BlockTimeProvider.GetBlockTime();
             BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(500));
 
-            await AuctionContractStub.Claim.SendAsync(new ClaimInput
+            var result = await AuctionContractStub.Claim.SendAsync(new ClaimInput
             {
                 AuctionId = auctionId
             });
 
             currentBlockTime = BlockTimeProvider.GetBlockTime();
+            
+            var log = GetLogEvent<Claimed>(result.TransactionResult);
+            log.AuctionId.ShouldBe(auctionId);
+            log.Bidder.ShouldBe(User2Address);
+            log.FinishTime.ShouldBe(currentBlockTime);
+            
             output = await AuctionContractStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
             {
                 AuctionId = auctionId
@@ -975,6 +1019,17 @@ namespace Forest.Contracts.Auction
                 Value = "TEST"
             });
             output.Value.ShouldBe(0);
+        }
+
+        private T GetLogEvent<T>(TransactionResult transactionResult) where T : IEvent<T>, new()
+        {
+            var log = transactionResult.Logs.FirstOrDefault(l => l.Name == typeof(T).Name);
+            log.ShouldNotBeNull();
+
+            var logEvent = new T();
+            logEvent.MergeFrom(log.NonIndexed);
+
+            return logEvent;
         }
     }
 }
