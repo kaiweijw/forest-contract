@@ -49,6 +49,9 @@ service SymbolRegistrarContract {
 
     rpc SetLastSeedId(google.protobuf.Int64Value) returns (google.protobuf.Empty) {
     }
+    
+    rpc SetProxyAccountContract(aelf.Address) returns (google.protobuf.Empty){
+    }
 
     rpc SetReceivingAccount (aelf.Address) returns (google.protobuf.Empty) {
     }
@@ -93,6 +96,14 @@ service SymbolRegistrarContract {
     
     rpc GetSaleController(google.protobuf.Empty) returns (ControllerList) {
         option (aelf.is_view) = true;
+    }
+    
+    rpc GetProxyAccountContract(google.protobuf.Empty) returns (aelf.Address) {
+            option (aelf.is_view) = true;
+    }
+    
+    rpc GetLastSeedId(google.protobuf.Empty) returns (google.protobuf.Int64Value) {
+                option (aelf.is_view) = true;
     }
 
 }

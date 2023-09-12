@@ -83,6 +83,7 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty CreateSeed(CreateSeedInput input)
         {
             AssertSaleController();
+            Assert(input.To != null, "To address is empty");
             var specialSeed = State.SpecialSeedMap[input.Symbol];
             Assert(specialSeed == null || specialSeed.SeedType != SeedType.Disable, "seed " + input.Symbol + " not support create.");
             CreateSeed(input.To, input.Symbol);
@@ -147,7 +148,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 Decimals = 0,
                 IsBurnable = true,
                 TotalSupply = 1,
-                Owner = seedCollection.Owner,
+                Owner = seedCollection?.Owner,
                 Issuer = issuer,
                 ExternalInfo = new ExternalInfo(),
                 LockWhiteList = { State.TokenContract.Value }
@@ -157,12 +158,15 @@ namespace Forest.Contracts.SymbolRegistrar
             expireTime = expireTime == 0 ? Context.CurrentBlockTime.AddSeconds(State.SeedExpirationConfig.Value).Seconds : expireTime;
             createInput.ExternalInfo.Value[SymbolRegistrarContractConstants.SeedExpireTimeExternalInfoKey] = expireTime.ToString();
             
+            var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(seedCollection?.Owner);
+            Assert(proxyAccount != null && proxyAccount.ProxyAccountHash != null, "ProxyAccountHash not existed.");
+            
             State.ProxyAccountContract.ForwardCall.Send(
                 new ForwardCallInput
                 {
                     ContractAddress = State.TokenContract.Value,
                     MethodName = nameof(State.TokenContract.Create),
-                    ProxyAccountHash = GetProxyAccountHash(),
+                    ProxyAccountHash = proxyAccount?.ProxyAccountHash,
                     Args = createInput.ToByteString()
                 });
             State.SeedInfoMap[seedSymbol] = new SeedInfo
@@ -173,26 +177,5 @@ namespace Forest.Contracts.SymbolRegistrar
             };
             return true;
         }
-
-        private Hash GetProxyAccountHash()
-        {
-            if (State.SeedNftCollectionProxyAccountHash.Value != null)
-            {
-                return State.SeedNftCollectionProxyAccountHash.Value;
-            }
-
-            var symbol = SymbolRegistrarContractConstants.SeedPrefix + 0;
-            var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
-            {
-                Symbol = symbol
-            });
-            Assert(tokenInfo != null && tokenInfo.Owner != null, "seed nft collection not existed");
-            var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(tokenInfo.Owner);
-            Assert(proxyAccount != null && proxyAccount.ProxyAccountHash != null, "ProxyAccountHash not existed.");
-            State.SeedNftCollectionProxyAccountHash.Value = proxyAccount.ProxyAccountHash;
-            return State.SeedNftCollectionProxyAccountHash.Value;
-        }
-        
-        
     }
 }

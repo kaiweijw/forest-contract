@@ -77,6 +77,21 @@ namespace Forest.Contracts.SymbolRegistrar
         }
 
         [Fact]
+        public async Task LastSeedId_Success()
+        {
+            await InitializeContract();
+            await InitSeed();
+            var lastSeedId = await AdminSymbolRegistrarContractStub.GetLastSeedId.CallAsync(new Empty());
+            lastSeedId.Value.ShouldBe(0);
+            await AdminSymbolRegistrarContractStub.SetLastSeedId.SendAsync(new Int64Value()
+            {
+                Value = 1
+            });
+            lastSeedId = await AdminSymbolRegistrarContractStub.GetLastSeedId.CallAsync(new Empty());
+            lastSeedId.Value.ShouldBe(1);
+        }
+
+        [Fact]
         public async Task CreateSeedTest_SeedNotSupport_Fail()
         {
             await InitializeContractWithSpecialSeed();
@@ -243,6 +258,20 @@ namespace Forest.Contracts.SymbolRegistrar
             seedCreated.To.ShouldBe(User1.Address);
             seedCreated.OwnedSymbol.ShouldBe("LUCK");
         }
-        
+
+        [Fact]
+        public async Task SetProxyAccountContract_Test()
+        {
+            await InitializeContract();
+            var result = await User1SymbolRegistrarContractStub.SetProxyAccountContract.SendWithExceptionAsync(ProxyAccountAddress);
+            result.TransactionResult.Error.ShouldContain("No permission.");
+            result = await AdminSymbolRegistrarContractStub.SetProxyAccountContract.SendWithExceptionAsync(new Address());
+            result.TransactionResult.Error.ShouldContain("Invalid param");
+            result = await AdminSymbolRegistrarContractStub.SetProxyAccountContract.SendAsync(User2.Address);
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            var address = await AdminSymbolRegistrarContractStub.GetProxyAccountContract.CallAsync(new Empty());
+            address.ShouldBe(User2.Address);
+        }
+
     }
 }
