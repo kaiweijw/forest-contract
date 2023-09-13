@@ -237,8 +237,6 @@ public partial class AuctionContract
 
         var diff = inputPrice.Amount - lastPrice.Amount;
         Assert(diff >= lastPrice.Amount.Mul(minMarkup).Div(100), "Bid price not high enough.");
-        // var threshold = lastPrice.Amount.Mul(100 + minMarkup).Div(100);
-        // Assert(inputPrice.Amount >= threshold, "Bid price not high enough.");
     }
 
     private void FireAuctionTimeUpdated(AuctionInfo auctionInfo)
