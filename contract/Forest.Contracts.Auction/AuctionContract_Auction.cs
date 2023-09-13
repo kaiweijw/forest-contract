@@ -3,7 +3,6 @@ using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
 using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
-using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Contracts.Auction;
@@ -12,48 +11,50 @@ public partial class AuctionContract
 {
     public override Empty CreateAuction(CreateAuctionInput input)
     {
+        AssertInitialize();
+        AssertAuctionController();
         Assert(input != null, "Invalid input.");
         Assert(!string.IsNullOrWhiteSpace(input.Symbol), "Invalid input symbol.");
-        Assert(input.Amount > 0, "Invalid input amount");
+        AssertSymbol(input.Symbol);
         Assert(input.ReceivingAddress == null || !input.ReceivingAddress.Value.IsNullOrEmpty(),
             "Invalid input receiving address.");
-        AssertInputPrice(input.StartPrice);
+        Assert(input.AuctionType == AuctionType.English, "Invalid input auction type.");
+        AssertPrice(input.StartPrice);
         AssertAuctionConfig(input.AuctionConfig);
-        
-        var auctionConfig = input.AuctionConfig;
-        var currentBlockTime = Context.CurrentBlockTime;
 
-        var auctionId = HashHelper.ConcatAndCompute(Context.TransactionId, HashHelper.ComputeFrom(input.Symbol));
-        
+        var auctionConfig = input.AuctionConfig;
+
+        var auctionId = GenerateAuctionId(input.Symbol);
+
+        Assert(State.AuctionInfoMap[auctionId] == null, "Auction already exist.");
+
         var auctionInfo = new AuctionInfo
         {
             AuctionId = auctionId,
             AuctionConfig = auctionConfig,
             AuctionType = input.AuctionType,
             Symbol = input.Symbol,
-            Amount = input.Amount,
             StartPrice = input.StartPrice,
-            ReceivingAddress = input.ReceivingAddress ?? Context.Sender
+            ReceivingAddress = input.ReceivingAddress ?? Context.Sender,
+            Creator = Context.Sender
         };
 
         if (input.AuctionConfig.StartImmediately)
         {
-            auctionInfo.StartTime = currentBlockTime;
-            auctionInfo.EndTime = currentBlockTime.AddSeconds(auctionConfig.Duration);
-            auctionInfo.MaxEndTime = currentBlockTime.AddSeconds(auctionConfig.Duration.Add(auctionConfig.MaxExtensionTime));
+            InitAuctionTime(auctionInfo);
         }
 
         State.AuctionInfoMap[auctionId] = auctionInfo;
-        
-        TransferFromCreator(new Price
+
+        TransferTokenFromCreator(new Price
         {
-            Amount = auctionInfo.Amount,
+            Amount = AuctionContractConstants.DefaultAmount,
             Symbol = auctionInfo.Symbol
         });
 
         Context.Fire(new AuctionCreated
         {
-            Creator = Context.Sender,
+            Creator = auctionInfo.Creator,
             AuctionId = auctionInfo.AuctionId,
             StartPrice = auctionInfo.StartPrice,
             StartTime = auctionInfo.StartTime,
@@ -61,7 +62,6 @@ public partial class AuctionContract
             MaxEndTime = auctionInfo.MaxEndTime,
             AuctionType = auctionInfo.AuctionType,
             Symbol = auctionInfo.Symbol,
-            Amount = auctionInfo.Amount,
             AuctionConfig = auctionInfo.AuctionConfig,
             ReceivingAddress = auctionInfo.ReceivingAddress
         });
@@ -72,8 +72,8 @@ public partial class AuctionContract
     public override Empty PlaceBid(PlaceBidInput input)
     {
         Assert(input != null, "Invalid input.");
-        Assert(input.AuctionId != null && !input.AuctionId.Value.IsNullOrEmpty() , "Invalid input auction id.");
-        AssertInputPrice(input.Price);
+        Assert(input.AuctionId != null && !input.AuctionId.Value.IsNullOrEmpty(), "Invalid input auction id.");
+        AssertPrice(input.Price);
 
         var auctionInfo = State.AuctionInfoMap[input.AuctionId];
 
@@ -90,10 +90,10 @@ public partial class AuctionContract
 
         Context.Fire(new BidPlaced
         {
-            AuctionId = input.AuctionId,
-            Bidder = Context.Sender,
-            Price = input.Price,
-            BidTime = Context.CurrentBlockTime
+            AuctionId = auctionInfo.AuctionId,
+            Bidder = auctionInfo.LastBidInfo.Bidder,
+            Price = auctionInfo.LastBidInfo.Price,
+            BidTime = auctionInfo.LastBidInfo.BidTime
         });
 
         return new Empty();
@@ -106,11 +106,14 @@ public partial class AuctionContract
 
         var auctionInfo = State.AuctionInfoMap[input.AuctionId];
         Assert(auctionInfo != null, "Auction not exist.");
+        Assert(auctionInfo.StartTime != null, "Auction not start yet.");
 
         var currentBlockTime = Context.CurrentBlockTime;
+        Assert(currentBlockTime >= auctionInfo.EndTime, "Auction not end yet.");
+
         auctionInfo.FinishTime = currentBlockTime;
-        
-        TransferToBidder(auctionInfo);
+
+        TransferTokenToBidder(auctionInfo);
         TransferToReceivingAccount(auctionInfo);
 
         Context.Fire(new Claimed
@@ -119,29 +122,27 @@ public partial class AuctionContract
             Bidder = auctionInfo.LastBidInfo.Bidder,
             FinishTime = currentBlockTime
         });
-        
+
         return new Empty();
     }
-    
+
     private void PlaceBidForEnglishAuction(PlaceBidInput input, AuctionInfo auctionInfo)
     {
         var auctionConfig = auctionInfo.AuctionConfig;
 
         var currentBlockTime = Context.CurrentBlockTime;
-        Assert(currentBlockTime < auctionInfo.EndTime, "Auction finished. Bid failed.");
 
         if (auctionInfo.StartTime == null)
         {
-            auctionInfo.StartTime = currentBlockTime;
-            auctionInfo.EndTime = currentBlockTime.AddSeconds(auctionConfig.Duration);
-            auctionInfo.MaxEndTime =
-                currentBlockTime.AddSeconds(auctionConfig.Duration.Add(auctionConfig.MaxExtensionTime));
+            InitAuctionTime(auctionInfo);
 
             FireAuctionTimeUpdated(auctionInfo);
         }
 
+        Assert(currentBlockTime < auctionInfo.EndTime, "Auction finished. Bid failed.");
+
         var bidInfo = auctionInfo.LastBidInfo;
-        
+
         AssertBidPrice(
             bidInfo?.Bidder == null ? auctionInfo.StartPrice : bidInfo.Price, input.Price, auctionConfig.MinMarkup);
 
@@ -168,7 +169,7 @@ public partial class AuctionContract
         auctionInfo.LastBidInfo = bidInfo;
         State.AuctionInfoMap[input.AuctionId] = auctionInfo;
     }
-    
+
     private void Refund(BidInfo bidInfo)
     {
         if (bidInfo != null)
@@ -183,7 +184,7 @@ public partial class AuctionContract
         }
     }
 
-    private void TransferFromCreator(Price price)
+    private void TransferTokenFromCreator(Price price)
     {
         State.TokenContract.TransferFrom.Send(new TransferFromInput
         {
@@ -194,7 +195,7 @@ public partial class AuctionContract
             Memo = "Auction"
         });
     }
-    
+
     private void TransferFromBidder(BidInfo bidInfo)
     {
         State.TokenContract.TransferFrom.Send(new TransferFromInput
@@ -207,17 +208,17 @@ public partial class AuctionContract
         });
     }
 
-    private void TransferToBidder(AuctionInfo auctionInfo)
+    private void TransferTokenToBidder(AuctionInfo auctionInfo)
     {
         State.TokenContract.Transfer.Send(new TransferInput
         {
             Symbol = auctionInfo.Symbol,
-            Amount = auctionInfo.Amount,
+            Amount = AuctionContractConstants.DefaultAmount,
             To = auctionInfo.LastBidInfo.Bidder,
             Memo = "Auction"
         });
     }
-    
+
     private void TransferToReceivingAccount(AuctionInfo auctionInfo)
     {
         State.TokenContract.Transfer.Send(new TransferInput
@@ -233,9 +234,9 @@ public partial class AuctionContract
     {
         Assert(inputPrice.Symbol == lastPrice.Symbol, "Invalid input price symbol.");
         Assert(inputPrice.Amount > lastPrice.Amount, "Bid price not high enough.");
-        
-        var threshold = lastPrice.Amount.Mul(100 + minMarkup).Div(100);
-        Assert(inputPrice.Amount >= threshold, "Bid price not high enough.");
+
+        var diff = inputPrice.Amount - lastPrice.Amount;
+        Assert(diff >= lastPrice.Amount.Mul(minMarkup).Div(100), "Bid price not high enough.");
     }
 
     private void FireAuctionTimeUpdated(AuctionInfo auctionInfo)
@@ -249,18 +250,23 @@ public partial class AuctionContract
         });
     }
 
-    private void AssertInputPrice(Price input)
-    {
-        Assert(input != null && !string.IsNullOrWhiteSpace(input.Symbol) &&
-               input.Amount > 0, "Invalid input price.");
-    }
-    
     private void AssertAuctionConfig(AuctionConfig input)
     {
-        Assert(input != null, "Invalid input auction config");
+        Assert(input != null, "Invalid input auction config.");
         Assert(input.Duration > 0, "Invalid input duration.");
         Assert(input.CountdownTime >= 0, "Invalid input countdown time.");
         Assert(input.MaxExtensionTime >= 0, "Invalid input max extension time.");
-        Assert(input.MinMarkup > 0, "Invalid input min markup.");
+        Assert(input.MinMarkup >= 0, "Invalid input min markup.");
+    }
+
+    private void InitAuctionTime(AuctionInfo auctionInfo)
+    {
+        var currentBlockTime = Context.CurrentBlockTime;
+        var auctionConfig = auctionInfo.AuctionConfig;
+
+        auctionInfo.StartTime = currentBlockTime;
+        auctionInfo.EndTime = currentBlockTime.AddSeconds(auctionConfig.Duration);
+        auctionInfo.MaxEndTime =
+            currentBlockTime.AddSeconds(auctionConfig.Duration.Add(auctionConfig.MaxExtensionTime));
     }
 }

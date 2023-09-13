@@ -14,4 +14,14 @@ public partial class AuctionContract
     {
         return State.Admin.Value;
     }
+
+    public override Int64Value GetCurrentCounter(StringValue input)
+    {
+        return new Int64Value { Value = State.SymbolCounter[input.Value] };
+    }
+
+    public override ControllerList GetAuctionController(Empty input)
+    {
+        return State.AuctionController.Value;
+    }
 }

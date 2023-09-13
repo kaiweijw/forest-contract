@@ -37,6 +37,12 @@ service AuctionContract {
 
     rpc Claim(ClaimInput) returns (google.protobuf.Empty) {
     }
+
+    rpc AddAuctionController(AddAuctionControllerInput) returns (google.protobuf.Empty) {
+    }
+
+    rpc RemoveAuctionController(RemoveAuctionControllerInput) returns (google.protobuf.Empty) {
+    }
     
     // View
     rpc GetAuctionInfo(GetAuctionInfoInput) returns (AuctionInfo) {
@@ -46,11 +52,20 @@ service AuctionContract {
     rpc GetAdmin(google.protobuf.Empty) returns (aelf.Address) {
         option (aelf.is_view) = true;
     }
+
+    rpc GetCurrentCounter(google.protobuf.StringValue) returns (google.protobuf.Int64Value) {
+        option (aelf.is_view) = true;
+    }
+
+    rpc GetAuctionController(google.protobuf.Empty) returns (ControllerList) {
+        option (aelf.is_view) = true;
+    }
 }
 
 //Data structure
 message InitializeInput {
     aelf.Address admin = 1;
+    repeated aelf.Address auction_controller = 2;
 }
 
 enum AuctionType {
@@ -74,10 +89,9 @@ message Price {
 message CreateAuctionInput {
     AuctionType auction_type = 1;
     string symbol = 2;
-    int64 amount = 3;
-    AuctionConfig auction_config = 4;
-    Price start_price = 5;
-    aelf.Address receiving_address = 6;
+    AuctionConfig auction_config = 3;
+    Price start_price = 4;
+    aelf.Address receiving_address = 5;
 }
 
 message PlaceBidInput {
@@ -95,8 +109,8 @@ message GetAuctionInfoInput{
 
 message AuctionInfo{
     aelf.Hash auction_id = 1;
-    string symbol = 2;
-    int64 amount = 3;
+    aelf.Address creator = 2;
+    string symbol = 3;
     Price start_price = 4;
     google.protobuf.Timestamp start_time = 5;
     google.protobuf.Timestamp end_time = 6;
@@ -114,6 +128,18 @@ message BidInfo{
     google.protobuf.Timestamp bid_time = 3;
 }
 
+message ControllerList {
+    repeated aelf.Address controllers = 1;
+}
+
+message AddAuctionControllerInput{
+    ControllerList addresses = 1;
+}
+
+message RemoveAuctionControllerInput{
+    ControllerList addresses = 1;
+}
+
 // Log Event
 message AuctionCreated {
     option (aelf.is_event) = true;
@@ -125,9 +151,8 @@ message AuctionCreated {
     google.protobuf.Timestamp max_end_time = 6;
     AuctionType auction_type = 7;
     string symbol = 8;
-    int64 amount = 9;
-    AuctionConfig auction_config = 10;
-    aelf.Address receiving_address = 11;
+    AuctionConfig auction_config = 9;
+    aelf.Address receiving_address = 10;
 }
 
 message BidPlaced {
@@ -151,4 +176,14 @@ message Claimed {
     aelf.Hash auction_id = 1;
     google.protobuf.Timestamp finish_time = 2;
     aelf.Address bidder = 3;
+}
+
+message AuctionControllerAdded {
+    option (aelf.is_event) = true;
+    ControllerList addresses = 1;
+}
+
+message AuctionControllerRemoved {
+    option (aelf.is_event) = true;
+    ControllerList addresses = 1;
 }
