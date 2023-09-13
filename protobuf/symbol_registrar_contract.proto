@@ -99,11 +99,11 @@ service SymbolRegistrarContract {
     }
     
     rpc GetProxyAccountContract(google.protobuf.Empty) returns (aelf.Address) {
-            option (aelf.is_view) = true;
+        option (aelf.is_view) = true;
     }
     
     rpc GetLastSeedId(google.protobuf.Empty) returns (google.protobuf.Int64Value) {
-                option (aelf.is_view) = true;
+        option (aelf.is_view) = true;
     }
 
 }
