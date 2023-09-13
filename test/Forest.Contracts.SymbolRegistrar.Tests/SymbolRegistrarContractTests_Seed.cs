@@ -89,6 +89,14 @@ namespace Forest.Contracts.SymbolRegistrar
             });
             lastSeedId = await AdminSymbolRegistrarContractStub.GetLastSeedId.CallAsync(new Empty());
             lastSeedId.Value.ShouldBe(1);
+            await InitSaleController(Admin.Address);
+            await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput
+            {
+                Symbol = "LUCK",
+                To = User1.Address
+            });
+            lastSeedId = await AdminSymbolRegistrarContractStub.GetLastSeedId.CallAsync(new Empty());
+            lastSeedId.Value.ShouldBe(2);
         }
 
         [Fact]
