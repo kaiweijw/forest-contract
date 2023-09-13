@@ -53,8 +53,8 @@ public partial class AuctionContract
 
     private Hash GenerateAuctionId(string symbol)
     {
-        var counter = State.SymbolCounterMap[symbol];
-        State.SymbolCounterMap[symbol] = counter.Add(1);
+        var counter = State.SymbolCounter[symbol];
+        State.SymbolCounter[symbol] = counter.Add(1);
 
         return HashHelper.ConcatAndCompute(Context.OriginTransactionId,
             HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(symbol), HashHelper.ComputeFrom(counter)));
