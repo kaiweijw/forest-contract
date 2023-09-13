@@ -10,7 +10,6 @@ public partial class AuctionContract
 {
     private void AssertAdmin()
     {
-        AssertInitialize();
         Assert(Context.Sender == State.Admin.Value, "No permission.");
     }
 
@@ -19,7 +18,7 @@ public partial class AuctionContract
         Assert(State.Initialized.Value, "Not initialized.");
     }
 
-    private void AssertInputPrice(Price input)
+    private void AssertPrice(Price input)
     {
         Assert(input != null && !string.IsNullOrWhiteSpace(input.Symbol) &&
                input.Amount > 0, "Invalid input price.");

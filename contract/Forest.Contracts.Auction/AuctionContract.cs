@@ -39,6 +39,7 @@ namespace Forest.Contracts.Auction
 
         public override Empty SetAdmin(Address input)
         {
+            AssertInitialize();
             AssertAdmin();
             Assert(input != null && !input.Value.IsNullOrEmpty(), "Invalid input.");
 
@@ -49,6 +50,7 @@ namespace Forest.Contracts.Auction
 
         public override Empty AddAuctionController(AddAuctionControllerInput input)
         {
+            AssertInitialize();
             AssertAdmin();
             Assert(input != null && input.Addresses != null, "Invalid input.");
             Assert(input.Addresses.Controllers != null && input.Addresses.Controllers.Count > 0,
@@ -80,6 +82,7 @@ namespace Forest.Contracts.Auction
 
         public override Empty RemoveAuctionController(RemoveAuctionControllerInput input)
         {
+            AssertInitialize();
             AssertAdmin();
             Assert(input != null && input.Addresses != null, "Invalid input.");
             Assert(input.Addresses.Controllers != null && input.Addresses.Controllers.Count > 0,

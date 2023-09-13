@@ -19,7 +19,7 @@ public partial class AuctionContract
         Assert(input.ReceivingAddress == null || !input.ReceivingAddress.Value.IsNullOrEmpty(),
             "Invalid input receiving address.");
         Assert(input.AuctionType == AuctionType.English, "Invalid input auction type.");
-        AssertInputPrice(input.StartPrice);
+        AssertPrice(input.StartPrice);
         AssertAuctionConfig(input.AuctionConfig);
 
         var auctionConfig = input.AuctionConfig;
@@ -73,7 +73,7 @@ public partial class AuctionContract
     {
         Assert(input != null, "Invalid input.");
         Assert(input.AuctionId != null && !input.AuctionId.Value.IsNullOrEmpty(), "Invalid input auction id.");
-        AssertInputPrice(input.Price);
+        AssertPrice(input.Price);
 
         var auctionInfo = State.AuctionInfoMap[input.AuctionId];
 
@@ -235,8 +235,10 @@ public partial class AuctionContract
         Assert(inputPrice.Symbol == lastPrice.Symbol, "Invalid input price symbol.");
         Assert(inputPrice.Amount > lastPrice.Amount, "Bid price not high enough.");
 
-        var threshold = lastPrice.Amount.Mul(100 + minMarkup).Div(100);
-        Assert(inputPrice.Amount >= threshold, "Bid price not high enough.");
+        var diff = inputPrice.Amount - lastPrice.Amount;
+        Assert(diff >= lastPrice.Amount.Mul(minMarkup).Div(100), "Bid price not high enough.");
+        // var threshold = lastPrice.Amount.Mul(100 + minMarkup).Div(100);
+        // Assert(inputPrice.Amount >= threshold, "Bid price not high enough.");
     }
 
     private void FireAuctionTimeUpdated(AuctionInfo auctionInfo)
