@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
 using AElf.Contracts.ProxyAccountContract;
@@ -83,11 +85,28 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty CreateSeed(CreateSeedInput input)
         {
             AssertSaleController();
-            Assert(input.To != null, "To address is empty");
+            AssertSeedSymbol(input.Symbol);
+            Assert(input.To != null && !input.To.Value.IsNullOrEmpty(), "To address is empty");
             var specialSeed = State.SpecialSeedMap[input.Symbol];
             Assert(specialSeed == null || specialSeed.SeedType != SeedType.Disable, "seed " + input.Symbol + " not support create.");
             CreateSeed(input.To, input.Symbol);
             return new Empty();
+        }
+        
+        private void AssertSeedSymbol(string symbol)
+        {
+            var words = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
+            Assert(words[0].Length > 0 && words[0].All(IsValidCreateSymbolChar), "Invalid Seed Symbol input");
+            if (words.Length == 1)
+            {
+                return;
+            }
+            Assert(words.Length == 2 && words[1] == SymbolRegistrarContractConstants.CollectionSymbolSuffix, "Invalid Seed NFT Symbol input");
+        }
+        
+        private bool IsValidCreateSymbolChar(char character)
+        {
+            return character >= 'A' && character <= 'Z';
         }
 
         private void CreateSeed(Address to, string symbol, long expireTime = 0)
@@ -148,7 +167,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 Decimals = 0,
                 IsBurnable = true,
                 TotalSupply = 1,
-                Owner = seedCollection?.Owner,
+                Owner = seedCollection.Owner,
                 Issuer = issuer,
                 ExternalInfo = new ExternalInfo(),
                 LockWhiteList = { State.TokenContract.Value }
@@ -158,7 +177,7 @@ namespace Forest.Contracts.SymbolRegistrar
             expireTime = expireTime == 0 ? Context.CurrentBlockTime.AddSeconds(State.SeedExpirationConfig.Value).Seconds : expireTime;
             createInput.ExternalInfo.Value[SymbolRegistrarContractConstants.SeedExpireTimeExternalInfoKey] = expireTime.ToString();
             
-            var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(seedCollection?.Owner);
+            var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(seedCollection.Owner);
             Assert(proxyAccount != null && proxyAccount.ProxyAccountHash != null, "ProxyAccountHash not existed.");
             
             State.ProxyAccountContract.ForwardCall.Send(
@@ -166,7 +185,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 {
                     ContractAddress = State.TokenContract.Value,
                     MethodName = nameof(State.TokenContract.Create),
-                    ProxyAccountHash = proxyAccount?.ProxyAccountHash,
+                    ProxyAccountHash = proxyAccount.ProxyAccountHash,
                     Args = createInput.ToByteString()
                 });
             State.SeedInfoMap[seedSymbol] = new SeedInfo

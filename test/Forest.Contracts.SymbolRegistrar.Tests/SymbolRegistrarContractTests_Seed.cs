@@ -114,6 +114,38 @@ namespace Forest.Contracts.SymbolRegistrar
         }
 
         [Fact]
+        public async Task CreateSeedTest_InvalidParam_Fail()
+        {
+            await InitializeContract();
+            await InitSaleController(Admin.Address);
+            var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
+            {
+                To = User1.Address
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid Seed Symbol input");
+
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
+            {
+                Symbol = "",
+                To = User1.Address
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid Seed Symbol input");
+
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
+            {
+                Symbol = "LUCK-2",
+                To = User1.Address
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid Seed NFT Symbol input");
+
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
+            {
+                Symbol = "LUCK"
+            });
+            result.TransactionResult.Error.ShouldContain("To address is empty");
+        }
+
+        [Fact]
         public async Task CreateSeedTest_Fail()
         {
             await InitializeContract();
