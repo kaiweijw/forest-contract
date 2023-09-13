@@ -77,6 +77,29 @@ namespace Forest.Contracts.SymbolRegistrar
         }
 
         [Fact]
+        public async Task LastSeedId_Success()
+        {
+            await InitializeContract();
+            await InitSeed();
+            var lastSeedId = await AdminSymbolRegistrarContractStub.GetLastSeedId.CallAsync(new Empty());
+            lastSeedId.Value.ShouldBe(0);
+            await AdminSymbolRegistrarContractStub.SetLastSeedId.SendAsync(new Int64Value()
+            {
+                Value = 1
+            });
+            lastSeedId = await AdminSymbolRegistrarContractStub.GetLastSeedId.CallAsync(new Empty());
+            lastSeedId.Value.ShouldBe(1);
+            await InitSaleController(Admin.Address);
+            await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput
+            {
+                Symbol = "LUCK",
+                To = User1.Address
+            });
+            lastSeedId = await AdminSymbolRegistrarContractStub.GetLastSeedId.CallAsync(new Empty());
+            lastSeedId.Value.ShouldBe(2);
+        }
+
+        [Fact]
         public async Task CreateSeedTest_SeedNotSupport_Fail()
         {
             await InitializeContractWithSpecialSeed();
@@ -88,6 +111,38 @@ namespace Forest.Contracts.SymbolRegistrar
                 To = User1.Address
             });
             result.TransactionResult.Error.ShouldContain("Seed LUCK not support create.");
+        }
+
+        [Fact]
+        public async Task CreateSeedTest_InvalidParam_Fail()
+        {
+            await InitializeContract();
+            await InitSaleController(Admin.Address);
+            var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
+            {
+                To = User1.Address
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid Seed Symbol input");
+
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
+            {
+                Symbol = "",
+                To = User1.Address
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid Seed Symbol input");
+
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
+            {
+                Symbol = "LUCK-2",
+                To = User1.Address
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid Seed NFT Symbol input");
+
+            result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
+            {
+                Symbol = "LUCK"
+            });
+            result.TransactionResult.Error.ShouldContain("To address is empty");
         }
 
         [Fact]
@@ -243,6 +298,20 @@ namespace Forest.Contracts.SymbolRegistrar
             seedCreated.To.ShouldBe(User1.Address);
             seedCreated.OwnedSymbol.ShouldBe("LUCK");
         }
-        
+
+        [Fact]
+        public async Task SetProxyAccountContract_Test()
+        {
+            await InitializeContract();
+            var result = await User1SymbolRegistrarContractStub.SetProxyAccountContract.SendWithExceptionAsync(ProxyAccountAddress);
+            result.TransactionResult.Error.ShouldContain("No permission.");
+            result = await AdminSymbolRegistrarContractStub.SetProxyAccountContract.SendWithExceptionAsync(new Address());
+            result.TransactionResult.Error.ShouldContain("Invalid param");
+            result = await AdminSymbolRegistrarContractStub.SetProxyAccountContract.SendAsync(User2.Address);
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            var address = await AdminSymbolRegistrarContractStub.GetProxyAccountContract.CallAsync(new Empty());
+            address.ShouldBe(User2.Address);
+        }
+
     }
 }

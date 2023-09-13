@@ -1,3 +1,4 @@
+using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Contracts.SymbolRegistrar
@@ -59,5 +60,14 @@ namespace Forest.Contracts.SymbolRegistrar
             };
         }
 
+        public override Address GetProxyAccountContract(Empty input)
+        {
+            return State.ProxyAccountContract.Value;
+        }
+
+        public override Int64Value GetLastSeedId(Empty input)
+        {
+            return new Int64Value { Value = State.LastSeedId.Value };
+        }
     }
 }

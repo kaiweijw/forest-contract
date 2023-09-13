@@ -61,6 +61,14 @@ namespace Forest.Contracts.SymbolRegistrar
             return new Empty();
         }
 
+        public override Empty SetProxyAccountContract(Address input)
+        {
+            AssertAdmin();
+            Assert(input != null && !input.Value.IsNullOrEmpty(), "Invalid param");
+            State.ProxyAccountContract.Value = input;
+            return new Empty();
+        }
+
         public override Empty SetLastSeedId(Int64Value input)
         {
             AssertAdmin();
