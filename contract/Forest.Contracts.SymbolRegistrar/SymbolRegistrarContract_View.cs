@@ -69,5 +69,10 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             return new Int64Value { Value = State.LastSeedId.Value };
         }
+
+        public override StringValue GetSeedImageUrlPrefix(Empty input)
+        {
+            return new StringValue { Value = State.SeedImageUrlPrefix.Value };
+        }
     }
 }

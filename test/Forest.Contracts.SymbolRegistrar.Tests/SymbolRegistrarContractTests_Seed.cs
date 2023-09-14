@@ -62,6 +62,10 @@ namespace Forest.Contracts.SymbolRegistrar
             });
             result.TransactionResult.Error.ShouldContain("No sale controller permission.");
             await InitSaleController(Admin.Address);
+            await AdminSymbolRegistrarContractStub.SetSeedImageUrlPrefix.SendAsync(new StringValue()
+            {
+                Value = "http://www.aws.com/"
+            });
             result = await AdminSymbolRegistrarContractStub.CreateSeed.SendAsync(new CreateSeedInput
             {
                 Symbol = "LUCK",
@@ -74,6 +78,7 @@ namespace Forest.Contracts.SymbolRegistrar
             seedCreated.Symbol.ShouldBe("SEED-1");
             seedCreated.To.ShouldBe(User1.Address);
             seedCreated.OwnedSymbol.ShouldBe("LUCK");
+            seedCreated.ImageUrl.ShouldBe("http://www.aws.com/SEED-1.svg");
         }
 
         [Fact]
@@ -313,5 +318,24 @@ namespace Forest.Contracts.SymbolRegistrar
             address.ShouldBe(User2.Address);
         }
 
+        [Fact]
+        public async Task SetSeedImageUrlPrefix_Test()
+        {
+            await InitializeContract();
+            var result = await User1SymbolRegistrarContractStub.SetSeedImageUrlPrefix.SendWithExceptionAsync(new StringValue()
+            {
+                Value = "http://www.aws.com"
+            });
+            result.TransactionResult.Error.ShouldContain("No permission.");
+            result = await AdminSymbolRegistrarContractStub.SetSeedImageUrlPrefix.SendWithExceptionAsync(new StringValue());
+            result.TransactionResult.Error.ShouldContain("Invalid param");
+            result = await AdminSymbolRegistrarContractStub.SetSeedImageUrlPrefix.SendAsync(new StringValue()
+            {
+                Value = "http://www.aws.com"
+            });
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            var seedImageUrlPrefix = await AdminSymbolRegistrarContractStub.GetSeedImageUrlPrefix.CallAsync(new Empty());
+            seedImageUrlPrefix.Value.ShouldBe("http://www.aws.com");
+        }
     }
 }

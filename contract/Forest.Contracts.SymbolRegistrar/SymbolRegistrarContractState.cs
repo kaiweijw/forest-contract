@@ -18,9 +18,8 @@ namespace Forest.Contracts.SymbolRegistrar
         // seed-x -> seedInfo
         public MappedState<string, SeedInfo> SeedInfoMap { get; set; }
         public SingletonState<long> LastSeedId { get; set; }
-
+        public SingletonState<string> SeedImageUrlPrefix { get; set; }
         public SingletonState<ControllerList> SaleController { get; set; }
-        public SingletonState<Hash> SeedNftCollectionProxyAccountHash { get; set; }
         public SingletonState<bool> Initialized { get; set; }
         public SingletonState<Address> Admin { get; set; }
         public SingletonState<Address> ReceivingAccount { get; set; }
