@@ -81,7 +81,7 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty SetSeedImageUrlPrefix(StringValue input)
         {
             AssertAdmin();
-            Assert(input != null && !String.IsNullOrEmpty(input.Value), "Invalid param");
+            Assert(input != null && !String.IsNullOrWhiteSpace(input.Value), "Invalid param");
             State.SeedImageUrlPrefix.Value = input.Value;
             return new Empty();
         }
