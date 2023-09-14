@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
@@ -132,7 +133,8 @@ namespace Forest.Contracts.SymbolRegistrar
                 Symbol = seedSymbol,
                 OwnedSymbol = symbol,
                 ExpireTime = seedInfo.ExpireTime,
-                To = to
+                To = to,
+                ImageUrl = seedInfo.ImageUrl
             });
         }
 
@@ -177,6 +179,12 @@ namespace Forest.Contracts.SymbolRegistrar
             expireTime = expireTime == 0 ? Context.CurrentBlockTime.AddSeconds(State.SeedExpirationConfig.Value).Seconds : expireTime;
             createInput.ExternalInfo.Value[SymbolRegistrarContractConstants.SeedExpireTimeExternalInfoKey] = expireTime.ToString();
             
+            if (!String.IsNullOrEmpty(State.SeedImageUrlPrefix.Value))
+            {
+                createInput.ExternalInfo.Value[SymbolRegistrarContractConstants.NftImageUrlExternalInfoKey] =
+                    State.SeedImageUrlPrefix.Value + seedSymbol + SymbolRegistrarContractConstants.NftImageUrlSuffix;
+            }
+
             var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(seedCollection.Owner);
             Assert(proxyAccount != null && proxyAccount.ProxyAccountHash != null, "ProxyAccountHash not existed.");
             
@@ -192,7 +200,8 @@ namespace Forest.Contracts.SymbolRegistrar
             {
                 Symbol = seedSymbol,
                 OwnedSymbol = symbol,
-                ExpireTime = expireTime
+                ExpireTime = expireTime,
+                ImageUrl = createInput.ExternalInfo.Value.GetValueOrDefault(SymbolRegistrarContractConstants.NftImageUrlExternalInfoKey, "")
             };
             return true;
         }

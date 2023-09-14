@@ -70,6 +70,9 @@ service SymbolRegistrarContract {
 
     rpc SetSeedExpirationConfig(SeedExpirationConfig) returns (google.protobuf.Empty) {
     }
+    
+    rpc SetSeedImageUrlPrefix(google.protobuf.StringValue) returns (google.protobuf.Empty) {
+    }
 
     // View
 
@@ -106,6 +109,9 @@ service SymbolRegistrarContract {
         option (aelf.is_view) = true;
     }
 
+    rpc GetSeedImageUrlPrefix(google.protobuf.Empty) returns (google.protobuf.StringValue) {
+        option (aelf.is_view) = true;
+    }
 }
 
 
@@ -148,6 +154,7 @@ message SeedInfo {
     SeedType seed_type = 4;
     // The address of the buyer
     aelf.Address to = 5;
+    string image_url = 6;
 }
 
 message SeedsPriceInput {
@@ -260,6 +267,7 @@ message SeedCreated {
     SeedType seed_type = 4;
     // The address buyer
     aelf.Address to = 5;
+    string image_url = 6;
 }
 
 message SeedsPriceChanged {

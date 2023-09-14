@@ -19,4 +19,6 @@ public class SymbolRegistrarContractConstants
     public const string CollectionSymbolSuffix = "0";
     public const string SeedOwnedSymbolExternalInfoKey = "__seed_owned_symbol";
     public const string SeedExpireTimeExternalInfoKey = "__seed_exp_time";
+    public const string NftImageUrlExternalInfoKey = "__nft_image_url";
+    public const string NftImageUrlSuffix = ".svg";
 }
