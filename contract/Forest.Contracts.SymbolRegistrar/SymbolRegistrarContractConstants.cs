@@ -12,7 +12,8 @@ public class SymbolRegistrarContractConstants
     public const int DefaultMinMarkup = 10; // 10%
 
     public const long DefaultSeedExpirationTime = 60 * 60 * 24 * 365; // 365 days
-    
+
+    public const int MaxAddSpecialSeedCount = 500;
     public const int MaxSymbolLength = 30;
     public const string SeedPrefix = "SEED-";
     public const int MaxCycleCount = 30;

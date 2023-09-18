@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using AElf;
 using AElf.Sdk.CSharp;
@@ -89,25 +90,40 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty SetSeedsPrice(SeedsPriceInput input)
         {
             AssertAdmin();
-            if (input.FtPriceList?.Value?.Count == 0 && input.NftPriceList?.Value?.Count == 0)
+            var ftListEmpty = (input.FtPriceList?.Value?.Count ?? 0) == 0;
+            var nftListEmpty = (input.NftPriceList?.Value?.Count ?? 0) == 0;
+            
+            if (ftListEmpty && nftListEmpty)
             {
                 return new Empty();
             }
-
-            if (input.FtPriceList.Value.Count > 0)
+            var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
+            if (!ftListEmpty)
             {
                 AssertPriceList(input.FtPriceList);
                 foreach (var ftPriceItem in input.FtPriceList.Value)
                 {
+                    if (!priceSymbolExists.Contains(ftPriceItem.Symbol))
+                    {
+                        var tokenInfo = GetTokenInfo(ftPriceItem.Symbol);
+                        Assert(tokenInfo?.Symbol.Length > 0, "Price token " + ftPriceItem.Symbol + " not exists");
+                        priceSymbolExists.Add(ftPriceItem.Symbol);
+                    }
                     State.FTPrice[ftPriceItem.SymbolLength] = ftPriceItem;
                 }
             }
 
-            if (input.NftPriceList.Value.Count > 0)
+            if (!nftListEmpty)
             {
                 AssertPriceList(input.NftPriceList);
                 foreach (var nftPriceItem in input.NftPriceList.Value)
                 {
+                    if (!priceSymbolExists.Contains(nftPriceItem.Symbol))
+                    {
+                        var tokenInfo = GetTokenInfo(nftPriceItem.Symbol);
+                        Assert(tokenInfo?.Symbol.Length > 0, "Price token " + nftPriceItem.Symbol + " not exists");
+                        priceSymbolExists.Add(nftPriceItem.Symbol);
+                    }
                     State.NFTPrice[nftPriceItem.SymbolLength] = nftPriceItem;
                 }
             }

@@ -20,12 +20,15 @@ namespace Forest.Contracts.SymbolRegistrar
                        || GetDefaultParliamentController().OwnerAddress == Context.Sender, $"No permission.({GetDefaultParliamentController().OwnerAddress},{Context.Sender})");
             else
                 AssertContractAuthor();
+            Assert(input.Value.Count <= SymbolRegistrarContractConstants.MaxAddSpecialSeedCount, "Seed list max limit exceeded.");
 
             var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
             var exists = new HashSet<string>();
             for (var index = 0; index < input?.Value?.Count; index++)
             {
                 var item = input.Value[index];
+                Assert(item.PriceAmount > 0, "Invalid price amount");
+                AssertSymbolPattern(item.Symbol);
                 if (!priceSymbolExists.Contains(item.PriceSymbol))
                 {
                     var tokenInfo = GetTokenInfo(item.PriceSymbol);
@@ -54,26 +57,29 @@ namespace Forest.Contracts.SymbolRegistrar
 
         public override Empty RemoveSpecialSeeds(RemoveSpecialSeedInput input)
         {
-            Assert(GetDefaultParliamentController().OwnerAddress == Context.Sender, "No permission.");
-
-            var exists = new HashSet<string>();
+            
+            if (State.Initialized.Value)
+                Assert(GetDefaultParliamentController().OwnerAddress == Context.Sender, "No permission.");
+            else 
+                AssertContractAuthor();
+            
             var removedList = new SpecialSeedList();
-            for (var index = 0; index < input?.Symbols.Count; index++)
+            foreach (var symbol in input.Symbols)
             {
-                var symbol = input.Symbols[index];
-                Assert(!exists.Contains(symbol), "Duplicate symbol " + symbol);
-                exists.Add(symbol);
-
                 var itemData = State.SpecialSeedMap[symbol];
                 if (itemData == null) continue;
                 removedList.Value.Add(itemData);
                 State.SpecialSeedMap.Remove(symbol);
             }
 
-            Context.Fire(new SpecialSeedRemoved
+            if (removedList.Value.Count > 0)
             {
-                RemoveList = removedList
-            });
+                Context.Fire(new SpecialSeedRemoved
+                {
+                    RemoveList = removedList
+                });
+            }
+
             return new Empty();
         }
     }

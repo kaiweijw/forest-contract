@@ -70,6 +70,7 @@ namespace Forest.Contracts.SymbolRegistrar
                     priceItem.SymbolLength <= SymbolRegistrarContractConstants.MaxSymbolLength,
                     "Invalid symbolLength: " + priceItem.SymbolLength);
                 Assert(tracker[priceItem.SymbolLength - 1] == 0, "Duplicate symbolLength: " + priceItem.SymbolLength);
+                Assert(priceItem.Amount > 0, "Invalid amount");
                 tracker[priceItem.SymbolLength - 1] = 1;
             }
         }

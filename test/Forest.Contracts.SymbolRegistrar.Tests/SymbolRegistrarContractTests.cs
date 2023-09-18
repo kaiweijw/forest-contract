@@ -87,12 +87,12 @@ namespace Forest.Contracts.SymbolRegistrar
         }
 
 
-        internal async Task InitElfBalance(Address to)
+        internal async Task InitElfBalance(Address to, long amount = 10000_0000_0000)
         {
             await AdminTokenContractStub.Transfer.SendAsync(new TransferInput
             {
                 Symbol = "ELF",
-                Amount = 10000_0000_0000,
+                Amount = amount,
                 To = to
             });
             
@@ -115,7 +115,7 @@ namespace Forest.Contracts.SymbolRegistrar
             });
         }
 
-        internal async Task InitSeed()
+        internal async Task InitSeed0()
         {
             await AdminTokenContractStub.Create.SendAsync(
                 new CreateInput
@@ -147,6 +147,19 @@ namespace Forest.Contracts.SymbolRegistrar
             return priceList;
         }
 
+        internal SpecialSeed SpecialSeed(string symbol, SeedType seedType, string priceSymbol, long priceAmount)
+        {
+            return new SpecialSeed
+            {
+                SeedType = seedType,
+                Symbol = symbol,
+                PriceSymbol = priceSymbol,
+                PriceAmount = priceAmount,
+                AuctionType = AuctionType.English
+            };
+        }
+
+        
         internal SpecialSeed _specialUsd = new()
         {
             SeedType = SeedType.Unique,
@@ -200,6 +213,45 @@ namespace Forest.Contracts.SymbolRegistrar
             Symbol = "ETH",
             PriceSymbol = "ELF",
             PriceAmount = 1000_0000_0000,
+            IssueChain = "ETH",
+            ExternalInfo = { ["aaa"] = "bbb" }
+        };
+        
+        internal SpecialSeed _specialLongName = new()
+        {
+            SeedType = SeedType.Notable,
+            Symbol = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDE",
+            PriceSymbol = "ELF",
+            PriceAmount = 1000_0000_0000,
+            IssueChain = "ETH",
+            ExternalInfo = { ["aaa"] = "bbb" }
+        };
+        
+        internal SpecialSeed _specialInvalidSymbol = new()
+        {
+            SeedType = SeedType.Notable,
+            Symbol = "abcabc",
+            PriceSymbol = "ELF",
+            PriceAmount = 1000_0000_0000,
+            IssueChain = "ETH",
+            ExternalInfo = { ["aaa"] = "bbb" }
+        };
+        
+        internal SpecialSeed _specialInvalidNftSymbol = new()
+        {
+            SeedType = SeedType.Notable,
+            Symbol = "ABC-abc",
+            PriceSymbol = "ELF",
+            PriceAmount = 1000_0000_0000,
+            IssueChain = "ETH",
+            ExternalInfo = { ["aaa"] = "bbb" }
+        };
+        internal SpecialSeed _specialInvalidPriceAmount = new()
+        {
+            SeedType = SeedType.Notable,
+            Symbol = "ABC",
+            PriceSymbol = "ELF",
+            PriceAmount = -1,
             IssueChain = "ETH",
             ExternalInfo = { ["aaa"] = "bbb" }
         };
