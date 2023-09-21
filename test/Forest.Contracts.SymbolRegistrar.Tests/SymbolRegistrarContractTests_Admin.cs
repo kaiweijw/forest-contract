@@ -198,7 +198,8 @@ namespace Forest.Contracts.SymbolRegistrar
             {
                 Duration = 100,
                 CountdownTime = 100,
-                MaxExtensionTime = 100
+                MaxExtensionTime = 100,
+                MinMarkup = -1
             });
             result.TransactionResult.Error.ShouldContain("Invalid input min markup.");
         }
