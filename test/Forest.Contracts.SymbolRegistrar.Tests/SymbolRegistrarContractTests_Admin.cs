@@ -137,5 +137,70 @@ namespace Forest.Contracts.SymbolRegistrar
             exception2.ShouldNotBeNull();
             exception2.Message.ShouldContain("No permission");
         }
+        
+        [Fact]
+        public async Task SetAuctionConfigTests()
+        {
+            await InitializeContract();
+            await InitSaleController(Admin.Address);
+            await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendAsync(new AuctionConfig
+            {
+                CountdownTime = 100,
+                Duration = 100,
+                MaxExtensionTime = 100,
+                MinMarkup = 100
+            });
+            await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendAsync(new AuctionConfig
+            {
+                CountdownTime = 100,
+                Duration = 100,
+                MaxExtensionTime = 100,
+                MinMarkup = 100
+            });
+
+            var output = await AdminSymbolRegistrarContractStub.GetAuctionConfig.CallAsync(new Empty());
+            output.Duration.ShouldBe(100);
+            output.CountdownTime.ShouldBe(100);
+            output.MaxExtensionTime.ShouldBe(100);
+            output.MinMarkup.ShouldBe(100);
+        }
+
+        [Fact]
+        public async Task SetAuctionConfigTests_Fail()
+        {
+            var result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig());
+            result.TransactionResult.Error.ShouldContain("Contract not initialized.");
+
+            await InitializeContract();
+            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig());
+            result.TransactionResult.Error.ShouldContain("No sale controller permission.");
+
+            await InitSaleController(Admin.Address);
+            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig());
+            result.TransactionResult.Error.ShouldContain("Invalid input duration.");
+
+            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig
+            {
+                Duration = 100,
+                CountdownTime = -1
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid input countdown time.");
+
+            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig
+            {
+                Duration = 100,
+                CountdownTime = 100,
+                MaxExtensionTime = -1
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid input max extension time.");
+
+            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig
+            {
+                Duration = 100,
+                CountdownTime = 100,
+                MaxExtensionTime = 100
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid input min markup.");
+        }
     }
 }
