@@ -202,6 +202,24 @@ namespace Forest.Contracts.SymbolRegistrar
             return new Empty();
         }
 
-    
+        public override Empty SetAuctionConfig(AuctionConfig input)
+        {
+            AssertInitialized();
+            AssertSaleController();
+
+            Assert(input != null, "Invalid input.");
+            Assert(input.Duration > 0, "Invalid input duration.");
+            Assert(input.CountdownTime >= 0, "Invalid input countdown time.");
+            Assert(input.MaxExtensionTime >= 0, "Invalid input max extension time.");
+            Assert(input.MinMarkup >= 0, "Invalid input min markup.");
+
+            if (State.AuctionConfig.Value.Equals(input))
+            {
+                return new Empty();
+            }
+
+            State.AuctionConfig.Value = input;
+            return new Empty();
+        }
     }
 }
