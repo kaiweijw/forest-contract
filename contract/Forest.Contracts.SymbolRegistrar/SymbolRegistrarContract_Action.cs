@@ -128,11 +128,13 @@ namespace Forest.Contracts.SymbolRegistrar
             var seedInfo = State.SeedInfoMap[seedSymbol];
             seedInfo.To = to;
             State.SeedInfoMap[seedSymbol] = seedInfo;
+            var specialSeed = State.SpecialSeedMap[symbol];
             Context.Fire(new SeedCreated
             {
                 Symbol = seedSymbol,
                 OwnedSymbol = symbol,
                 ExpireTime = seedInfo.ExpireTime,
+                SeedType = specialSeed?.SeedType ?? SeedType.Regular,
                 To = to,
                 ImageUrl = seedInfo.ImageUrl
             });
