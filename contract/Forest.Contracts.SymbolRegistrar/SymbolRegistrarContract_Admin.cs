@@ -22,6 +22,8 @@ namespace Forest.Contracts.SymbolRegistrar
 
             Assert(input.ReceivingAccount != null && !input.ReceivingAccount.Value.IsNullOrEmpty(),
                 "PaymentReceiverAddress required.");
+            Assert(input.AdministratorAddress == null || !input.AdministratorAddress.Value.IsNullOrEmpty(), 
+                "Invalid administrator address.");
 
             State.Admin.Value = input.AdministratorAddress ?? Context.Sender;
             State.ReceivingAccount.Value = input.ReceivingAccount;
