@@ -79,6 +79,7 @@ namespace Forest.Contracts.SymbolRegistrar
             seedCreated.To.ShouldBe(User1.Address);
             seedCreated.OwnedSymbol.ShouldBe("LUCK");
             seedCreated.ImageUrl.ShouldBe("http://www.aws.com/SEED-1.svg");
+            seedCreated.SeedType.ShouldBe(SeedType.Regular);
         }
 
         [Fact]
