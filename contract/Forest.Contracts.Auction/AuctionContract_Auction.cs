@@ -1,6 +1,5 @@
 using AElf;
 using AElf.Contracts.MultiToken;
-using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using Google.Protobuf.WellKnownTypes;
 
@@ -97,7 +96,7 @@ public partial class AuctionContract
         Assert(!auctionInfo.IsAuctionFinished(currentBlockTime), "Auction finished. Bid failed.");
 
         var bidInfo = auctionInfo.LastBidInfo;
-        
+
         var auctionConfig = auctionInfo.AuctionConfig;
         AssertBidPriceEnough(
             bidInfo?.Bidder == null ? auctionInfo.StartPrice : bidInfo.Price, input.Price, auctionConfig.MinMarkup);

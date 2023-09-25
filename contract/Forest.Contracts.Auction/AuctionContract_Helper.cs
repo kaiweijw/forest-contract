@@ -78,7 +78,7 @@ public partial class AuctionContract
         ValidatePrice(input.StartPrice);
         ValidateAuctionConfig(input.AuctionConfig);
     }
-    
+
     private void AssertBidPriceEnough(Price lastPrice, Price inputPrice, int minMarkup)
     {
         Assert(inputPrice.Symbol == lastPrice.Symbol, "Invalid input price symbol.");

@@ -117,7 +117,7 @@ public static class Extensions
     {
         return currentBlockTime.AddSeconds(self.AuctionConfig.CountdownTime) >= self.EndTime;
     }
-    
+
     public static bool IsAuctionFinished(this AuctionInfo self, Timestamp currentBlockTime)
     {
         return self.EndTime <= currentBlockTime;
