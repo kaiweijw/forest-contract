@@ -31,7 +31,7 @@ public partial class AuctionContract
             Symbol = auctionInfo.Symbol
         });
 
-        Context.Fire(auctionInfo.CreateAuctionCreatedEvent());
+        Context.Fire(auctionInfo.GenerateAuctionCreatedEvent());
 
         return new Empty();
     }
@@ -55,7 +55,7 @@ public partial class AuctionContract
 
         auctionInfo = State.AuctionInfoMap[input.AuctionId];
 
-        Context.Fire(auctionInfo.CreateBidPlacedEvent());
+        Context.Fire(auctionInfo.GenerateBidPlacedEvent());
 
         return new Empty();
     }
@@ -77,7 +77,7 @@ public partial class AuctionContract
         TransferTokenToBidder(auctionInfo);
         TransferToReceivingAccount(auctionInfo);
 
-        Context.Fire(auctionInfo.CreateClaimedEvent());
+        Context.Fire(auctionInfo.GenerateClaimedEvent());
 
         return new Empty();
     }
@@ -90,7 +90,7 @@ public partial class AuctionContract
         {
             auctionInfo.SetAuctionTime(currentBlockTime);
 
-            Context.Fire(auctionInfo.CreateAuctionTimeUpdatedEvent());
+            Context.Fire(auctionInfo.GenerateAuctionTimeUpdatedEvent());
         }
 
         Assert(!auctionInfo.IsAuctionFinished(currentBlockTime), "Auction finished. Bid failed.");
@@ -116,7 +116,7 @@ public partial class AuctionContract
         if (auctionInfo.IsInCountdownTime(currentBlockTime))
         {
             auctionInfo.ExtendEndTime();
-            Context.Fire(auctionInfo.CreateAuctionTimeUpdatedEvent());
+            Context.Fire(auctionInfo.GenerateAuctionTimeUpdatedEvent());
         }
 
         State.AuctionInfoMap[input.AuctionId] = auctionInfo.UpdateBidInfo(bidInfo);

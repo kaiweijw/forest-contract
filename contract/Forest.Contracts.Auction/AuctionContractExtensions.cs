@@ -6,7 +6,7 @@ namespace Forest.Contracts.Auction;
 
 public static class Extensions
 {
-    public static AuctionCreated CreateAuctionCreatedEvent(this AuctionInfo self)
+    public static AuctionCreated GenerateAuctionCreatedEvent(this AuctionInfo self)
     {
         return new AuctionCreated
         {
@@ -23,7 +23,7 @@ public static class Extensions
         };
     }
 
-    public static BidPlaced CreateBidPlacedEvent(this AuctionInfo self)
+    public static BidPlaced GenerateBidPlacedEvent(this AuctionInfo self)
     {
         return new BidPlaced
         {
@@ -34,7 +34,7 @@ public static class Extensions
         };
     }
 
-    public static Claimed CreateClaimedEvent(this AuctionInfo self)
+    public static Claimed GenerateClaimedEvent(this AuctionInfo self)
     {
         return new Claimed
         {
@@ -44,7 +44,7 @@ public static class Extensions
         };
     }
 
-    public static AuctionTimeUpdated CreateAuctionTimeUpdatedEvent(this AuctionInfo self)
+    public static AuctionTimeUpdated GenerateAuctionTimeUpdatedEvent(this AuctionInfo self)
     {
         return new AuctionTimeUpdated
         {
