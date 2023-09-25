@@ -29,19 +29,17 @@ namespace Forest.Contracts.SymbolRegistrar
             Assert(input.ProxyAccountAddress != null && !input.ProxyAccountAddress.Value.IsNullOrEmpty(),
                 "ProxyAccountAddress required.");
             State.ProxyAccountContract.Value = input.ProxyAccountAddress;
-
-            if (input.SpecialSeeds != null)
-                AddSpecialSeeds(input.SpecialSeeds);
-
-            if (input.SeedsPrices != null)
-                SetSeedsPrice(input.SeedsPrices);
-
             State.TokenContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
             State.ParliamentContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.ParliamentContractSystemName);
 
             InitializeAuctionConfig();
+            if (input.SpecialSeeds != null)
+                AddSpecialSeeds(input.SpecialSeeds);
+
+            if (input.SeedsPrices != null)
+                UpdateSeedsPrice(input.SeedsPrices);
 
             State.Initialized.Value = true;
             return new Empty();
@@ -90,12 +88,18 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty SetSeedsPrice(SeedsPriceInput input)
         {
             AssertAdmin();
+            UpdateSeedsPrice(input);
+            return new Empty();
+        }
+
+        private void UpdateSeedsPrice(SeedsPriceInput input)
+        {
             var ftListEmpty = (input.FtPriceList?.Value?.Count ?? 0) == 0;
             var nftListEmpty = (input.NftPriceList?.Value?.Count ?? 0) == 0;
             
             if (ftListEmpty && nftListEmpty)
             {
-                return new Empty();
+                return;
             }
             var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
             if (!ftListEmpty)
@@ -133,8 +137,6 @@ namespace Forest.Contracts.SymbolRegistrar
                 FtPriceList = input.FtPriceList,
                 NftPriceList = input.NftPriceList
             });
-
-            return new Empty();
         }
 
         public override Empty AddSaleController(AddSaleControllerInput input)
