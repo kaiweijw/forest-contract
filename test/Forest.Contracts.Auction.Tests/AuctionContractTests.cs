@@ -315,7 +315,7 @@ namespace Forest.Contracts.Auction
             await Initialize();
 
             result = await AuctionContractUserStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput());
-            result.TransactionResult.Error.ShouldContain("No sale controller permission.");
+            result.TransactionResult.Error.ShouldContain("No auction controller permission.");
 
             result = await AuctionContractStub.CreateAuction.SendWithExceptionAsync(new CreateAuctionInput());
             result.TransactionResult.Error.ShouldContain("Invalid input symbol.");

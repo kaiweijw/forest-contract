@@ -13,18 +13,18 @@ public partial class AuctionContract
         Assert(Context.Sender == State.Admin.Value, "No permission.");
     }
 
-    private void AssertInitialize()
+    private void AssertInitialized()
     {
         Assert(State.Initialized.Value, "Not initialized.");
     }
 
-    private void AssertPrice(Price input)
+    private void ValidatePrice(Price input)
     {
         Assert(input != null && !string.IsNullOrWhiteSpace(input.Symbol) &&
                input.Amount > 0, "Invalid input price.");
     }
 
-    private void AssertSymbol(string symbol)
+    private void ValidateSymbol(string symbol)
     {
         var words = symbol.Split(AuctionContractConstants.NFTSymbolSeparator);
         Assert(words[0].Length > 0 && words[0].All(IsValidCreateSymbolChar), "Invalid input symbol.");
@@ -59,10 +59,41 @@ public partial class AuctionContract
             HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(symbol), HashHelper.ComputeFrom(counter)));
     }
 
-    private void AssertAuctionController()
+    private void AssertAuctionControllerPermission()
     {
         Assert(
             State.AuctionController.Value != null && State.AuctionController.Value.Controllers.Contains(Context.Sender),
-            "No sale controller permission.");
+            "No auction controller permission.");
+    }
+
+    private void ValidateCreateAuctionInput(CreateAuctionInput input)
+    {
+        Assert(input != null, "Invalid input.");
+        Assert(!string.IsNullOrWhiteSpace(input.Symbol), "Invalid input symbol.");
+        ValidateSymbol(input.Symbol);
+        Assert(input.ReceivingAddress == null || !input.ReceivingAddress.Value.IsNullOrEmpty(),
+            "Invalid input receiving address.");
+        Assert(input.AuctionType == AuctionType.English, "Invalid input auction type.");
+
+        ValidatePrice(input.StartPrice);
+        ValidateAuctionConfig(input.AuctionConfig);
+    }
+    
+    private void AssertBidPriceEnough(Price lastPrice, Price inputPrice, int minMarkup)
+    {
+        Assert(inputPrice.Symbol == lastPrice.Symbol, "Invalid input price symbol.");
+        Assert(inputPrice.Amount > lastPrice.Amount, "Bid price not high enough.");
+
+        var diff = inputPrice.Amount - lastPrice.Amount;
+        Assert(diff >= lastPrice.Amount.Mul(minMarkup).Div(100), "Bid price not high enough.");
+    }
+
+    private void ValidateAuctionConfig(AuctionConfig input)
+    {
+        Assert(input != null, "Invalid input auction config.");
+        Assert(input.Duration > 0, "Invalid input duration.");
+        Assert(input.CountdownTime >= 0, "Invalid input countdown time.");
+        Assert(input.MaxExtensionTime >= 0, "Invalid input max extension time.");
+        Assert(input.MinMarkup >= 0, "Invalid input min markup.");
     }
 }
