@@ -55,6 +55,13 @@ namespace Forest.Contracts.SymbolRegistrar
                 Symbol = "SEED-1"
             });
             balance.Balance.ShouldBeGreaterThan(0);
+
+            var elfBalance = await User1TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+            {
+                Owner = User1.Address,
+                Symbol = "ELF"
+            });
+            elfBalance.Balance.ShouldBe(9953_0000_0000);
         }
 
 
@@ -267,6 +274,13 @@ namespace Forest.Contracts.SymbolRegistrar
                 Symbol = "SEED-1"
             });
             balance.Balance.ShouldBeGreaterThan(0);
+            
+            var elfBalance = await User1TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+            {
+                Owner = User1.Address,
+                Symbol = "ELF"
+            });
+            elfBalance.Balance.ShouldBe(9955_0000_0000);
         }
 
 
@@ -287,6 +301,25 @@ namespace Forest.Contracts.SymbolRegistrar
             }));
             res.ShouldNotBeNull();
             res.Message.ShouldContain("Invalid OwnedSymbol");
+        }
+
+        [Fact]
+        public async Task Buy_existsFT_fail()
+        {
+            await SetSeedsPrice_success();
+            await InitSeed0();
+            await InitElfBalance(User1.Address);
+            await ApproveMaxElfBalance(User1TokenContractStub, SymbolRegistrarContractAddress);
+
+            // To buy 
+            var symbol = "ELF";
+            var res = await Assert.ThrowsAsync<Exception>(() => User1SymbolRegistrarContractStub.Buy.SendAsync(new BuyInput
+            {
+                Symbol = symbol,
+                IssueTo = User1.Address
+            }));
+            res.ShouldNotBeNull();
+            res.Message.ShouldContain("Symbol exists");
         }
 
     }
