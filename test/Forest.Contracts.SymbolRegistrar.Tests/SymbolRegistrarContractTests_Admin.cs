@@ -10,13 +10,11 @@ namespace Forest.Contracts.SymbolRegistrar
 {
     public class SymbolRegistrarContractTests_Admin : SymbolRegistrarContractTests
     {
-        
-
         [Fact]
         public async Task InitTest_view()
         {
             await InitializeContract();
-            
+
             var bizConfig = AdminSymbolRegistrarContractStub.GetBizConfig.CallAsync(new Empty());
             bizConfig.Result.ReceivingAccount.ShouldBe(Admin.Address);
             bizConfig.Result.AdministratorAddress.ShouldBe(Admin.Address);
@@ -26,29 +24,43 @@ namespace Forest.Contracts.SymbolRegistrar
         public async Task InitTest_Fail()
         {
             // no permission
-            var exception = await Assert.ThrowsAsync<Exception>(() => User1SymbolRegistrarContractStub.Initialize.SendAsync(
-                new InitializeInput()
-                {
-                    ReceivingAccount = Admin.Address
-                }));
+            var exception = await Assert.ThrowsAsync<Exception>(() =>
+                User1SymbolRegistrarContractStub.Initialize.SendAsync(
+                    new InitializeInput()
+                    {
+                        ReceivingAccount = Admin.Address
+                    }));
             exception.ShouldNotBeNull();
             exception.Message.ShouldContain("No permission");
 
+            // Invalid administrator address
+            var emptyAdminAddressException = await Assert.ThrowsAsync<Exception>(() =>
+                AdminSymbolRegistrarContractStub.Initialize.SendAsync(
+                    new InitializeInput()
+                    {
+                        ReceivingAccount = Admin.Address,
+                        AdministratorAddress = new Address()
+                    }));
+            emptyAdminAddressException.ShouldNotBeNull();
+            emptyAdminAddressException.Message.ShouldContain("Invalid administrator address");
+
             // invalid param
-            var exception2 = await Assert.ThrowsAsync<Exception>(() => AdminSymbolRegistrarContractStub.Initialize.SendAsync(
-                new InitializeInput()
-                {
-                    // no param
-                }));
+            var exception2 = await Assert.ThrowsAsync<Exception>(() =>
+                AdminSymbolRegistrarContractStub.Initialize.SendAsync(
+                    new InitializeInput()
+                    {
+                        // no param
+                    }));
             exception2.ShouldNotBeNull();
             exception2.Message.ShouldContain("PaymentReceiverAddress required");
 
             // invalid param
-            var exception3 = await Assert.ThrowsAsync<Exception>(() => AdminSymbolRegistrarContractStub.Initialize.SendAsync(
-                new InitializeInput()
-                {
-                    ReceivingAccount = new Address()
-                }));
+            var exception3 = await Assert.ThrowsAsync<Exception>(() =>
+                AdminSymbolRegistrarContractStub.Initialize.SendAsync(
+                    new InitializeInput()
+                    {
+                        ReceivingAccount = new Address()
+                    }));
             exception3.ShouldNotBeNull();
             exception3.Message.ShouldContain("PaymentReceiverAddress required");
             
@@ -83,14 +95,14 @@ namespace Forest.Contracts.SymbolRegistrar
                 AdminSymbolRegistrarContractStub.SetReceivingAccount.SendAsync(User2.Address));
             exception1.ShouldNotBeNull();
             exception1.Message.ShouldContain("Contract not Initialized");
-            
+
             await InitTest_view();
-            
+
             var exception2 = await Assert.ThrowsAsync<Exception>(() =>
                 AdminSymbolRegistrarContractStub.SetAdmin.SendAsync(new Address()));
             exception2.ShouldNotBeNull();
             exception2.Message.ShouldContain("Invalid param");
-            
+
             var exception3 = await Assert.ThrowsAsync<Exception>(() =>
                 AdminSymbolRegistrarContractStub.SetReceivingAccount.SendAsync(new Address()));
             exception3.ShouldNotBeNull();
@@ -116,7 +128,7 @@ namespace Forest.Contracts.SymbolRegistrar
                     Value = { _specialUsd, _specialEth }
                 }
             });
-            
+
             // logs
             var logEvent = result.TransactionResult.Logs.First(log => log.Name.Contains(nameof(SpecialSeedAdded)));
             var specialSeedAdded = SpecialSeedAdded.Parser.ParseFrom(logEvent.NonIndexed);
@@ -128,8 +140,8 @@ namespace Forest.Contracts.SymbolRegistrar
                 Value = _specialUsd.Symbol
             });
             seedUsd.Symbol.ShouldBe(_specialUsd.Symbol);
-            
-            
+
+
             var seedEth = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
             {
                 Value = _specialEth.Symbol
@@ -226,7 +238,7 @@ namespace Forest.Contracts.SymbolRegistrar
             exception2.ShouldNotBeNull();
             exception2.Message.ShouldContain("No permission");
         }
-        
+
         [Fact]
         public async Task SetAuctionConfigTests()
         {
@@ -257,15 +269,18 @@ namespace Forest.Contracts.SymbolRegistrar
         [Fact]
         public async Task SetAuctionConfigTests_Fail()
         {
-            var result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig());
+            var result =
+                await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig());
             result.TransactionResult.Error.ShouldContain("Contract not initialized.");
 
             await InitializeContract();
-            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig());
+            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig
+                .SendWithExceptionAsync(new AuctionConfig());
             result.TransactionResult.Error.ShouldContain("No sale controller permission.");
 
             await InitSaleController(Admin.Address);
-            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig());
+            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig
+                .SendWithExceptionAsync(new AuctionConfig());
             result.TransactionResult.Error.ShouldContain("Invalid input duration.");
 
             result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig
