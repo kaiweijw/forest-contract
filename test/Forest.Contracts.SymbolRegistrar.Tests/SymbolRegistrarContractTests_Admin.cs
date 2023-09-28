@@ -195,7 +195,7 @@ namespace Forest.Contracts.SymbolRegistrar
             });
             result.TransactionResult.Error.ShouldContain("Price token " + _specialUsd_errorPrice.PriceSymbol + " not exists");
             
-            const int length = 600;
+            const int length = 501;
             var batchSpecialSeedList = new SpecialSeedList();
             for (var i = 0; i < length; i++)
             {
@@ -210,6 +210,14 @@ namespace Forest.Contracts.SymbolRegistrar
                 SpecialSeeds = batchSpecialSeedList
             });
             maxLimitExceeded.TransactionResult.Error.ShouldContain("max limit exceeded");
+            
+            batchSpecialSeedList.Value.RemoveAt(500);
+            await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
+            {
+                ReceivingAccount = Admin.Address,
+                ProxyAccountAddress = Admin.Address,
+                SpecialSeeds = batchSpecialSeedList
+            });
         }
 
         [Fact]
