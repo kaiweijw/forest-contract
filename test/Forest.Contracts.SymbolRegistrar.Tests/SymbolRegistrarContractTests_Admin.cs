@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Types;
+using Forest.Contracts.SymbolRegistrar.Helper;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
@@ -193,6 +194,22 @@ namespace Forest.Contracts.SymbolRegistrar
                 }
             });
             result.TransactionResult.Error.ShouldContain("Price token " + _specialUsd_errorPrice.PriceSymbol + " not exists");
+            
+            const int length = 600;
+            var batchSpecialSeedList = new SpecialSeedList();
+            for (var i = 0; i < length; i++)
+            {
+                batchSpecialSeedList.Value.Add(SpecialSeed(BaseEncodeHelper.Base26(i), SeedType.Unique, "ELF",
+                    100_0000_0000));
+            }
+
+            var maxLimitExceeded = await AdminSymbolRegistrarContractStub.Initialize.SendWithExceptionAsync(new InitializeInput()
+            {
+                ReceivingAccount = Admin.Address,
+                ProxyAccountAddress = Admin.Address,
+                SpecialSeeds = batchSpecialSeedList
+            });
+            maxLimitExceeded.TransactionResult.Error.ShouldContain("max limit exceeded");
         }
 
         [Fact]
