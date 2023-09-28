@@ -96,6 +96,9 @@ namespace Forest.Contracts.SymbolRegistrar
             exception3.ShouldNotBeNull();
             exception3.Message.ShouldContain("Invalid param");
 
+            var exception4 = await User1SymbolRegistrarContractStub.SetReceivingAccount.SendWithExceptionAsync(new Address(User1.Address));
+            exception4.TransactionResult.Error.ShouldContain("No permission");
+
             await AdminSymbolRegistrarContractStub.SetReceivingAccount.SendAsync(User2.Address);
             await AdminSymbolRegistrarContractStub.SetAdmin.SendAsync(User1.Address);
 
@@ -265,7 +268,10 @@ namespace Forest.Contracts.SymbolRegistrar
             result.TransactionResult.Error.ShouldContain("No sale controller permission.");
 
             await InitSaleController(Admin.Address);
-            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig());
+            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig
+            {
+                Duration = -1
+            });
             result.TransactionResult.Error.ShouldContain("Invalid input duration.");
 
             result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig
