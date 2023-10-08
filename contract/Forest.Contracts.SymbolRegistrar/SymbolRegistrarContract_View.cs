@@ -31,8 +31,16 @@ namespace Forest.Contracts.SymbolRegistrar
             var nftPriceList = new PriceList();
             for (var i = 0; i < SymbolRegistrarContractConstants.MaxSymbolLength; i++)
             {
-                ftPriceList.Value.Add(State.FTPrice[i + 1]);
-                nftPriceList.Value.Add(State.NFTPrice[i + 1]);
+                var ftPrice = State.FTPrice[i + 1];
+                if (ftPrice != null)
+                {
+                    ftPriceList.Value.Add(ftPrice);
+                }
+                var nftPrice = State.NFTPrice[i + 1];
+                if (nftPrice != null)
+                {
+                    nftPriceList.Value.Add(nftPrice);
+                }
             }
 
             return new GetSeedsPriceOutput
