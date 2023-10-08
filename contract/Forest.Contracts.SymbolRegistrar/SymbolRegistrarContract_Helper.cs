@@ -33,7 +33,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
         private void AssertSymbolPattern(string symbol)
         {
-            Assert(symbol.Length > 0 && symbol.Length < SymbolRegistrarContractConstants.MaxSymbolLength,
+            Assert(symbol.Length > 0 && symbol.Length <= SymbolRegistrarContractConstants.MaxSymbolLength,
                 "Invalid symbol length.");
 
             var symbolPartition = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
