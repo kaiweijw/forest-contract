@@ -139,6 +139,34 @@ namespace Forest.Contracts.SymbolRegistrar
 
 
         [Fact]
+        public async Task RemoveSpecialSeed_duplicate_success()
+        {
+            await SetSpecialSeed_byProposal();
+            
+            var removeResult = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
+                "RemoveSpecialSeeds", new RemoveSpecialSeedInput
+                {
+                    Symbols = { _specialUsd.Symbol, _specialUsd.Symbol }
+                });
+            removeResult.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            var logEvent =
+                removeResult.TransactionResult.Logs.First(log => log.Name.Contains(nameof(SpecialSeedRemoved)));
+            var specialSeedRemoved = SpecialSeedRemoved.Parser.ParseFrom(logEvent.NonIndexed);
+            specialSeedRemoved.RemoveList.Value.Count.ShouldBe(1);            
+            
+            
+            var removeResult2 = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
+                "RemoveSpecialSeeds", new RemoveSpecialSeedInput
+                {
+                    Symbols = { _specialUsd.Symbol }
+                });
+            removeResult2.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            removeResult2.TransactionResult.Logs.FirstOrDefault(log => log.Name.Contains(nameof(SpecialSeedRemoved)), null).ShouldBeNull();
+            
+        }
+        
+        
+        [Fact]
         public async Task SetSpecialSeed_remove_notInit_success()
         {
             var removeResult = await AdminSymbolRegistrarContractStub.RemoveSpecialSeeds.SendAsync(
