@@ -53,8 +53,6 @@ public partial class AuctionContract
                 break;
         }
 
-        auctionInfo = State.AuctionInfoMap[input.AuctionId];
-
         Context.Fire(auctionInfo.GenerateBidPlacedEvent());
 
         return new Empty();
@@ -68,6 +66,7 @@ public partial class AuctionContract
         var auctionInfo = State.AuctionInfoMap[input.AuctionId];
         Assert(auctionInfo != null, "Auction not exist.");
         Assert(auctionInfo.StartTime != null, "Auction not start yet.");
+        Assert(auctionInfo.FinishTime == null, "Auction already claimed.");
 
         var currentBlockTime = Context.CurrentBlockTime;
         Assert(auctionInfo.IsAuctionFinished(currentBlockTime), "Auction not end yet.");
