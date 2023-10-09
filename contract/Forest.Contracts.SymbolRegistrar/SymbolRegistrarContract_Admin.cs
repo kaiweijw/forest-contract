@@ -201,7 +201,10 @@ namespace Forest.Contracts.SymbolRegistrar
 
             Context.Fire(new SaleControllerRemoved
             {
-                Addresses = State.SaleController.Value
+                Addresses = new ControllerList
+                {
+                    Controllers = { removeList }
+                }
             });
             return new Empty();
         }

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Types;
+using Forest.Contracts.SymbolRegistrar.Helper;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
@@ -108,6 +109,9 @@ namespace Forest.Contracts.SymbolRegistrar
             exception3.ShouldNotBeNull();
             exception3.Message.ShouldContain("Invalid param");
 
+            var exception4 = await User1SymbolRegistrarContractStub.SetReceivingAccount.SendWithExceptionAsync(new Address(User1.Address));
+            exception4.TransactionResult.Error.ShouldContain("No permission");
+
             await AdminSymbolRegistrarContractStub.SetReceivingAccount.SendAsync(User2.Address);
             await AdminSymbolRegistrarContractStub.SetAdmin.SendAsync(User1.Address);
 
@@ -202,6 +206,30 @@ namespace Forest.Contracts.SymbolRegistrar
                 }
             });
             result.TransactionResult.Error.ShouldContain("Price token " + _specialUsd_errorPrice.PriceSymbol + " not exists");
+            
+            const int length = 501;
+            var batchSpecialSeedList = new SpecialSeedList();
+            for (var i = 0; i < length; i++)
+            {
+                batchSpecialSeedList.Value.Add(SpecialSeed(BaseEncodeHelper.Base26(i), SeedType.Unique, "ELF",
+                    100_0000_0000));
+            }
+
+            var maxLimitExceeded = await AdminSymbolRegistrarContractStub.Initialize.SendWithExceptionAsync(new InitializeInput()
+            {
+                ReceivingAccount = Admin.Address,
+                ProxyAccountAddress = Admin.Address,
+                SpecialSeeds = batchSpecialSeedList
+            });
+            maxLimitExceeded.TransactionResult.Error.ShouldContain("max limit exceeded");
+            
+            batchSpecialSeedList.Value.RemoveAt(500);
+            await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
+            {
+                ReceivingAccount = Admin.Address,
+                ProxyAccountAddress = Admin.Address,
+                SpecialSeeds = batchSpecialSeedList
+            });
         }
 
         [Fact]
@@ -279,8 +307,10 @@ namespace Forest.Contracts.SymbolRegistrar
             result.TransactionResult.Error.ShouldContain("No sale controller permission.");
 
             await InitSaleController(Admin.Address);
-            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig
-                .SendWithExceptionAsync(new AuctionConfig());
+            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig
+            {
+                Duration = -1
+            });
             result.TransactionResult.Error.ShouldContain("Invalid input duration.");
 
             result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig
@@ -383,7 +413,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 }
             });
             var saleControllerRemoved = SaleControllerRemoved.Parser.ParseFrom(result.TransactionResult.Logs.First(e => e.Name == nameof(SaleControllerRemoved)).NonIndexed);
-            saleControllerRemoved.Addresses.Controllers.ShouldContain(User2.Address);
+            saleControllerRemoved.Addresses.Controllers.ShouldContain(Admin.Address);
             
             result = await AdminSymbolRegistrarContractStub.RemoveSaleController.SendWithExceptionAsync(new RemoveSaleControllerInput()
             {
