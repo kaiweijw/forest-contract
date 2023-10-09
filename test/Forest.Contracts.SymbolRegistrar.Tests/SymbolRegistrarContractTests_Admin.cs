@@ -413,7 +413,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 }
             });
             var saleControllerRemoved = SaleControllerRemoved.Parser.ParseFrom(result.TransactionResult.Logs.First(e => e.Name == nameof(SaleControllerRemoved)).NonIndexed);
-            saleControllerRemoved.Addresses.Controllers.ShouldContain(User2.Address);
+            saleControllerRemoved.Addresses.Controllers.ShouldContain(Admin.Address);
             
             result = await AdminSymbolRegistrarContractStub.RemoveSaleController.SendWithExceptionAsync(new RemoveSaleControllerInput()
             {
