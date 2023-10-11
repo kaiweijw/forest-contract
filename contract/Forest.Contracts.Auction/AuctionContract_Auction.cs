@@ -107,7 +107,7 @@ public partial class AuctionContract
         AssertBidPriceEnough(
             bidInfo?.Bidder == null ? auctionInfo.StartPrice : bidInfo.Price, input.Price, auctionConfig.MinMarkup);
 
-        RefundToPreviousBidder(bidInfo);
+        RefundToLastBidder(bidInfo);
 
         bidInfo = new BidInfo
         {
@@ -128,7 +128,7 @@ public partial class AuctionContract
         State.AuctionInfoMap[input.AuctionId] = auctionInfo.UpdateBidInfo(bidInfo);
     }
 
-    private void RefundToPreviousBidder(BidInfo bidInfo)
+    private void RefundToLastBidder(BidInfo bidInfo)
     {
         if (bidInfo != null)
         {
