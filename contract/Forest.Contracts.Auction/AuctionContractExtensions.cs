@@ -39,7 +39,7 @@ public static class Extensions
         return new Claimed
         {
             AuctionId = self.AuctionId,
-            Bidder = self.LastBidInfo.Bidder,
+            Bidder = self.LastBidInfo?.Bidder,
             FinishTime = self.FinishTime
         };
     }
@@ -121,5 +121,10 @@ public static class Extensions
     public static bool IsAuctionFinished(this AuctionInfo self, Timestamp currentBlockTime)
     {
         return self.EndTime <= currentBlockTime;
+    }
+
+    public static bool IsAuctionBid(this AuctionInfo self)
+    {
+        return self.LastBidInfo != null;
     }
 }

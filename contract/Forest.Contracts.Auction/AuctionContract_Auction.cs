@@ -73,8 +73,15 @@ public partial class AuctionContract
 
         auctionInfo.SetFinishTime(currentBlockTime);
 
-        TransferTokenToBidder(auctionInfo);
-        TransferToReceivingAccount(auctionInfo);
+        if (!auctionInfo.IsAuctionBid())
+        {
+            RefundTokenToCreator(auctionInfo);
+        }
+        else
+        {
+            TransferTokenToBidder(auctionInfo);
+            TransferToReceivingAccount(auctionInfo);
+        }
 
         Context.Fire(auctionInfo.GenerateClaimedEvent());
 
@@ -100,7 +107,7 @@ public partial class AuctionContract
         AssertBidPriceEnough(
             bidInfo?.Bidder == null ? auctionInfo.StartPrice : bidInfo.Price, input.Price, auctionConfig.MinMarkup);
 
-        Refund(bidInfo);
+        RefundToPreviousBidder(bidInfo);
 
         bidInfo = new BidInfo
         {
@@ -121,7 +128,7 @@ public partial class AuctionContract
         State.AuctionInfoMap[input.AuctionId] = auctionInfo.UpdateBidInfo(bidInfo);
     }
 
-    private void Refund(BidInfo bidInfo)
+    private void RefundToPreviousBidder(BidInfo bidInfo)
     {
         if (bidInfo != null)
         {
@@ -143,6 +150,17 @@ public partial class AuctionContract
             To = Context.Self,
             Amount = price.Amount,
             Symbol = price.Symbol,
+            Memo = "Auction"
+        });
+    }
+    
+    private void RefundTokenToCreator(AuctionInfo auctionInfo)
+    {
+        State.TokenContract.Transfer.Send(new TransferInput
+        {
+            Symbol = auctionInfo.Symbol,
+            Amount = AuctionContractConstants.DefaultAmount,
+            To = auctionInfo.Creator,
             Memo = "Auction"
         });
     }

@@ -799,6 +799,50 @@ namespace Forest.Contracts.Auction
             GetBalance("SEED-1", AuctionContractAddress).Result.ShouldBe(0);
             GetBalance("ELF", ReceivingAddress).Result.ShouldBe(200);
         }
+        
+        [Fact]
+        public async Task ClaimTests_NoBidder()
+        {
+            await Initialize();
+            await InitSeed();
+
+            var balance = await GetBalance("SEED-1", DefaultAddress);
+            balance.ShouldBe(1);
+            
+            var result = await AuctionContractStub.CreateAuction.SendAsync(new CreateAuctionInput
+            {
+                Symbol = "SEED-1",
+                AuctionConfig = new AuctionConfig
+                {
+                    Duration = 10,
+                    MaxExtensionTime = 0,
+                    CountdownTime = 0,
+                    MinMarkup = 0,
+                    StartImmediately = true
+                },
+                AuctionType = AuctionType.English,
+                ReceivingAddress = ReceivingAddress,
+                StartPrice = new Price
+                {
+                    Amount = 100,
+                    Symbol = "ELF"
+                }
+            });
+            var log = GetLogEvent<AuctionCreated>(result.TransactionResult);
+            
+            balance = await GetBalance("SEED-1", DefaultAddress);
+            balance.ShouldBe(0);
+            
+            BlockTimeProvider.SetBlockTime(BlockTimeProvider.GetBlockTime().AddSeconds(10));
+            
+            await AuctionContractStub.Claim.SendAsync(new ClaimInput
+            {
+                AuctionId = log.AuctionId
+            });
+            
+            balance = await GetBalance("SEED-1", DefaultAddress);
+            balance.ShouldBe(1);
+        }
 
         [Fact]
         public async Task ClaimTests_Fail()
