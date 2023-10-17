@@ -60,22 +60,22 @@ namespace Forest.Contracts.Auction
                 State.AuctionController.Value = new ControllerList();
             }
 
-            if (State.AuctionController.Value.Equals(input.Addresses))
+            var controllerToAdd =
+                input.Addresses.Controllers.Distinct().Except(State.AuctionController.Value.Controllers).ToList();
+
+            if (controllerToAdd.Count == 0)
             {
                 return new Empty();
             }
 
-            var controllerList = State.AuctionController.Value.Clone();
-            controllerList.Controllers.AddRange(input.Addresses.Controllers);
-
-            State.AuctionController.Value = new ControllerList
-            {
-                Controllers = { controllerList.Controllers.Distinct() }
-            };
+            State.AuctionController.Value.Controllers.AddRange(controllerToAdd);
 
             Context.Fire(new AuctionControllerAdded
             {
-                Addresses = State.AuctionController.Value
+                Addresses = new ControllerList
+                {
+                    Controllers = { controllerToAdd }
+                }
             });
             return new Empty();
         }
@@ -88,27 +88,24 @@ namespace Forest.Contracts.Auction
             Assert(input.Addresses.Controllers != null && input.Addresses.Controllers.Count > 0,
                 "Invalid input controllers");
 
-            var removeList = input.Addresses.Controllers.Intersect(State.AuctionController.Value.Controllers)
+            var removeList = input.Addresses.Controllers.Distinct().Intersect(State.AuctionController.Value.Controllers)
                 .ToList();
             if (removeList.Count == 0)
             {
                 return new Empty();
             }
-
-            var controllerList = State.AuctionController.Value.Clone();
+            
             foreach (var address in removeList)
             {
-                controllerList.Controllers.Remove(address);
+                State.AuctionController.Value.Controllers.Remove(address);
             }
-
-            State.AuctionController.Value = new ControllerList
-            {
-                Controllers = { controllerList.Controllers }
-            };
 
             Context.Fire(new AuctionControllerRemoved
             {
-                Addresses = State.AuctionController.Value
+                Addresses = new ControllerList
+                {
+                    Controllers = { removeList }
+                }
             });
             return new Empty();
         }
