@@ -55,10 +55,6 @@ namespace Forest.Contracts.Auction
             Assert(input != null && input.Addresses != null, "Invalid input.");
             Assert(input.Addresses.Controllers != null && input.Addresses.Controllers.Count > 0,
                 "Invalid input controllers");
-            if (State.AuctionController.Value == null)
-            {
-                State.AuctionController.Value = new ControllerList();
-            }
 
             var addList =
                 input.Addresses.Controllers.Distinct().Except(State.AuctionController.Value.Controllers).ToList();
