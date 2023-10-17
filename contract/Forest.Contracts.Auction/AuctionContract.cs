@@ -60,21 +60,21 @@ namespace Forest.Contracts.Auction
                 State.AuctionController.Value = new ControllerList();
             }
 
-            var controllerToAdd =
+            var addList =
                 input.Addresses.Controllers.Distinct().Except(State.AuctionController.Value.Controllers).ToList();
 
-            if (controllerToAdd.Count == 0)
+            if (addList.Count == 0)
             {
                 return new Empty();
             }
 
-            State.AuctionController.Value.Controllers.AddRange(controllerToAdd);
+            State.AuctionController.Value.Controllers.AddRange(addList);
 
             Context.Fire(new AuctionControllerAdded
             {
                 Addresses = new ControllerList
                 {
-                    Controllers = { controllerToAdd }
+                    Controllers = { addList }
                 }
             });
             return new Empty();
