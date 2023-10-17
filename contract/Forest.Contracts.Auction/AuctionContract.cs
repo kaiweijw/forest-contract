@@ -23,7 +23,7 @@ namespace Forest.Contracts.Auction
                 Controllers = { State.Admin.Value }
             };
 
-            if (input.AuctionController.Count > 0)
+            if (input.AuctionController != null && input.AuctionController.Count > 0)
             {
                 State.AuctionController.Value.Controllers.AddRange(input.AuctionController.Distinct()
                     .Where(t => t != State.Admin.Value));
