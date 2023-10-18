@@ -73,15 +73,14 @@ public partial class AuctionContract
 
         auctionInfo.SetFinishTime(currentBlockTime);
 
-        if (auctionInfo.IsAuctionBid())
+        if (!auctionInfo.IsAuctionBid())
+        {
+            RefundTokenToCreator(auctionInfo);
+        }
+        else
         {
             TransferTokenToBidder(auctionInfo);
             TransferToReceivingAccount(auctionInfo);
-        }
-        // No one bid, refund to creator
-        else
-        {
-            RefundTokenToCreator(auctionInfo);
         }
 
         Context.Fire(auctionInfo.GenerateClaimedEvent());

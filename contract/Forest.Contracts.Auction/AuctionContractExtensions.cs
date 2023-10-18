@@ -87,7 +87,7 @@ public static class Extensions
     public static AuctionInfo SetAuctionTime(this AuctionInfo self, Timestamp currentBlockTime)
     {
         self.StartTime = currentBlockTime;
-        self.EndTime = self.StartTime.AddSeconds(self.AuctionConfig.Duration);
+        self.EndTime = currentBlockTime.AddSeconds(self.AuctionConfig.Duration);
         self.MaxEndTime = self.EndTime.AddSeconds(self.AuctionConfig.MaxExtensionTime);
 
         return self;

@@ -23,7 +23,7 @@ namespace Forest.Contracts.Auction
                 Controllers = { State.Admin.Value }
             };
 
-            if (input.AuctionController != null && input.AuctionController.Count > 0)
+            if (input.AuctionController.Count > 0)
             {
                 State.AuctionController.Value.Controllers.AddRange(input.AuctionController.Distinct()
                     .Where(t => t != State.Admin.Value));
@@ -55,23 +55,27 @@ namespace Forest.Contracts.Auction
             Assert(input != null && input.Addresses != null, "Invalid input.");
             Assert(input.Addresses.Controllers != null && input.Addresses.Controllers.Count > 0,
                 "Invalid input controllers");
+            if (State.AuctionController.Value == null)
+            {
+                State.AuctionController.Value = new ControllerList();
+            }
 
-            var addList =
-                input.Addresses.Controllers.Distinct().Except(State.AuctionController.Value.Controllers).ToList();
-
-            if (addList.Count == 0)
+            if (State.AuctionController.Value.Equals(input.Addresses))
             {
                 return new Empty();
             }
 
-            State.AuctionController.Value.Controllers.AddRange(addList);
+            var controllerList = State.AuctionController.Value.Clone();
+            controllerList.Controllers.AddRange(input.Addresses.Controllers);
+
+            State.AuctionController.Value = new ControllerList
+            {
+                Controllers = { controllerList.Controllers.Distinct() }
+            };
 
             Context.Fire(new AuctionControllerAdded
             {
-                Addresses = new ControllerList
-                {
-                    Controllers = { addList }
-                }
+                Addresses = State.AuctionController.Value
             });
             return new Empty();
         }
@@ -84,24 +88,27 @@ namespace Forest.Contracts.Auction
             Assert(input.Addresses.Controllers != null && input.Addresses.Controllers.Count > 0,
                 "Invalid input controllers");
 
-            var removeList = input.Addresses.Controllers.Distinct().Intersect(State.AuctionController.Value.Controllers)
+            var removeList = input.Addresses.Controllers.Intersect(State.AuctionController.Value.Controllers)
                 .ToList();
             if (removeList.Count == 0)
             {
                 return new Empty();
             }
-            
+
+            var controllerList = State.AuctionController.Value.Clone();
             foreach (var address in removeList)
             {
-                State.AuctionController.Value.Controllers.Remove(address);
+                controllerList.Controllers.Remove(address);
             }
+
+            State.AuctionController.Value = new ControllerList
+            {
+                Controllers = { controllerList.Controllers }
+            };
 
             Context.Fire(new AuctionControllerRemoved
             {
-                Addresses = new ControllerList
-                {
-                    Controllers = { removeList }
-                }
+                Addresses = State.AuctionController.Value
             });
             return new Empty();
         }
