@@ -156,7 +156,7 @@ public partial class WhitelistContract
                 Info = null
             };
         }).ToList();
-        return new ExtraInfoList() {Value = {extraInfo}};
+        return new ExtraInfoList() { Value = { extraInfo } };
     }
 
     /// <summary>
@@ -199,7 +199,7 @@ public partial class WhitelistContract
             managerList.Add(creator ?? Context.Sender);
         }
 
-        State.ManagerListMap[whitelistId] = new AddressList() {Value = {managerList}};
+        State.ManagerListMap[whitelistId] = new AddressList() { Value = { managerList } };
         return State.ManagerListMap[whitelistId];
     }
 
@@ -211,7 +211,7 @@ public partial class WhitelistContract
             managerList.Add(creator ?? Context.Sender);
         }
 
-        State.SubscribeManagerListMap[subscribeId] = new AddressList() {Value = {managerList}};
+        State.SubscribeManagerListMap[subscribeId] = new AddressList() { Value = { managerList } };
         return State.SubscribeManagerListMap[subscribeId];
     }
 

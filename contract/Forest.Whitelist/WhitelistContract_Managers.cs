@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using AElf.Sdk.CSharp;
@@ -101,14 +100,15 @@ public partial class WhitelistContract
                     Id = id
                 });
             }
-            whitelistInfo.ExtraInfoIdList = new ExtraInfoIdList() {Value = {extraInfoIdList}};
+
+            whitelistInfo.ExtraInfoIdList = new ExtraInfoIdList() { Value = { extraInfoIdList } };
             Context.Fire(new WhitelistAddressInfoAdded()
             {
                 WhitelistId = whitelistHash,
                 ExtraInfoIdList = whitelistInfo.ExtraInfoIdList
             });
         }
-        
+
         Context.Fire(new WhitelistCreated
         {
             WhitelistId = whitelistHash,
@@ -329,7 +329,7 @@ public partial class WhitelistContract
             Context.Fire(new WhitelistAddressInfoRemoved()
             {
                 WhitelistId = whitelistInfo.WhitelistId,
-                ExtraInfoIdList = new ExtraInfoIdList {Value = {toRemove}}
+                ExtraInfoIdList = new ExtraInfoIdList { Value = { toRemove } }
             });
             return new Empty();
         }
@@ -384,7 +384,7 @@ public partial class WhitelistContract
             WhitelistId = whitelistInfo.WhitelistId,
             ExtraInfoIdList = new ExtraInfoIdList
             {
-                Value = {extraInfoIdList}
+                Value = { extraInfoIdList }
             }
         });
         return new Empty();
@@ -403,7 +403,7 @@ public partial class WhitelistContract
                 Id = State.AddressTagInfoIdMap[whitelistInfo.WhitelistId][address] ?? null,
                 AddressList = new AddressList
                 {
-                    Value = {address}
+                    Value = { address }
                 }
             });
         }
@@ -497,7 +497,7 @@ public partial class WhitelistContract
                 extraInfoAddressAfter = new ExtraInfoId()
                 {
                     Id = input.ExtraInfoList.Id,
-                    AddressList = new AddressList() {Value = {address}}
+                    AddressList = new AddressList() { Value = { address } }
                 };
                 whitelistInfo.ExtraInfoIdList.Value.Add(extraInfoAddressAfter);
                 //Add address to the new tagIdInfo map.

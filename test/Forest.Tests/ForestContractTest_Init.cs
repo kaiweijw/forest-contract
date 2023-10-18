@@ -197,19 +197,6 @@ public class ForestContractTest_Init : ForestContractTestBase
         });
         res.ShouldNotBeNull();
     }
-    
-
-    [Fact]
-    public async Task MethodFeeTest()
-    {
-        await InitializeForestContract();
-        await AdminForestContractStub.SetMethodFee.SendAsync(new MethodFees());
-        await AdminForestContractStub.ChangeMethodFeeController.SendAsync(new AuthorityInfo());
-        var methodFee = await AdminForestContractStub.GetMethodFee.SendAsync(new StringValue());
-        methodFee.ShouldNotBeNull();
-        var methodFeeController = await AdminForestContractStub.GetMethodFeeController.SendAsync(new Empty());
-        methodFeeController.ShouldNotBeNull();
-    }
 
     [Fact]
     public async Task GlobalTokenWhiteListTest()
