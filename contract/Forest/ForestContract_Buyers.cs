@@ -52,8 +52,7 @@ public partial class ForestContract
 
         var blockTime = Context.CurrentBlockTime;
         var sender = Context.Sender;
-        var listedNftInfoList =
-            State.ListedNFTInfoListMap[input.Symbol][input.OfferTo];
+        var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][input.OfferTo];
 
         var whitelistManager = GetWhitelistManager();
 
@@ -204,8 +203,7 @@ public partial class ForestContract
 
     private bool TryDealWithFixedPriceWhitelist(MakeOfferInput input, Price price, Hash whitelistId)
     {
-        Assert(input.Price.Symbol == price.Symbol,
-            $"Need to use token {price.Symbol}, not {input.Price.Symbol}");
+        Assert(input.Price.Symbol == price.Symbol, $"Need to use token {price.Symbol}, not {input.Price.Symbol}");
         //Get extraInfoId according to the sender.
         var extraInfoId = State.WhitelistContract.GetTagIdByAddress.Call(new GetTagIdByAddressInput()
         {

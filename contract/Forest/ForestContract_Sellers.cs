@@ -19,11 +19,11 @@ public partial class ForestContract
         Assert(input.Price.Amount > 0, "Incorrect listing price.");
         Assert(input.Quantity > 0, "Incorrect quantity.");
 
-        var tokeninfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol
         });
-        Assert(!string.IsNullOrWhiteSpace(tokeninfo.Symbol), "this NFT Info not exists.");
+        Assert(!string.IsNullOrWhiteSpace(tokenInfo.Symbol), "this NFT Info not exists.");
 
         var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
         {
@@ -45,8 +45,7 @@ public partial class ForestContract
             "List info already exists");
 
         var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
-        Assert(tokenWhiteList.Contains(input.Price.Symbol),
-            $"{input.Price.Symbol} is not in token white list.");
+        Assert(tokenWhiteList.Contains(input.Price.Symbol), $"{input.Price.Symbol} is not in token white list.");
 
         if (input.IsWhitelistAvailable)
         {
@@ -99,7 +98,7 @@ public partial class ForestContract
             }
         }
 
-        ListedNFTInfo listedNftInfo = new ListedNFTInfo
+        var listedNftInfo = new ListedNFTInfo
         {
             ListType = ListType.FixedPrice,
             Owner = Context.Sender,
@@ -233,44 +232,41 @@ public partial class ForestContract
                                  && o.Price.Symbol == input.Price.Symbol
                                  && o.Price.Amount == input.Price.Amount
                                  && o.ExpireTime >= Context.CurrentBlockTime);
-        Price price;
-        long totalAmount;
+        
         if (offer == null)
         {
             Assert(false, "offer is empty");
             return new Empty();
         }
+
+        Assert(offer.Quantity >= input.Quantity, "Deal quantity exceeded.");
+        offer.Quantity = offer.Quantity.Sub(input.Quantity);
+        if (offer.Quantity == 0)
+        {
+            State.OfferListMap[input.Symbol][input.OfferFrom].Value.Remove(offer);
+            Context.Fire(new OfferRemoved
+            {
+                Symbol = input.Symbol,
+                OfferFrom = input.OfferFrom,
+                OfferTo = offer.To,
+                ExpireTime = offer.ExpireTime
+            });
+        }
         else
         {
-            Assert(offer.Quantity >= input.Quantity, "Deal quantity exceeded.");
-            offer.Quantity = offer.Quantity.Sub(input.Quantity);
-            if (offer.Quantity == 0)
+            Context.Fire(new OfferChanged
             {
-                State.OfferListMap[input.Symbol][input.OfferFrom].Value.Remove(offer);
-                Context.Fire(new OfferRemoved
-                {
-                    Symbol = input.Symbol,
-                    OfferFrom = input.OfferFrom,
-                    OfferTo = offer.To,
-                    ExpireTime = offer.ExpireTime
-                });
-            }
-            else
-            {
-                Context.Fire(new OfferChanged
-                {
-                    Symbol = input.Symbol,
-                    OfferFrom = input.OfferFrom,
-                    OfferTo = offer.To,
-                    Quantity = offer.Quantity,
-                    Price = offer.Price,
-                    ExpireTime = offer.ExpireTime
-                });
-            }
-
-            price = offer.Price;
-            totalAmount = price.Amount.Mul(input.Quantity);
+                Symbol = input.Symbol,
+                OfferFrom = input.OfferFrom,
+                OfferTo = offer.To,
+                Quantity = offer.Quantity,
+                Price = offer.Price,
+                ExpireTime = offer.ExpireTime
+            });
         }
+
+        var price = offer.Price;
+        var totalAmount = price.Amount.Mul(input.Quantity);
 
         var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
         if (listedNftInfoList != null && listedNftInfoList.Value.Any())

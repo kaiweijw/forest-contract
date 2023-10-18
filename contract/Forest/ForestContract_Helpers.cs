@@ -194,9 +194,7 @@ public partial class ForestContract
                     });
                 }
 
-                var tagId =
-                    HashHelper.ComputeFrom(
-                        $"{whitelistId}{projectId}{extra.Key.TagName}");
+                var tagId = HashHelper.ComputeFrom($"{whitelistId}{projectId}{extra.Key.TagName}");
                 var toAddExtraInfoIdList = new ExtraInfoIdList();
                 foreach (var whitelistInfo in extra.Value.Where(whitelistInfo =>
                              whitelistInfo.AddressList.Value.Any()))

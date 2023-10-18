@@ -12,8 +12,7 @@ internal class WhitelistManager
     private readonly MappedState<Hash, Hash> _whitelistIdMap;
     private readonly WhitelistContractContainer.WhitelistContractReferenceState _whitelistContract;
 
-    public WhitelistManager(CSharpSmartContractContext context,
-        MappedState<Hash, Hash> whitelistIdMap,
+    public WhitelistManager(CSharpSmartContractContext context, MappedState<Hash, Hash> whitelistIdMap,
         WhitelistContractContainer.WhitelistContractReferenceState whitelistContract)
     {
         _context = context;

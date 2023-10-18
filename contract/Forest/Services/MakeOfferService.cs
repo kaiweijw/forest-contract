@@ -47,8 +47,7 @@ internal class MakeOfferService
 
     public bool IsSenderInWhitelist(MakeOfferInput makeOfferInput, out Hash whitelistId)
     {
-        var projectId =
-            WhitelistHelper.CalculateProjectId(makeOfferInput.Symbol, makeOfferInput.OfferTo);
+        var projectId = WhitelistHelper.CalculateProjectId(makeOfferInput.Symbol, makeOfferInput.OfferTo);
         whitelistId = _whitelistIdMap[projectId];
         return whitelistId != null && _whitelistManager.IsAddressInWhitelist(_context.Sender, whitelistId);
     }
@@ -71,9 +70,7 @@ internal class MakeOfferService
             throw new AssertionException("NFT does not exist.");
         }
 
-        var listedNftInfoList =
-            _listedNFTInfoListMap[makeOfferInput.Symbol][
-                makeOfferInput.OfferTo ?? nftInfo.Issuer];
+        var listedNftInfoList = _listedNFTInfoListMap[makeOfferInput.Symbol][makeOfferInput.OfferTo ?? nftInfo.Issuer];
 
         if (listedNftInfoList == null || listedNftInfoList.Value.All(i => i.ListType == ListType.NotListed))
         {

@@ -68,8 +68,7 @@ public partial class ForestContract
             Royalty = State.RoyaltyMap[input.Symbol]
         };
 
-        var certainNftRoyalty = State.CertainNFTRoyaltyMap[input.Symbol] ??
-                                new CertainNFTRoyaltyInfo();
+        var certainNftRoyalty = State.CertainNFTRoyaltyMap[input.Symbol] ?? new CertainNFTRoyaltyInfo();
         if (certainNftRoyalty.IsManuallySet)
         {
             royaltyInfo.Royalty = certainNftRoyalty.Royalty;

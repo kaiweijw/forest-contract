@@ -32,8 +32,7 @@ public partial class ForestContract
             Symbol = input.Symbol,
         });
 
-        Assert(nftCollectionInfo.Issuer == Context.Sender || nftInfo.Issuer == Context.Sender,
-            "No permission.");
+        Assert(nftCollectionInfo.Issuer == Context.Sender || nftInfo.Issuer == Context.Sender, "No permission.");
         State.CertainNFTRoyaltyMap[input.Symbol] = new CertainNFTRoyaltyInfo
         {
             IsManuallySet = true,
