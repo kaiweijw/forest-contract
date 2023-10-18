@@ -1030,20 +1030,34 @@ namespace Forest.Contracts.Auction
         public async Task AddAuctionControllerTests()
         {
             await Initialize();
-            await AuctionContractStub.AddAuctionController.SendAsync(new AddAuctionControllerInput
+            var result = await AuctionContractStub.AddAuctionController.SendAsync(new AddAuctionControllerInput
             {
                 Addresses = new ControllerList
                 {
                     Controllers = { DefaultAddress }
                 }
             });
-            await AuctionContractStub.AddAuctionController.SendAsync(new AddAuctionControllerInput
+            result.TransactionResult.Logs.FirstOrDefault(l => l.Name == "AuctionControllerAdded").ShouldBeNull();
+            
+            result = await AuctionContractStub.AddAuctionController.SendAsync(new AddAuctionControllerInput
             {
                 Addresses = new ControllerList
                 {
                     Controllers = { UserAddress }
                 }
             });
+            var log = GetLogEvent<AuctionControllerAdded>(result.TransactionResult);
+            log.Addresses.Controllers.Count.ShouldBe(1);
+            log.Addresses.Controllers.ShouldContain(UserAddress);
+            
+            result = await AuctionContractStub.AddAuctionController.SendAsync(new AddAuctionControllerInput
+            {
+                Addresses = new ControllerList
+                {
+                    Controllers = { DefaultAddress, DefaultAddress, UserAddress, UserAddress }
+                }
+            });
+            result.TransactionResult.Logs.FirstOrDefault(l => l.Name == "AuctionControllerAdded").ShouldBeNull();
 
             var output = await AuctionContractStub.GetAuctionController.CallAsync(new Empty());
             output.Controllers.Count.ShouldBe(2);
@@ -1094,13 +1108,16 @@ namespace Forest.Contracts.Auction
             output.Controllers.First().ShouldBe(DefaultAddress);
             output.Controllers.Last().ShouldBe(UserAddress);
 
-            await AuctionContractStub.RemoveAuctionController.SendAsync(new RemoveAuctionControllerInput
+            var result = await AuctionContractStub.RemoveAuctionController.SendAsync(new RemoveAuctionControllerInput
             {
                 Addresses = new ControllerList
                 {
                     Controllers = { UserAddress }
                 }
             });
+            var log = GetLogEvent<AuctionControllerRemoved>(result.TransactionResult);
+            log.Addresses.Controllers.Count.ShouldBe(1);
+            log.Addresses.Controllers.ShouldContain(UserAddress);
 
             await AuctionContractStub.RemoveAuctionController.SendAsync(new RemoveAuctionControllerInput
             {
