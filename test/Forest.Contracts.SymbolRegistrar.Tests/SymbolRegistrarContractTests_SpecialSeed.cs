@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AElf.Types;
 using Forest.Contracts.SymbolRegistrar.Helper;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
@@ -309,5 +310,113 @@ namespace Forest.Contracts.SymbolRegistrar
             );
             maxLimitExceeded.Message.ShouldContain("max limit exceeded");
         }
+        
+        [Fact]
+        public async Task SetUniqueSpecialSeed_update_success()
+        {
+            await InitializeContract();
+
+            // create proposal and approve
+            var result = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
+                "AddUniqueSeeds", new UniqueSeedList()
+                {
+                    Symbols = { "LUCK" }
+                });
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            var log = result.TransactionResult.Logs.First(l => l.Name == nameof(SpecialSeedAdded));
+            var specialSeedAdded = SpecialSeedAdded.Parser.ParseFrom(log.NonIndexed);
+            specialSeedAdded.AddList.Value.Count.ShouldBe(2);
+            specialSeedAdded.AddList.Value[0].SeedType.ShouldBe(SeedType.Unique);
+            specialSeedAdded.AddList.Value[0].Symbol.ShouldBe("LUCK");
+            specialSeedAdded.AddList.Value[0].PriceAmount.ShouldBe(0);
+            specialSeedAdded.AddList.Value[0].PriceSymbol.ShouldBeEmpty();
+            specialSeedAdded.AddList.Value[1].SeedType.ShouldBe(SeedType.Unique);
+            specialSeedAdded.AddList.Value[1].Symbol.ShouldBe("LUCK-0");
+            specialSeedAdded.AddList.Value[1].PriceAmount.ShouldBe(0);
+            specialSeedAdded.AddList.Value[1].PriceSymbol.ShouldBeEmpty();
+            
+            await AdminSymbolRegistrarContractStub.SetSeedsPrice.SendAsync(new SeedsPriceInput
+            {
+                NftPriceList = MockPriceList(),
+                FtPriceList = MockPriceList()
+            });
+            await AdminSymbolRegistrarContractStub.SetUniqueSeedsExternalPrice.SendAsync(new UniqueSeedsExternalPriceInput()
+            {
+                NftPriceList = MockPriceList(),
+                FtPriceList = MockPriceList()
+            });
+
+            var luck = await User1SymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
+            {
+                Value = "LUCK"
+            });
+            luck.ShouldNotBeNull();
+            luck.PriceAmount.ShouldBe(MockPriceList().Value[3].Amount * 2);
+            luck.PriceSymbol.ShouldBe(MockPriceList().Value[3].Symbol);
+            
+            luck = await User1SymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
+            {
+                Value = "LUCK-0"
+            });
+            luck.ShouldNotBeNull();
+            luck.PriceAmount.ShouldBe(MockPriceList().Value[3].Amount * 2);
+            luck.PriceSymbol.ShouldBe(MockPriceList().Value[3].Symbol);
+        }
+
+        [Fact]
+        public async Task SetUniqueSpecialSeed_fail()
+        {
+            await InitializeContract();
+
+            // long name
+            var invalidSymbolLength = await Assert.ThrowsAsync<Exception>(() =>
+                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddUniqueSeeds",
+                    new UniqueSeedList()
+                    {
+                        Symbols = { _specialLongName.Symbol }
+                    })
+            );
+            invalidSymbolLength.Message.ShouldContain("Invalid symbol length");
+
+            // invalid symbol
+            var invalidSymbol = await Assert.ThrowsAsync<Exception>(() =>
+                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddUniqueSeeds",
+                    new UniqueSeedList()
+                    {
+                        Symbols = { _specialInvalidSymbol.Symbol }
+                    })
+            );
+            invalidSymbol.Message.ShouldContain("Invalid symbol");
+
+            // invalid NFT symbol
+            var invalidNftSymbol = await Assert.ThrowsAsync<Exception>(() =>
+                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddUniqueSeeds",
+                    new UniqueSeedList()
+                    {
+                        Symbols = { _specialInvalidNftSymbol.Symbol }
+                    })
+            );
+            invalidNftSymbol.Message.ShouldContain("Invalid nft symbol");
+        }
+
+        [Fact]
+        public async Task AddUniqueSpecialSeed_maxLimitExceeded_fail()
+        {
+            await InitializeContract();
+
+            const int length = 600;
+            var batchSpecialSeedList = new UniqueSeedList();
+            for (var i = 0; i < length; i++)
+            {
+                batchSpecialSeedList.Symbols.Add(BaseEncodeHelper.Base26(i));
+            }
+
+            var maxLimitExceeded = await Assert.ThrowsAsync<Exception>(() =>
+                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddUniqueSeeds",
+                    batchSpecialSeedList)
+            );
+            maxLimitExceeded.Message.ShouldContain("max limit exceeded");
+        }
+
     }
 }

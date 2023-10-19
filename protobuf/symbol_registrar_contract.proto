@@ -37,6 +37,9 @@ service SymbolRegistrarContract {
     // when proposal has been approved special-seeds will be add
     rpc AddSpecialSeeds(SpecialSeedList) returns (google.protobuf.Empty) {
     }
+    
+    rpc AddUniqueSeeds(UniqueSeedList) returns (google.protobuf.Empty) {
+    }
 
     // for Parliament contract
     // when proposal has been approved special-seeds will be remove
@@ -57,6 +60,9 @@ service SymbolRegistrarContract {
     }
 
     rpc SetSeedsPrice(SeedsPriceInput) returns (google.protobuf.Empty) {
+    }
+    
+    rpc SetUniqueSeedsExternalPrice(UniqueSeedsExternalPriceInput) returns (google.protobuf.Empty) {
     }
 
     rpc SetAuctionConfig(AuctionConfig) returns (google.protobuf.Empty) {
@@ -123,6 +129,7 @@ message InitializeInput {
     SeedsPriceInput seeds_prices = 4;
     aelf.Address proxy_account_address = 5;
     AuctionConfig auctionConfig = 6;
+    UniqueSeedsExternalPriceInput unique_seeds_external_prices = 7;
 }
 
 
@@ -158,6 +165,13 @@ message SeedInfo {
 }
 
 message SeedsPriceInput {
+    // empty list will be ignore
+    PriceList ft_price_list = 1;
+    // empty list will be ignore
+    PriceList nft_price_list = 2;
+}
+
+message UniqueSeedsExternalPriceInput {
     // empty list will be ignore
     PriceList ft_price_list = 1;
     // empty list will be ignore
@@ -243,6 +257,10 @@ message RemoveSpecialSeedInput{
     repeated string symbols = 1;
 }
 
+message UniqueSeedList {
+    repeated string symbols = 1;
+}
+
 message SpecialSeedList {
     // seeds to add
     repeated SpecialSeed value = 1;
@@ -271,6 +289,12 @@ message SeedCreated {
 }
 
 message SeedsPriceChanged {
+    option (aelf.is_event) = true;
+    PriceList ft_price_list = 1;
+    PriceList nft_price_list = 2;
+}
+
+message UniqueSeedsExternalPriceChanged {
     option (aelf.is_event) = true;
     PriceList ft_price_list = 1;
     PriceList nft_price_list = 2;

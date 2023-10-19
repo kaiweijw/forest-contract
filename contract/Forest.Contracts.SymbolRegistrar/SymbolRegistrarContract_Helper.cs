@@ -44,7 +44,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
             if (symbolPartition.Length > 1)
             {
-                Assert(AllCharsInRange(symbolPartition[1], '0', '9'), "Invalid nft symbol.");
+                Assert(symbolPartition[1] == SymbolRegistrarContractConstants.CollectionSymbolSuffix, "Invalid nft symbol.");
             }
         }
 
@@ -57,10 +57,18 @@ namespace Forest.Contracts.SymbolRegistrar
         }
 
 
-        private void AssertPriceList(PriceList priceList)
+        private void AssertPriceList(PriceList priceList, bool uniqueSeed = false)
         {
-            Assert(priceList?.Value?.Count == SymbolRegistrarContractConstants.MaxSymbolLength,
-                "price list length must be " + SymbolRegistrarContractConstants.MaxSymbolLength);
+            if (uniqueSeed)
+            {
+                Assert(priceList?.Value?.Count <= SymbolRegistrarContractConstants.MaxSymbolLength,
+                    "price list length must be less or equal " + SymbolRegistrarContractConstants.MaxSymbolLength);
+            }
+            else
+            {
+                Assert(priceList?.Value?.Count == SymbolRegistrarContractConstants.MaxSymbolLength,
+                    "price list length must be " + SymbolRegistrarContractConstants.MaxSymbolLength);
+            }
 
             var tracker = new int[SymbolRegistrarContractConstants.MaxSymbolLength];
             foreach (var priceItem in priceList.Value)
@@ -74,7 +82,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 tracker[priceItem.SymbolLength - 1] = 1;
             }
         }
-
+        
         private void AssertCanDeal(string symbol)
         {
             var tokenInfo = GetTokenInfo(symbol);
@@ -88,7 +96,7 @@ namespace Forest.Contracts.SymbolRegistrar
         private PriceItem GetDealPrice(string symbol)
         {
             var isNFT = symbol.Contains(SymbolRegistrarContractConstants.NFTSymbolSeparator);
-            return isNFT ? State.NFTPrice[symbol.Length] : State.FTPrice[symbol.Length];
+            return isNFT ? State.NFTPrice[symbol.Length - 2] : State.FTPrice[symbol.Length];
         }
 
 
