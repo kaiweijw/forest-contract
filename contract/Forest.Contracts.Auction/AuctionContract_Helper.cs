@@ -1,4 +1,3 @@
-using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
@@ -27,10 +26,8 @@ public partial class AuctionContract
     private void ValidateSymbol(string symbol)
     {
         var words = symbol.Split(AuctionContractConstants.NFTSymbolSeparator);
-        Assert(words[0].Length > 0 && words[0].All(IsValidCreateSymbolChar), "Invalid input symbol.");
-        Assert(
-            words.Length == 2 && words[1].Length > 0 && words[1].All(IsValidItemIdChar) &&
-            words[1] != AuctionContractConstants.CollectionSymbolSuffix, "Only support NFT.");
+        Assert(words[0].Length > 0, "Invalid input symbol.");
+        Assert(words.Length == 2 && words[1] != AuctionContractConstants.CollectionSymbolSuffix, "Only support NFT.");
 
         var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
@@ -38,16 +35,6 @@ public partial class AuctionContract
         });
         Assert(!string.IsNullOrWhiteSpace(tokenInfo.Symbol), "Token not found.");
         Assert(tokenInfo.TotalSupply == 1, "Only support 721 type NFT.");
-    }
-
-    private bool IsValidItemIdChar(char character)
-    {
-        return character >= '0' && character <= '9';
-    }
-
-    private bool IsValidCreateSymbolChar(char character)
-    {
-        return character >= 'A' && character <= 'Z';
     }
 
     private Hash GenerateAuctionId(string symbol)
@@ -79,13 +66,15 @@ public partial class AuctionContract
         ValidateAuctionConfig(input.AuctionConfig);
     }
 
-    private void AssertBidPriceEnough(Price lastPrice, Price inputPrice, int minMarkup)
+    private void AssertBidPriceEnough(long lastPrice, long amount, int minMarkup)
     {
-        Assert(inputPrice.Symbol == lastPrice.Symbol, "Invalid input price symbol.");
-        Assert(inputPrice.Amount > lastPrice.Amount, "Bid price not high enough.");
+        Assert(amount > lastPrice, "Bid price not high enough.");
 
-        var diff = inputPrice.Amount - lastPrice.Amount;
-        Assert(diff >= lastPrice.Amount.Mul(minMarkup).Div(100), "Bid price not high enough.");
+        var diff = amount - lastPrice;
+
+        // min markup 1000 / 10000 = 10%
+        Assert(diff >= lastPrice.Mul(minMarkup).Div(AuctionContractConstants.TenThousandConstant),
+            "Bid price not high enough.");
     }
 
     private void ValidateAuctionConfig(AuctionConfig input)

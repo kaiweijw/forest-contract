@@ -25,11 +25,7 @@ public partial class AuctionContract
 
         State.AuctionInfoMap[auctionId] = auctionInfo;
 
-        TransferTokenFromCreator(new Price
-        {
-            Amount = AuctionContractConstants.DefaultAmount,
-            Symbol = auctionInfo.Symbol
-        });
+        TransferTokenFromCreator(AuctionContractConstants.DefaultAmount, auctionInfo.Symbol);
 
         Context.Fire(auctionInfo.GenerateAuctionCreatedEvent());
 
@@ -40,7 +36,6 @@ public partial class AuctionContract
     {
         Assert(input != null, "Invalid input.");
         Assert(input.AuctionId != null && !input.AuctionId.Value.IsNullOrEmpty(), "Invalid input auction id.");
-        ValidatePrice(input.Price);
 
         var auctionInfo = State.AuctionInfoMap[input.AuctionId];
 
@@ -50,6 +45,9 @@ public partial class AuctionContract
         {
             case AuctionType.English:
                 PlaceBidForEnglishAuction(input, auctionInfo);
+                break;
+            default:
+                Assert(false, "Unsupported auction type.");
                 break;
         }
 
@@ -105,15 +103,19 @@ public partial class AuctionContract
         var bidInfo = auctionInfo.LastBidInfo;
 
         var auctionConfig = auctionInfo.AuctionConfig;
-        AssertBidPriceEnough(
-            bidInfo?.Bidder == null ? auctionInfo.StartPrice : bidInfo.Price, input.Price, auctionConfig.MinMarkup);
+        AssertBidPriceEnough(bidInfo?.Bidder == null ? auctionInfo.StartPrice.Amount : bidInfo.Price.Amount,
+            input.Amount, auctionConfig.MinMarkup);
 
         RefundToLastBidder(bidInfo);
 
         bidInfo = new BidInfo
         {
             Bidder = Context.Sender,
-            Price = input.Price,
+            Price = new Price
+            {
+                Amount = input.Amount,
+                Symbol = auctionInfo.StartPrice.Symbol
+            },
             BidTime = currentBlockTime
         };
 
@@ -143,18 +145,18 @@ public partial class AuctionContract
         }
     }
 
-    private void TransferTokenFromCreator(Price price)
+    private void TransferTokenFromCreator(long amount, string symbol)
     {
         State.TokenContract.TransferFrom.Send(new TransferFromInput
         {
             From = Context.Sender,
             To = Context.Self,
-            Amount = price.Amount,
-            Symbol = price.Symbol,
+            Amount = amount,
+            Symbol = symbol,
             Memo = "Auction"
         });
     }
-    
+
     private void RefundTokenToCreator(AuctionInfo auctionInfo)
     {
         State.TokenContract.Transfer.Send(new TransferInput

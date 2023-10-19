@@ -96,7 +96,7 @@ message CreateAuctionInput {
 
 message PlaceBidInput {
     aelf.Hash auction_id = 1;
-    Price price = 2;
+    int64 amount = 2;
 }
 
 message ClaimInput {
