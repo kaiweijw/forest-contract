@@ -66,7 +66,7 @@ public partial class AuctionContract
         ValidateAuctionConfig(input.AuctionConfig);
     }
 
-    private void AssertBidPriceEnough(long lastPrice, long amount, int minMarkup)
+    private void AssertBidPriceEnough(long lastPrice, long amount, long minMarkup)
     {
         Assert(amount > lastPrice, "Bid price not high enough.");
 
