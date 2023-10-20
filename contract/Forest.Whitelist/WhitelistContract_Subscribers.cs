@@ -75,7 +75,7 @@ public partial class WhitelistContract
             {
                 SubscribeId = consumedList.SubscribeId,
                 WhitelistId = subscribeInfo.WhitelistId,
-                ExtraInfoIdList = new ExtraInfoIdList {Value = {extraInfoId}}
+                ExtraInfoIdList = new ExtraInfoIdList { Value = { extraInfoId } }
             });
         }
         else
@@ -93,7 +93,7 @@ public partial class WhitelistContract
             {
                 SubscribeId = consumedList.SubscribeId,
                 WhitelistId = subscribeInfo.WhitelistId,
-                ExtraInfoIdList = new ExtraInfoIdList {Value = {extraInfoId}}
+                ExtraInfoIdList = new ExtraInfoIdList { Value = { extraInfoId } }
             });
         }
 

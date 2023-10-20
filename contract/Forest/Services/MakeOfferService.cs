@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using AElf.Contracts.MultiToken;
-using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
 using AElf.Sdk.CSharp.State;
@@ -9,7 +8,6 @@ using AElf.Types;
 using Forest.Helpers;
 using Forest.Managers;
 using Forest.Whitelist;
-using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Services;
 
@@ -47,10 +45,9 @@ internal class MakeOfferService
         }
     }
 
-    public bool IsSenderInWhitelist(MakeOfferInput makeOfferInput,out Hash whitelistId)
+    public bool IsSenderInWhitelist(MakeOfferInput makeOfferInput, out Hash whitelistId)
     {
-        var projectId =
-            WhitelistHelper.CalculateProjectId(makeOfferInput.Symbol, makeOfferInput.OfferTo);
+        var projectId = WhitelistHelper.CalculateProjectId(makeOfferInput.Symbol, makeOfferInput.OfferTo);
         whitelistId = _whitelistIdMap[projectId];
         return whitelistId != null && _whitelistManager.IsAddressInWhitelist(_context.Sender, whitelistId);
     }
@@ -73,9 +70,7 @@ internal class MakeOfferService
             throw new AssertionException("NFT does not exist.");
         }
 
-        var listedNftInfoList =
-            _listedNFTInfoListMap[makeOfferInput.Symbol][
-                makeOfferInput.OfferTo ?? nftInfo.Issuer];
+        var listedNftInfoList = _listedNFTInfoListMap[makeOfferInput.Symbol][makeOfferInput.OfferTo ?? nftInfo.Issuer];
 
         if (listedNftInfoList == null || listedNftInfoList.Value.All(i => i.ListType == ListType.NotListed))
         {
@@ -103,14 +98,13 @@ internal class MakeOfferService
         var blockTime = _context.CurrentBlockTime;
         var maxDealCount = _bizConfig.Value.MaxOfferDealCount;
         return listedNftInfoList.Value.Where(i =>
-            (i.Price.Symbol == makeOfferInput.Price.Symbol && i.Price.Amount <= makeOfferInput.Price.Amount ||
-             i.ListType != ListType.FixedPrice) 
-            && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours))
+                (i.Price.Symbol == makeOfferInput.Price.Symbol && i.Price.Amount <= makeOfferInput.Price.Amount ||
+                 i.ListType != ListType.FixedPrice)
+                && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours))
             .OrderBy(i => i.Price.Amount)
             .Take(maxDealCount > 0 ? maxDealCount : ForestContract.DefaultMaxOfferDealCount)
             .ToList();
     }
-    
 }
 
 public enum DealStatus

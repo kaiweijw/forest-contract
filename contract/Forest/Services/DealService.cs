@@ -21,8 +21,8 @@ public class DealService
         var currentIndex = 0;
         var blockTime = _context.CurrentBlockTime;
         foreach (var listedNftInfo in input.ListedNftInfoList.Value.Where(i =>
-                     i.Price.Symbol == input.MakeOfferInput.Price.Symbol 
-                     && blockTime >= i.Duration.StartTime 
+                     i.Price.Symbol == input.MakeOfferInput.Price.Symbol
+                     && blockTime >= i.Duration.StartTime
                      && blockTime >= i.Duration.PublicTime).OrderBy(i => i.Price.Amount))
         {
             if (listedNftInfo.Quantity >= needToDealQuantity)
@@ -70,16 +70,15 @@ public class DealService
 public class GetDealResultListInput
 {
     internal MakeOfferInput MakeOfferInput { get; set; }
-    internal ListedNFTInfoList ListedNftInfoList{ get; set; }
+    internal ListedNFTInfoList ListedNftInfoList { get; set; }
 }
-
 
 public class DealResult
 {
     internal string Symbol { get; set; }
-    internal long Quantity{ get; set; }
-    internal string PurchaseSymbol{ get; set; }
-    internal long PurchaseAmount{ get; set; }
+    internal long Quantity { get; set; }
+    internal string PurchaseSymbol { get; set; }
+    internal long PurchaseAmount { get; set; }
     internal ListDuration Duration { get; set; }
     internal int Index { get; set; }
 }

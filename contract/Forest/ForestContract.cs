@@ -1,5 +1,4 @@
 using AElf.Contracts.MultiToken;
-using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
@@ -26,7 +25,7 @@ namespace Forest
             State.WhitelistContract.Value = input.WhitelistContractAddress;
             State.GlobalTokenWhiteList.Value = new StringList
             {
-                Value = {Context.Variables.NativeSymbol}
+                Value = { Context.Variables.NativeSymbol }
             };
             State.BizConfig.Value = new BizConfig
             {
@@ -37,7 +36,7 @@ namespace Forest
             };
             return new Empty();
         }
-        
+
         public override Empty SetAdministrator(Address input)
         {
             AssertSenderIsAdmin();
@@ -62,6 +61,7 @@ namespace Forest
             {
                 input.Value.Add(Context.Variables.NativeSymbol);
             }
+
             foreach (var symbol in input.Value)
             {
                 var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
@@ -70,6 +70,7 @@ namespace Forest
                 });
                 Assert(tokenInfo?.Symbol?.Length > 0, "Invalid token : " + symbol);
             }
+
             State.GlobalTokenWhiteList.Value = input;
             Context.Fire(new GlobalTokenWhiteListChanged
             {
@@ -90,10 +91,10 @@ namespace Forest
         {
             AssertSenderIsAdmin();
             Assert(bizConfig != null, "Empty bizConfig");
-            Assert(bizConfig?.MaxTokenWhitelistCount > 0 
-                   && bizConfig?.MaxListCount > 0 
-                   && bizConfig?.MaxOfferCount > 0 
-                   && bizConfig?.MaxOfferDealCount > 0, 
+            Assert(bizConfig?.MaxTokenWhitelistCount > 0
+                   && bizConfig?.MaxListCount > 0
+                   && bizConfig?.MaxOfferCount > 0
+                   && bizConfig?.MaxOfferDealCount > 0,
                 "Count config should greater than 0");
             State.BizConfig.Value = bizConfig;
             return new Empty();

@@ -20,20 +20,19 @@ public partial class ForestContract
         {
             Symbol = input.Symbol
         });
-        
+
         var nftCollectionInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol,
         });
         Assert(!string.IsNullOrEmpty(nftCollectionInfo.Symbol), "NFT Collection not found.");
-        
+
         var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol,
         });
 
-        Assert(nftCollectionInfo.Issuer == Context.Sender || nftInfo.Issuer==Context.Sender,
-            "No permission.");
+        Assert(nftCollectionInfo.Issuer == Context.Sender || nftInfo.Issuer == Context.Sender, "No permission.");
         State.CertainNFTRoyaltyMap[input.Symbol] = new CertainNFTRoyaltyInfo
         {
             IsManuallySet = true,
@@ -47,7 +46,9 @@ public partial class ForestContract
     public override Empty SetTokenWhiteList(SetTokenWhiteListInput input)
     {
         AssertContractInitialized();
-        Assert(input.TokenWhiteList.Value.Count > 0 && input.TokenWhiteList.Value.Count <= State.BizConfig.Value.MaxTokenWhitelistCount, 
+        Assert(
+            input.TokenWhiteList.Value.Count > 0 &&
+            input.TokenWhiteList.Value.Count <= State.BizConfig.Value.MaxTokenWhitelistCount,
             $"TokenWhiteList length should be between 1-{State.BizConfig.Value.MaxTokenWhitelistCount}");
 
         var nftCollectionInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
