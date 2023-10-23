@@ -228,5 +228,35 @@ namespace Forest.Contracts.SymbolRegistrar
             State.AuctionConfig.Value = input;
             return new Empty();
         }
+        
+        public override Empty AddIssueChain(IssueChainList input)
+        {
+            AssertInitialized();
+            AssertAdmin();
+            Assert(input?.IssueChain?.Count > 0, "Invalid input.");
+            if (State.IssueChainList.Value == null)
+            {
+                State.IssueChainList.Value = new IssueChainList();
+            }
+
+            foreach (var issueChain in input.IssueChain)
+            {
+                State.IssueChainList.Value.IssueChain.Remove(issueChain);
+                State.IssueChainList.Value.IssueChain.Add(issueChain);
+            }
+            return new Empty();
+        }
+
+        public override Empty RemoveIssueChain(IssueChainList input)
+        {
+            AssertInitialized();
+            AssertAdmin();
+            Assert(input?.IssueChain?.Count > 0, "Invalid input.");
+            foreach (var issueChain in input.IssueChain)
+            {
+                State.IssueChainList.Value.IssueChain.Remove(issueChain);
+            }
+            return new Empty();
+        }
     }
 }

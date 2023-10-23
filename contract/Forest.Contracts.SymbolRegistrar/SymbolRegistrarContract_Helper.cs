@@ -38,24 +38,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
             var symbolPartition = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
             Assert(symbolPartition.Length == 1 || symbolPartition.Length == 2, "Invalid symbol.");
-
-            // Uppercase only
-            Assert(AllCharsInRange(symbolPartition[0], 'A', 'Z'), "Invalid symbol.");
-
-            if (symbolPartition.Length > 1)
-            {
-                Assert(AllCharsInRange(symbolPartition[1], '0', '9'), "Invalid nft symbol.");
-            }
         }
-
-        private static bool AllCharsInRange(string val, char from, char to)
-        {
-            foreach (var chr in val)
-                if (chr > to || chr < from)
-                    return false;
-            return true;
-        }
-
 
         private void AssertPriceList(PriceList priceList)
         {

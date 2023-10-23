@@ -29,6 +29,10 @@ namespace Forest.Contracts.SymbolRegistrar
                 ReceivingAccount = Admin.Address,
                 ProxyAccountAddress = ProxyAccountAddress
             });
+            await AdminSymbolRegistrarContractStub.AddIssueChain.SendAsync(new IssueChainList
+            {
+                IssueChain = { "ETH", "BTC" }
+            });
         }
         
         [Fact]
@@ -100,8 +104,8 @@ namespace Forest.Contracts.SymbolRegistrar
 
         internal async Task InitializeContractIfNecessary()
         {
-            var config = await AdminSymbolRegistrarContractStub.GetBizConfig.CallAsync(new Empty());
-            if (config.AdministratorAddress == null) await InitializeContract();
+            var config = await AdminSymbolRegistrarContractStub.GetAdministratorAddress.CallAsync(new Empty());
+            if (config.Value.IsEmpty) await InitializeContract();
         }
 
         internal async Task ApproveMaxElfBalance(TokenContractContainer.TokenContractStub userTokenStub, Address spender)
@@ -168,6 +172,15 @@ namespace Forest.Contracts.SymbolRegistrar
             PriceAmount = 100_0000_0000,
         };
 
+        
+        internal SpecialSeed _specialEur = new()
+        {
+            SeedType = SeedType.Unique,
+            Symbol = "EUR",
+            PriceSymbol = "ELF",
+            PriceAmount = 100_0000_0000,
+        };
+
         internal SpecialSeed _specialUsd_errorPrice = new()
         {
             SeedType = SeedType.Unique,
@@ -224,6 +237,7 @@ namespace Forest.Contracts.SymbolRegistrar
             PriceSymbol = "ELF",
             PriceAmount = 1000_0000_0000,
             IssueChain = "ETH",
+            IssueChainContractAddress = "0x0000000000000000000000",
             ExternalInfo = { ["aaa"] = "bbb" }
         };
         
@@ -244,6 +258,7 @@ namespace Forest.Contracts.SymbolRegistrar
             PriceSymbol = "ELF",
             PriceAmount = 1000_0000_0000,
             IssueChain = "ETH",
+            IssueChainContractAddress = "0x0000000000000000000000",
             ExternalInfo = { ["aaa"] = "bbb" }
         };
         internal SpecialSeed _specialInvalidPriceAmount = new()
@@ -253,6 +268,7 @@ namespace Forest.Contracts.SymbolRegistrar
             PriceSymbol = "ELF",
             PriceAmount = -1,
             IssueChain = "ETH",
+            IssueChainContractAddress = "0x0000000000000000000000",
             ExternalInfo = { ["aaa"] = "bbb" }
         };
     }

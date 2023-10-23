@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using AElf.Sdk.CSharp.State;
 using AElf.Types;
 
@@ -33,5 +34,7 @@ namespace Forest.Contracts.SymbolRegistrar
         // length -> Price, length from 1 to 30
         public MappedState<int, PriceItem> NFTPrice { get; set; }
         public MappedState<string, SpecialSeed> SpecialSeedMap { get; set; }
+        
+        public SingletonState<IssueChainList> IssueChainList { get; set; }  
     }
 }

@@ -237,27 +237,6 @@ namespace Forest.Contracts.SymbolRegistrar
             );
             invalidSymbolLength.Message.ShouldContain("Invalid symbol length");
 
-            // invalid symbol
-            var invalidSymbol = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
-                    new SpecialSeedList
-                    {
-                        Value = { _specialUsd, _specialInvalidSymbol }
-                    })
-            );
-            invalidSymbol.Message.ShouldContain("Invalid symbol");
-
-            // invalid NFT symbol
-            var invalidNftSymbol = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
-                    new SpecialSeedList
-                    {
-                        Value = { _specialUsd, _specialInvalidNftSymbol }
-                    })
-            );
-            invalidNftSymbol.Message.ShouldContain("Invalid nft symbol");
-
-
             // invalid NFT symbol
             var invalidPriceAmount = await Assert.ThrowsAsync<Exception>(() =>
                 SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
