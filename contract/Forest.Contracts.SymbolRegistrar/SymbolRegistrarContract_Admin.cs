@@ -253,11 +253,14 @@ namespace Forest.Contracts.SymbolRegistrar
 
             State.IssueChainList.Value = new IssueChainList();
             State.IssueChainList.Value.IssueChain.AddRange(all.Distinct().ToList());
-            
-            Context.Fire(new IssueChainAdded()
+
+            if (added.IssueChain.Count > 0)
             {
-                IssueChainList = added
-            });
+                Context.Fire(new IssueChainAdded()
+                {
+                    IssueChainList = added
+                });
+            }
             
             return new Empty();
         }
@@ -281,11 +284,14 @@ namespace Forest.Contracts.SymbolRegistrar
                     removed.IssueChain.Add(issueChain);
                 }
             }
-            
-            Context.Fire(new IssueChainRemoved()
+
+            if (removed.IssueChain.Count > 0)
             {
-                IssueChainList = removed
-            });
+                Context.Fire(new IssueChainRemoved()
+                {
+                    IssueChainList = removed
+                });
+            }
 
             return new Empty();
         }
