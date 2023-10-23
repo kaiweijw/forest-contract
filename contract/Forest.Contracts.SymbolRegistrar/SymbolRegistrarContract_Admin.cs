@@ -4,6 +4,7 @@ using System.Linq;
 using AElf;
 using AElf.Sdk.CSharp;
 using AElf.Types;
+using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Contracts.SymbolRegistrar
@@ -226,6 +227,72 @@ namespace Forest.Contracts.SymbolRegistrar
             }
 
             State.AuctionConfig.Value = input;
+            return new Empty();
+        }
+        
+        public override Empty AddIssueChain(IssueChainList input)
+        {
+            AssertInitialized();
+            AssertAdmin();
+            Assert(input?.IssueChain?.Count > 0, "Invalid input.");
+            if (State.IssueChainList.Value == null)
+            {
+                State.IssueChainList.Value = new IssueChainList();
+            }
+
+            var all = State.IssueChainList.Value.IssueChain.ToList();
+            var added = new IssueChainList();
+            foreach (var issueChain in input.IssueChain)
+            {
+                if (!all.Contains(issueChain))
+                {
+                    all.Add(issueChain);
+                    added.IssueChain.Add(issueChain);
+                }
+            }
+
+            State.IssueChainList.Value = new IssueChainList();
+            State.IssueChainList.Value.IssueChain.AddRange(all.Distinct().ToList());
+
+            if (added.IssueChain.Count > 0)
+            {
+                Context.Fire(new IssueChainAdded()
+                {
+                    IssueChainList = added
+                });
+            }
+            
+            return new Empty();
+        }
+
+        public override Empty RemoveIssueChain(IssueChainList input)
+        {
+            AssertInitialized();
+            AssertAdmin();
+            Assert(input?.IssueChain?.Count > 0, "Invalid input.");
+            if (State.IssueChainList.Value == null)
+            {
+                State.IssueChainList.Value = new IssueChainList();
+            }
+
+            var removed = new IssueChainList();
+            foreach (var issueChain in input.IssueChain)
+            {
+                if (State.IssueChainList.Value.IssueChain.Contains(issueChain))
+                {
+                    State.IssueChainList.Value.IssueChain.Remove(issueChain);
+                    removed.IssueChain.Add(issueChain);
+                }
+            }
+
+            if (removed.IssueChain.Count > 0)
+            {
+                Context.Fire(new IssueChainRemoved()
+                {
+                    IssueChainList = removed
+                });
+            }
+
             return new Empty();
         }
     }

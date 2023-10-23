@@ -11,13 +11,19 @@ namespace Forest.Contracts.SymbolRegistrar
     public partial class SymbolRegistrarContract : SymbolRegistrarContractContainer.SymbolRegistrarContractBase
     {
         
-        public override BizConfig GetBizConfig(Empty input)
+        public override Address GetAdministratorAddress(Empty input)
         {
-            return new BizConfig()
-            {
-                AdministratorAddress = State.Admin.Value,
-                ReceivingAccount = State.ReceivingAccount.Value,
-            };
+            return State.Admin.Value;
+        }
+
+        public override Address GetReceivingAccountAddress(Empty input)
+        {
+            return State.ReceivingAccount.Value;
+        }
+
+        public override IssueChainList GetIssueChainList(Empty input)
+        {
+            return State.IssueChainList.Value;
         }
 
         public override ControllerList GetSaleController(Empty input)
