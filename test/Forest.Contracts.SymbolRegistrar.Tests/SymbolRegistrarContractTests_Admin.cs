@@ -16,9 +16,11 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             await InitializeContract();
 
-            var bizConfig = AdminSymbolRegistrarContractStub.GetBizConfig.CallAsync(new Empty());
-            bizConfig.Result.ReceivingAccount.ShouldBe(Admin.Address);
-            bizConfig.Result.AdministratorAddress.ShouldBe(Admin.Address);
+            var adminAddress = await AdminSymbolRegistrarContractStub.GetAdministratorAddress.CallAsync(new Empty());
+            adminAddress.ShouldBe(Admin.Address);
+            
+            var receivingAddress = await AdminSymbolRegistrarContractStub.GetReceivingAccountAddress.CallAsync(new Empty());
+            receivingAddress.ShouldBe(Admin.Address);
         }
 
         [Fact]
@@ -115,9 +117,11 @@ namespace Forest.Contracts.SymbolRegistrar
             await AdminSymbolRegistrarContractStub.SetReceivingAccount.SendAsync(User2.Address);
             await AdminSymbolRegistrarContractStub.SetAdmin.SendAsync(User1.Address);
 
-            var bizConfig = AdminSymbolRegistrarContractStub.GetBizConfig.CallAsync(new Empty());
-            bizConfig.Result.ReceivingAccount.ShouldBe(User2.Address);
-            bizConfig.Result.AdministratorAddress.ShouldBe(User1.Address);
+            var adminAddress = await AdminSymbolRegistrarContractStub.GetAdministratorAddress.CallAsync(new Empty());
+            adminAddress.ShouldBe(User1.Address);
+
+            var receivingAddress = await AdminSymbolRegistrarContractStub.GetReceivingAccountAddress.CallAsync(new Empty());
+            receivingAddress.ShouldBe(User2.Address);
         }
 
         [Fact]
@@ -129,8 +133,13 @@ namespace Forest.Contracts.SymbolRegistrar
                 ProxyAccountAddress = Admin.Address,
                 SpecialSeeds = new SpecialSeedList
                 {
-                    Value = { _specialUsd, _specialEth }
+                    Value = { _specialUsd, _specialEur }
                 }
+            });
+
+            await AdminSymbolRegistrarContractStub.AddIssueChain.SendAsync(new IssueChainList
+            {
+                IssueChain = { "BTC", "ETH" }
             });
 
             // logs
@@ -146,11 +155,11 @@ namespace Forest.Contracts.SymbolRegistrar
             seedUsd.Symbol.ShouldBe(_specialUsd.Symbol);
 
 
-            var seedEth = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
+            var seedEru = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
             {
-                Value = _specialEth.Symbol
+                Value = _specialEur.Symbol
             });
-            seedEth.Symbol.ShouldBe(_specialEth.Symbol);
+            seedEru.Symbol.ShouldBe(_specialEur.Symbol);
         }
         
         [Fact]
@@ -166,26 +175,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 }
             });
             result.TransactionResult.Error.ShouldContain("Duplicate symbol");
-            result = await AdminSymbolRegistrarContractStub.Initialize.SendWithExceptionAsync(new InitializeInput()
-            {
-                ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = Admin.Address,
-                SpecialSeeds = new SpecialSeedList
-                {
-                    Value = { _specialInvalidSymbol }
-                }
-            });
-            result.TransactionResult.Error.ShouldContain("Invalid symbol");
-            result = await AdminSymbolRegistrarContractStub.Initialize.SendWithExceptionAsync(new InitializeInput()
-            {
-                ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = Admin.Address,
-                SpecialSeeds = new SpecialSeedList
-                {
-                    Value = { _specialInvalidNftSymbol }
-                }
-            });
-            result.TransactionResult.Error.ShouldContain("Invalid nft symbol.");
+
             result = await AdminSymbolRegistrarContractStub.Initialize.SendWithExceptionAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
@@ -478,6 +468,62 @@ namespace Forest.Contracts.SymbolRegistrar
                 Value = 9
             });
             result.TransactionResult.Error.ShouldContain("Invalid param");
+        }
+
+        [Fact]
+        public async Task IssueChainListTests()
+        {
+            await InitializeContract();
+
+            // add 3 seeds （BTC、ETH already added by “InitializeContract”）
+            var res = await AdminSymbolRegistrarContractStub.AddIssueChain.SendAsync(new IssueChainList
+            {
+                IssueChain = { "BTC", "ETH", "USDT" }
+            });
+            var addLogs = res.TransactionResult.Logs.Where(log => log.Name.Equals(nameof(IssueChainAdded))).ToList();
+            addLogs.Count.ShouldBe(1);
+            var addLog = IssueChainAdded.Parser.ParseFrom(addLogs[0].NonIndexed);
+            addLog.IssueChainList.IssueChain.Count.ShouldBe(1);
+            addLog.IssueChainList.IssueChain.ShouldContain("USDT");
+            
+            var result =  await AdminSymbolRegistrarContractStub.GetIssueChainList.CallAsync(new Empty());
+            result.IssueChain.Count.ShouldBe(3);
+            result.IssueChain.Contains("BTC").ShouldBe(true);
+            result.IssueChain.Contains("ETH").ShouldBe(true);
+            result.IssueChain.Contains("USDT").ShouldBe(true);
+            
+            
+            // remove 2 seeds
+            var removeRes = await AdminSymbolRegistrarContractStub.RemoveIssueChain.SendAsync(new IssueChainList
+            {
+                IssueChain = { "BTC", "ETH"}
+            });
+            var removeLogs = removeRes.TransactionResult.Logs.Where(log => log.Name.Equals(nameof(IssueChainRemoved))).ToList();
+            removeLogs.Count.ShouldBe(1);
+            var removeLog = IssueChainRemoved.Parser.ParseFrom(removeLogs[0].NonIndexed);
+            removeLog.IssueChainList.IssueChain.Count.ShouldBe(2);
+            removeLog.IssueChainList.IssueChain.ShouldContain("BTC");
+            removeLog.IssueChainList.IssueChain.ShouldContain("ETH");
+            
+            result =  await AdminSymbolRegistrarContractStub.GetIssueChainList.CallAsync(new Empty());
+            result.IssueChain.Count.ShouldBe(1);
+            result.IssueChain.Contains("USDT").ShouldBe(true);
+            
+            // add permission
+            var addNoPerm = await Assert.ThrowsAsync<Exception>( () => User1SymbolRegistrarContractStub.AddIssueChain.SendAsync(new IssueChainList
+            {
+                IssueChain = { "BTC", "ETH", "USDT" }
+            }));
+            addNoPerm.Message.ShouldContain("No permission");
+
+            // remove permission
+            var removeNoPerm = await Assert.ThrowsAsync<Exception>( () => User1SymbolRegistrarContractStub.RemoveIssueChain.SendAsync(new IssueChainList
+            {
+                IssueChain = { "BTC", "ETH", "USDT" }
+            }));
+            removeNoPerm.Message.ShouldContain("No permission");
+
+
         }
     }
 }

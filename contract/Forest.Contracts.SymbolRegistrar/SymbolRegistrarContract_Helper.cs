@@ -38,24 +38,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
             var symbolPartition = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
             Assert(symbolPartition.Length == 1 || symbolPartition.Length == 2, "Invalid symbol.");
-
-            // Uppercase only
-            Assert(AllCharsInRange(symbolPartition[0], 'A', 'Z'), "Invalid symbol.");
-
-            if (symbolPartition.Length > 1)
-            {
-                Assert(symbolPartition[1] == SymbolRegistrarContractConstants.CollectionSymbolSuffix, "Invalid nft symbol.");
-            }
         }
-
-        private static bool AllCharsInRange(string val, char from, char to)
-        {
-            foreach (var chr in val)
-                if (chr > to || chr < from)
-                    return false;
-            return true;
-        }
-
 
         private void AssertPriceList(PriceList priceList, bool uniqueSeed = false)
         {
@@ -96,7 +79,7 @@ namespace Forest.Contracts.SymbolRegistrar
         private PriceItem GetDealPrice(string symbol)
         {
             var isNFT = symbol.Contains(SymbolRegistrarContractConstants.NFTSymbolSeparator);
-            return isNFT ? State.NFTPrice[symbol.Length - 2] : State.FTPrice[symbol.Length];
+            return isNFT ? State.NFTPrice[symbol.Length] : State.FTPrice[symbol.Length];
         }
 
 

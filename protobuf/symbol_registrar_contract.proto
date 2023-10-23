@@ -80,6 +80,13 @@ service SymbolRegistrarContract {
     rpc SetSeedImageUrlPrefix(google.protobuf.StringValue) returns (google.protobuf.Empty) {
     }
 
+    rpc AddIssueChain(IssueChainList) returns (google.protobuf.Empty) {
+    }
+
+    rpc RemoveIssueChain(IssueChainList) returns (google.protobuf.Empty) {
+    }
+
+
     // View
 
     // get seed price with length
@@ -90,11 +97,15 @@ service SymbolRegistrarContract {
     rpc GetSpecialSeed(google.protobuf.StringValue) returns (SpecialSeed) {
         option (aelf.is_view) = true;
     }
-
-    rpc GetBizConfig(google.protobuf.Empty) returns (BizConfig) {
+    
+    rpc GetAdministratorAddress(google.protobuf.Empty) returns (aelf.Address) {
         option (aelf.is_view) = true;
     }
-
+    
+    rpc GetReceivingAccountAddress(google.protobuf.Empty) returns (aelf.Address) {
+        option (aelf.is_view) = true;
+    }
+    
     rpc GetSeedExpirationConfig(google.protobuf.Empty) returns (SeedExpirationConfig) {
         option (aelf.is_view) = true;
     }
@@ -118,6 +129,11 @@ service SymbolRegistrarContract {
     rpc GetSeedImageUrlPrefix(google.protobuf.Empty) returns (google.protobuf.StringValue) {
         option (aelf.is_view) = true;
     }
+    
+    rpc GetIssueChainList(google.protobuf.Empty) returns (IssueChainList) {
+        option (aelf.is_view) = true;
+    }
+    
 }
 
 
@@ -128,7 +144,7 @@ message InitializeInput {
     SpecialSeedList special_seeds = 3;
     SeedsPriceInput seeds_prices = 4;
     aelf.Address proxy_account_address = 5;
-    AuctionConfig auctionConfig = 6;
+    AuctionConfig auction_config = 6;
     UniqueSeedsExternalPriceInput unique_seeds_external_prices = 7;
 }
 
@@ -146,6 +162,7 @@ message BizConfig {
     aelf.Address receiving_account = 2;
     bool admin_can_cetSpecialSeeds = 3;
     AuctionConfig auction_config = 4;
+    IssueChainList issue_chain_list = 5;
 }
 
 message CreateSeedInput {
@@ -162,6 +179,10 @@ message SeedInfo {
     // The address of the buyer
     aelf.Address to = 5;
     string image_url = 6;
+}
+
+message IssueChainList {
+    repeated string issue_chain = 1;
 }
 
 message SeedsPriceInput {
@@ -346,4 +367,14 @@ message AuctionEndTimeExtended{
 message SeedExpirationConfigChanged{
     option (aelf.is_event) = true;
     SeedExpirationConfig seed_expiration_config = 1;
+}
+
+message IssueChainAdded{
+    option (aelf.is_event) = true;
+    IssueChainList issue_chain_list = 1;
+}
+
+message IssueChainRemoved{
+    option (aelf.is_event) = true;
+    IssueChainList issue_chain_list = 1;
 }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AElf.Sdk.CSharp;
+using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Contracts.SymbolRegistrar
@@ -23,6 +24,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
             var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
             var exists = new HashSet<string>();
+            var addedList = new SpecialSeedList();
             for (var index = 0; index < input?.Value?.Count; index++)
             {
                 var item = input.Value[index];
@@ -37,7 +39,9 @@ namespace Forest.Contracts.SymbolRegistrar
 
                 if (item.SeedType == SeedType.Notable)
                 {
+                    var issueChainList = State.IssueChainList?.Value?.IssueChain ?? new RepeatedField<string>();
                     Assert(item.IssueChain?.Length > 0, "Invalid issue chain of symbol " + item.Symbol);
+                    Assert(issueChainList.Contains(item.IssueChain), "Issue chain of symbol " + item.Symbol + " not exists");
                     Assert(item.IssueChainContractAddress?.Length > 0,
                         "Invalid issue chain contract of symbol " + item.Symbol);
                 }
