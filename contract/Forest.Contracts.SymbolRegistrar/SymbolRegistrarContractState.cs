@@ -39,5 +39,7 @@ namespace Forest.Contracts.SymbolRegistrar
         // length -> Price, length from 1 to 30
         public MappedState<int, PriceItem> UniqueExternalNFTPrice { get; set; }
         public MappedState<string, SpecialSeed> SpecialSeedMap { get; set; }
+        public SingletonState<Address> SeedCollectionOwner { get; set; }
+        public SingletonState<Hash> ProxyAccountHash { get; set; }
     }
 }

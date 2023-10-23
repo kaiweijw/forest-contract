@@ -35,6 +35,19 @@ namespace Forest.Contracts.SymbolRegistrar
                 Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
             State.ParliamentContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.ParliamentContractSystemName);
+            
+            var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix +
+                                              SymbolRegistrarContractConstants.CollectionSymbolSuffix);
+            if (seedCollection != null && !seedCollection.Owner.Value.IsNullOrEmpty())
+            {
+                State.SeedCollectionOwner.Value = seedCollection.Owner;
+                var proxyAccount =
+                    State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(seedCollection.Owner);
+                if (proxyAccount != null && !proxyAccount.ProxyAccountHash.Value.IsNullOrEmpty())
+                {
+                    State.ProxyAccountHash.Value = proxyAccount.ProxyAccountHash;
+                }
+            }
 
             InitializeAuctionConfig();
             if (input.SpecialSeeds != null)

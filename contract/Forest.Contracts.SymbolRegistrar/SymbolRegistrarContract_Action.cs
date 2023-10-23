@@ -144,7 +144,7 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             CheckSymbolExisted(symbol);
             var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix + SymbolRegistrarContractConstants.CollectionSymbolSuffix);
-            Assert(seedCollection != null && seedCollection.Symbol == SymbolRegistrarContractConstants.SeedPrefix + 0, "seedCollection not existed");
+            Assert(seedCollection != null && seedCollection.Symbol == SymbolRegistrarContractConstants.SeedPrefix + SymbolRegistrarContractConstants.CollectionSymbolSuffix, "seedCollection not existed");
             
             State.LastSeedId.Value = State.LastSeedId.Value.Add(1);
             var seedSymbol = SymbolRegistrarContractConstants.SeedPrefix + State.LastSeedId.Value;
@@ -158,7 +158,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 seedSymbol = SymbolRegistrarContractConstants.SeedPrefix + State.LastSeedId.Value;
                 seedTokenInfo = GetTokenInfo(seedSymbol);
             }
-            if (seedTokenInfo != null && seedTokenInfo.Symbol == seedSymbol)
+            if (seedTokenInfo != null && !string.IsNullOrWhiteSpace(seedTokenInfo.Symbol))
             {
                 return false;
             }
