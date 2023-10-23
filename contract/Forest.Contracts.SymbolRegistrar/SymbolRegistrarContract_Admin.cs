@@ -241,7 +241,10 @@ namespace Forest.Contracts.SymbolRegistrar
 
             foreach (var issueChain in input.IssueChain)
             {
-                State.IssueChainList.Value.IssueChain.Remove(issueChain);
+                if (State.IssueChainList.Value.IssueChain.Contains(issueChain))
+                {
+                    continue;
+                }
                 State.IssueChainList.Value.IssueChain.Add(issueChain);
             }
             return new Empty();
@@ -252,6 +255,10 @@ namespace Forest.Contracts.SymbolRegistrar
             AssertInitialized();
             AssertAdmin();
             Assert(input?.IssueChain?.Count > 0, "Invalid input.");
+            if (State.IssueChainList.Value == null)
+            {
+                State.IssueChainList.Value = new IssueChainList();
+            }
             foreach (var issueChain in input.IssueChain)
             {
                 State.IssueChainList.Value.IssueChain.Remove(issueChain);
