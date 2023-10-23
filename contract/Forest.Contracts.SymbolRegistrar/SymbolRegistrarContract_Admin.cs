@@ -4,6 +4,7 @@ using System.Linq;
 using AElf;
 using AElf.Sdk.CSharp;
 using AElf.Types;
+using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Contracts.SymbolRegistrar
@@ -239,14 +240,25 @@ namespace Forest.Contracts.SymbolRegistrar
                 State.IssueChainList.Value = new IssueChainList();
             }
 
+            var all = State.IssueChainList.Value.IssueChain.ToList();
+            var added = new IssueChainList();
             foreach (var issueChain in input.IssueChain)
             {
-                if (State.IssueChainList.Value.IssueChain.Contains(issueChain))
+                if (!all.Contains(issueChain))
                 {
-                    continue;
+                    all.Add(issueChain);
+                    added.IssueChain.Add(issueChain);
                 }
-                State.IssueChainList.Value.IssueChain.Add(issueChain);
             }
+
+            State.IssueChainList.Value = new IssueChainList();
+            State.IssueChainList.Value.IssueChain.AddRange(all.Distinct().ToList());
+            
+            Context.Fire(new IssueChainAdded()
+            {
+                IssueChainList = added
+            });
+            
             return new Empty();
         }
 
@@ -259,10 +271,22 @@ namespace Forest.Contracts.SymbolRegistrar
             {
                 State.IssueChainList.Value = new IssueChainList();
             }
+
+            var removed = new IssueChainList();
             foreach (var issueChain in input.IssueChain)
             {
-                State.IssueChainList.Value.IssueChain.Remove(issueChain);
+                if (State.IssueChainList.Value.IssueChain.Contains(issueChain))
+                {
+                    State.IssueChainList.Value.IssueChain.Remove(issueChain);
+                    removed.IssueChain.Add(issueChain);
+                }
             }
+            
+            Context.Fire(new IssueChainRemoved()
+            {
+                IssueChainList = removed
+            });
+
             return new Empty();
         }
     }

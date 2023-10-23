@@ -475,22 +475,36 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             await InitializeContract();
 
-            // add 3 seeds
-            await AdminSymbolRegistrarContractStub.AddIssueChain.SendAsync(new IssueChainList
+            // add 3 seeds （BTC、ETH already added by “InitializeContract”）
+            var res = await AdminSymbolRegistrarContractStub.AddIssueChain.SendAsync(new IssueChainList
             {
                 IssueChain = { "BTC", "ETH", "USDT" }
             });
+            var addLogs = res.TransactionResult.Logs.Where(log => log.Name.Equals(nameof(IssueChainAdded))).ToList();
+            addLogs.Count.ShouldBe(1);
+            var addLog = IssueChainAdded.Parser.ParseFrom(addLogs[0].NonIndexed);
+            addLog.IssueChainList.IssueChain.Count.ShouldBe(1);
+            addLog.IssueChainList.IssueChain.ShouldContain("USDT");
+            
             var result =  await AdminSymbolRegistrarContractStub.GetIssueChainList.CallAsync(new Empty());
             result.IssueChain.Count.ShouldBe(3);
             result.IssueChain.Contains("BTC").ShouldBe(true);
             result.IssueChain.Contains("ETH").ShouldBe(true);
             result.IssueChain.Contains("USDT").ShouldBe(true);
             
+            
             // remove 2 seeds
-            await AdminSymbolRegistrarContractStub.RemoveIssueChain.SendAsync(new IssueChainList
+            var removeRes = await AdminSymbolRegistrarContractStub.RemoveIssueChain.SendAsync(new IssueChainList
             {
                 IssueChain = { "BTC", "ETH"}
             });
+            var removeLogs = removeRes.TransactionResult.Logs.Where(log => log.Name.Equals(nameof(IssueChainRemoved))).ToList();
+            removeLogs.Count.ShouldBe(1);
+            var removeLog = IssueChainRemoved.Parser.ParseFrom(removeLogs[0].NonIndexed);
+            removeLog.IssueChainList.IssueChain.Count.ShouldBe(2);
+            removeLog.IssueChainList.IssueChain.ShouldContain("BTC");
+            removeLog.IssueChainList.IssueChain.ShouldContain("ETH");
+            
             result =  await AdminSymbolRegistrarContractStub.GetIssueChainList.CallAsync(new Empty());
             result.IssueChain.Count.ShouldBe(1);
             result.IssueChain.Contains("USDT").ShouldBe(true);

@@ -344,3 +344,13 @@ message SeedExpirationConfigChanged{
     option (aelf.is_event) = true;
     SeedExpirationConfig seed_expiration_config = 1;
 }
+
+message IssueChainAdded{
+    option (aelf.is_event) = true;
+    IssueChainList issue_chain_list = 1;
+}
+
+message IssueChainRemoved{
+    option (aelf.is_event) = true;
+    IssueChainList issue_chain_list = 1;
+}
