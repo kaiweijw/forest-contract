@@ -29,9 +29,9 @@ namespace Forest.Contracts.SymbolRegistrar
             State.Admin.Value = input.AdministratorAddress ?? Context.Sender;
             State.ReceivingAccount.Value = input.ReceivingAccount;
             State.SeedExpirationConfig.Value = SymbolRegistrarContractConstants.DefaultSeedExpirationTime;
-            Assert(input.ProxyAccountAddress != null && !input.ProxyAccountAddress.Value.IsNullOrEmpty(),
-                "ProxyAccountAddress required.");
-            State.ProxyAccountContract.Value = input.ProxyAccountAddress;
+            Assert(input.ProxyAccountContractAddress != null && !input.ProxyAccountContractAddress.Value.IsNullOrEmpty(),
+                "ProxyAccountContractAddress required.");
+            State.ProxyAccountContract.Value = input.ProxyAccountContractAddress;
             State.TokenContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
             State.ParliamentContract.Value =
@@ -39,12 +39,13 @@ namespace Forest.Contracts.SymbolRegistrar
             
             var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix +
                                               SymbolRegistrarContractConstants.CollectionSymbolSuffix);
-            if (seedCollection != null && !seedCollection.Owner.Value.IsNullOrEmpty())
+            
+            if (seedCollection?.Owner != null && !seedCollection.Owner.Value.IsEmpty)
             {
                 State.SeedCollectionOwner.Value = seedCollection.Owner;
                 var proxyAccount =
                     State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(seedCollection.Owner);
-                if (proxyAccount != null && !proxyAccount.ProxyAccountHash.Value.IsNullOrEmpty())
+                if (proxyAccount?.ProxyAccountHash != null && !proxyAccount.ProxyAccountHash.Value.IsEmpty)
                 {
                     State.ProxyAccountHash.Value = proxyAccount.ProxyAccountHash;
                 }
@@ -115,7 +116,7 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             var ftListEmpty = (input.FtPriceList?.Value?.Count ?? 0) == 0;
             var nftListEmpty = (input.NftPriceList?.Value?.Count ?? 0) == 0;
-            
+
             if (ftListEmpty && nftListEmpty)
             {
                 return;

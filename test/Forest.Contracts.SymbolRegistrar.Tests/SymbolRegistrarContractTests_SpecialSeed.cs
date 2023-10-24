@@ -338,8 +338,8 @@ namespace Forest.Contracts.SymbolRegistrar
                 Value = "LUCK-0"
             });
             luck.ShouldNotBeNull();
-            luck.PriceAmount.ShouldBe(MockPriceList().Value[3].Amount * 2);
-            luck.PriceSymbol.ShouldBe(MockPriceList().Value[3].Symbol);
+            luck.PriceAmount.ShouldBe(MockPriceList().Value[5].Amount * 2);
+            luck.PriceSymbol.ShouldBe(MockPriceList().Value[5].Symbol);
         }
 
         [Fact]

@@ -300,7 +300,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 IssueTo = User1.Address
             }));
             res.ShouldNotBeNull();
-            res.Message.ShouldContain("Invalid OwnedSymbol");
+            res.Message.ShouldContain("Invalid NFT Symbol");
         }
 
         [Fact]

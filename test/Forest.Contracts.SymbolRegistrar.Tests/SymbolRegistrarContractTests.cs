@@ -27,7 +27,7 @@ namespace Forest.Contracts.SymbolRegistrar
             await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = ProxyAccountAddress
+                ProxyAccountContractAddress = ProxyAccountContractAddress
             });
             await AdminSymbolRegistrarContractStub.AddIssueChain.SendAsync(new IssueChainList
             {
@@ -124,8 +124,8 @@ namespace Forest.Contracts.SymbolRegistrar
             await AdminTokenContractStub.Create.SendAsync(
                 new CreateInput
                 {
-                    Owner = ProxyAccountAddress,
-                    Issuer = ProxyAccountAddress,
+                    Owner = ProxyAccountContractAddress,
+                    Issuer = ProxyAccountContractAddress,
                     Symbol = "SEED-0",
                     TokenName = "TOKEN SEED-0",
                     TotalSupply = 1,

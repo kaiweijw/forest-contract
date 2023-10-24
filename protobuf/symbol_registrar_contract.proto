@@ -143,7 +143,7 @@ message InitializeInput {
     aelf.Address receiving_account = 2;
     SpecialSeedList special_seeds = 3;
     SeedsPriceInput seeds_prices = 4;
-    aelf.Address proxy_account_address = 5;
+    aelf.Address proxy_account_contract_address = 5;
     AuctionConfig auction_config = 6;
     UniqueSeedsExternalPriceInput unique_seeds_external_prices = 7;
 }
