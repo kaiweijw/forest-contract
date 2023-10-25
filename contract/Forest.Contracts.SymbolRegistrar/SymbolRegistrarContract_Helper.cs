@@ -49,20 +49,20 @@ namespace Forest.Contracts.SymbolRegistrar
             return character >= 'A' && character <= 'Z';
         }
 
-
-        private void AssertPriceList(PriceList priceList, bool uniqueSeed = false)
+        private void AssertPriceListLength(PriceList priceList)
         {
-            if (uniqueSeed)
-            {
-                Assert(priceList?.Value?.Count <= SymbolRegistrarContractConstants.MaxSymbolLength,
-                    "price list length must be less or equal " + SymbolRegistrarContractConstants.MaxSymbolLength);
-            }
-            else
-            {
-                Assert(priceList?.Value?.Count == SymbolRegistrarContractConstants.MaxSymbolLength,
-                    "price list length must be " + SymbolRegistrarContractConstants.MaxSymbolLength);
-            }
+            Assert(priceList?.Value?.Count == SymbolRegistrarContractConstants.MaxSymbolLength,
+                "price list length must be " + SymbolRegistrarContractConstants.MaxSymbolLength);
+        }
 
+        private void AssertUniquePriceListLength(PriceList priceList)
+        {
+            Assert(priceList?.Value?.Count <= SymbolRegistrarContractConstants.MaxSymbolLength,
+                "price list length must be less or equal " + SymbolRegistrarContractConstants.MaxSymbolLength);
+
+        }
+        private void AssertPriceList(PriceList priceList)
+        {
             var tracker = new int[SymbolRegistrarContractConstants.MaxSymbolLength];
             foreach (var priceItem in priceList.Value)
             {
@@ -148,10 +148,14 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             var symbols = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
             var tokenSymbol = symbols.First();
+            var tokenInfo = GetTokenInfo(tokenSymbol);
+            Assert(tokenInfo.Symbol.Length < 1, "Symbol exists");
             var tokenSeed = State.SymbolSeedMap[tokenSymbol];
             Assert(string.IsNullOrWhiteSpace(tokenSeed) || State.SeedInfoMap[tokenSeed].ExpireTime < Context.CurrentBlockTime.Seconds, "symbol seed existed");
             var collectionSymbol = symbols.First() + SymbolRegistrarContractConstants.NFTSymbolSeparator +
                                    SymbolRegistrarContractConstants.CollectionSymbolSuffix;
+            var collectionInfo = GetTokenInfo(collectionSymbol);
+            Assert(collectionInfo.Symbol.Length < 1, "Symbol exists");
             var collectionSeed = State.SymbolSeedMap[collectionSymbol];
             Assert(string.IsNullOrWhiteSpace(collectionSeed) || State.SeedInfoMap[collectionSeed].ExpireTime < Context.CurrentBlockTime.Seconds, "symbol seed existed");
         }

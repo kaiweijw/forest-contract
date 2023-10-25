@@ -24,10 +24,6 @@ namespace Forest.Contracts.SymbolRegistrar
         public SingletonState<bool> Initialized { get; set; }
         public SingletonState<Address> Admin { get; set; }
         public SingletonState<Address> ReceivingAccount { get; set; }
-        
-        // specialSymbol -> authorAccount
-        public MappedState<string, Address> SymbolAuthorAccountMap { get; set; }
-
         // length -> Price, length from 1 to 30
         public MappedState<int, PriceItem> FTPrice { get; set; }
 

@@ -124,6 +124,7 @@ namespace Forest.Contracts.SymbolRegistrar
             var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
             if (!ftListEmpty)
             {
+                AssertPriceListLength(input.FtPriceList);
                 AssertPriceList(input.FtPriceList);
                 foreach (var ftPriceItem in input.FtPriceList.Value)
                 {
@@ -139,6 +140,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
             if (!nftListEmpty)
             {
+                AssertPriceListLength(input.NftPriceList);
                 AssertPriceList(input.NftPriceList);
                 foreach (var nftPriceItem in input.NftPriceList.Value)
                 {
@@ -178,7 +180,8 @@ namespace Forest.Contracts.SymbolRegistrar
             var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
             if (!ftListEmpty)
             {
-                AssertPriceList(input.FtPriceList, true);
+                AssertUniquePriceListLength(input.FtPriceList);
+                AssertPriceList(input.FtPriceList);
                 foreach (var ftPriceItem in input.FtPriceList.Value)
                 {
                     if (!priceSymbolExists.Contains(ftPriceItem.Symbol))
@@ -193,7 +196,8 @@ namespace Forest.Contracts.SymbolRegistrar
 
             if (!nftListEmpty)
             {
-                AssertPriceList(input.NftPriceList, true);
+                AssertUniquePriceListLength(input.NftPriceList);
+                AssertPriceList(input.NftPriceList);
                 foreach (var nftPriceItem in input.NftPriceList.Value)
                 {
                     if (!priceSymbolExists.Contains(nftPriceItem.Symbol))

@@ -29,7 +29,7 @@ namespace Forest.Contracts.SymbolRegistrar
             
             var specialSeed = State.SpecialSeedMap[input.Symbol];
             Assert(specialSeed == null, "Special seed " + input.Symbol + " not support deal.");
-            AssertCanDeal(input.Symbol);
+            CheckSymbolExisted(input.Symbol);
 
             var price = GetDealPrice(input.Symbol);
             Assert(price != null, "Symbol price not exits");

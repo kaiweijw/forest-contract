@@ -348,22 +348,6 @@ message SaleControllerRemoved {
     ControllerList addresses = 1;
 }
 
-message SymbolAuthorInput{
-    string symbol = 1;
-    string address = 2;
-}
-
-message SymbolAuthorMapped{
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    string address = 2;
-}
-message AuctionEndTimeExtended{
-    option (aelf.is_event) = true;
-    string symbol = 1;
-    google.protobuf.Timestamp new_end_time = 2;
-}
-
 message SeedExpirationConfigChanged{
     option (aelf.is_event) = true;
     SeedExpirationConfig seed_expiration_config = 1;

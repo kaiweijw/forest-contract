@@ -238,7 +238,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 Symbol = "LUCK",
                 To = User1.Address
             });
-            result.TransactionResult.Error.ShouldContain("Token already exists.");
+            result.TransactionResult.Error.ShouldContain("Symbol exists");
         }
         
          [Fact]

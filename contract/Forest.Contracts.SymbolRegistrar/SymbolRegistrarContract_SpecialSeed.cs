@@ -24,7 +24,6 @@ namespace Forest.Contracts.SymbolRegistrar
 
             var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
             var exists = new HashSet<string>();
-            var addedList = new SpecialSeedList();
             for (var index = 0; index < input?.Value?.Count; index++)
             {
                 var item = input.Value[index];
