@@ -14,7 +14,6 @@ namespace Forest.Contracts.SymbolRegistrar
     public partial class SymbolRegistrarContract : SymbolRegistrarContractContainer.SymbolRegistrarContractBase
     {
         
-
         public override Empty AddSpecialSeeds(SpecialSeedList input)
         {
             if (State.Initialized.Value)
@@ -25,7 +24,6 @@ namespace Forest.Contracts.SymbolRegistrar
 
             var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
             var exists = new HashSet<string>();
-            var addedList = new SpecialSeedList();
             for (var index = 0; index < input?.Value?.Count; index++)
             {
                 var item = input.Value[index];
@@ -84,6 +82,54 @@ namespace Forest.Contracts.SymbolRegistrar
                 });
             }
 
+            return new Empty();
+        }
+
+        public override Empty AddUniqueSeeds(UniqueSeedList input)
+        {
+            if (State.Initialized.Value)
+                Assert(GetDefaultParliamentController().OwnerAddress == Context.Sender, "No permission.");
+            else
+                AssertContractAuthor();
+            Assert(input.Symbols.Count <= SymbolRegistrarContractConstants.MaxAddSpecialSeedCount, "Seed list max limit exceeded.");
+
+            var symbols = input.Symbols.Distinct().ToList();
+            var specialSeedList = new SpecialSeedList();
+            foreach (var symbol in symbols)
+            {
+                AssertSymbolPattern(symbol);
+                var symbolPartition = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
+                var ftSeed = State.SpecialSeedMap[symbolPartition[0]];
+                if (ftSeed == null)
+                {
+                    ftSeed = new SpecialSeed
+                    {
+                        Symbol = symbolPartition[0],
+                        SeedType = SeedType.Unique
+                    };
+                    State.SpecialSeedMap[symbolPartition[0]] = ftSeed;
+                    specialSeedList.Value.Add(ftSeed);
+                }
+
+                var nftSymbol = symbolPartition[0] + SymbolRegistrarContractConstants.NFTSymbolSeparator +
+                                SymbolRegistrarContractConstants.CollectionSymbolSuffix;
+                var nftSeed = State.SpecialSeedMap[nftSymbol];
+                if (nftSeed == null)
+                {
+                    nftSeed = new SpecialSeed
+                    {
+                        Symbol = nftSymbol,
+                        SeedType = SeedType.Unique
+                    };
+                    State.SpecialSeedMap[nftSymbol] = nftSeed;
+                    specialSeedList.Value.Add(nftSeed);
+                }
+            }
+
+            Context.Fire(new SpecialSeedAdded
+            {
+                AddList = specialSeedList,
+            });
             return new Empty();
         }
     }

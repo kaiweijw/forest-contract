@@ -72,15 +72,15 @@ namespace Forest.Contracts.SymbolRegistrar
             {
                 ReceivingAccount = Admin.Address
             });
-            result.TransactionResult.Error.ShouldContain("ProxyAccountAddress required.");
+            result.TransactionResult.Error.ShouldContain("ProxyAccountContractAddress required.");
 
             // invalid param
             result = await AdminSymbolRegistrarContractStub.Initialize.SendWithExceptionAsync(new InitializeInput
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = new Address()
+                ProxyAccountContractAddress = new Address()
             });
-            result.TransactionResult.Error.ShouldContain("ProxyAccountAddress required.");
+            result.TransactionResult.Error.ShouldContain("ProxyAccountContractAddress required.");
 
             // success
             await InitializeContract();
@@ -130,7 +130,7 @@ namespace Forest.Contracts.SymbolRegistrar
             var result = await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = Admin.Address,
+                ProxyAccountContractAddress = Admin.Address,
                 SpecialSeeds = new SpecialSeedList
                 {
                     Value = { _specialUsd, _specialEur }
@@ -168,7 +168,7 @@ namespace Forest.Contracts.SymbolRegistrar
             var result = await AdminSymbolRegistrarContractStub.Initialize.SendWithExceptionAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = Admin.Address,
+                ProxyAccountContractAddress = Admin.Address,
                 SpecialSeeds = new SpecialSeedList
                 {
                     Value = { _specialUsd, _specialUsd }
@@ -179,7 +179,7 @@ namespace Forest.Contracts.SymbolRegistrar
             result = await AdminSymbolRegistrarContractStub.Initialize.SendWithExceptionAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = Admin.Address,
+                ProxyAccountContractAddress = Admin.Address,
                 SpecialSeeds = new SpecialSeedList
                 {
                     Value = { _specialInvalidPriceAmount }
@@ -189,7 +189,7 @@ namespace Forest.Contracts.SymbolRegistrar
             result = await AdminSymbolRegistrarContractStub.Initialize.SendWithExceptionAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = Admin.Address,
+                ProxyAccountContractAddress = Admin.Address,
                 SpecialSeeds = new SpecialSeedList
                 {
                     Value = { _specialUsd_errorPrice }
@@ -208,7 +208,7 @@ namespace Forest.Contracts.SymbolRegistrar
             var maxLimitExceeded = await AdminSymbolRegistrarContractStub.Initialize.SendWithExceptionAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = Admin.Address,
+                ProxyAccountContractAddress = Admin.Address,
                 SpecialSeeds = batchSpecialSeedList
             });
             maxLimitExceeded.TransactionResult.Error.ShouldContain("max limit exceeded");
@@ -217,7 +217,7 @@ namespace Forest.Contracts.SymbolRegistrar
             await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = Admin.Address,
+                ProxyAccountContractAddress = Admin.Address,
                 SpecialSeeds = batchSpecialSeedList
             });
         }
@@ -228,7 +228,7 @@ namespace Forest.Contracts.SymbolRegistrar
             var result = await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = Admin.Address,
+                ProxyAccountContractAddress = Admin.Address,
                 SeedsPrices = new SeedsPriceInput
                 {
                     NftPriceList = MockPriceList(),
@@ -424,9 +424,9 @@ namespace Forest.Contracts.SymbolRegistrar
             {
                 ExpirationTime = 1000
             });
-            result.TransactionResult.Error.ShouldContain("No sale controller permission.");
-            await InitSaleController(User1.Address);
-            result = await User1SymbolRegistrarContractStub.SetSeedExpirationConfig.SendAsync(new SeedExpirationConfig()
+            
+            result.TransactionResult.Error.ShouldContain("No permission.");
+            result = await AdminSymbolRegistrarContractStub.SetSeedExpirationConfig.SendAsync(new SeedExpirationConfig()
             {
                 ExpirationTime = 1000
             });
@@ -435,7 +435,7 @@ namespace Forest.Contracts.SymbolRegistrar
             seedExpirationConfigChanged.SeedExpirationConfig.ExpirationTime.ShouldBe(1000);
             var seedExpirationConfig = await User1SymbolRegistrarContractStub.GetSeedExpirationConfig.CallAsync(new Empty());
             seedExpirationConfig.ExpirationTime.ShouldBe(1000);
-            result = await User1SymbolRegistrarContractStub.SetSeedExpirationConfig.SendWithExceptionAsync(new SeedExpirationConfig()
+            result = await AdminSymbolRegistrarContractStub.SetSeedExpirationConfig.SendWithExceptionAsync(new SeedExpirationConfig()
             {
                 ExpirationTime = -1000
             });

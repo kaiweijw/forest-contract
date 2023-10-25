@@ -26,7 +26,7 @@ namespace Forest.Contracts.SymbolRegistrar
         // internal Address DAppContractAddress => GetAddress(DAppSmartContractAddressNameProvider.StringName);
         protected const int MinersCount = 1;
 
-        internal Address ProxyAccountAddress { get; set; }
+        internal Address ProxyAccountContractAddress { get; set; }
         internal Address SymbolRegistrarContractAddress { get; set; }
         internal Account Admin => Accounts[0];
         internal Account User1 => Accounts[1];
@@ -86,7 +86,7 @@ namespace Forest.Contracts.SymbolRegistrar
                     Code = ByteString.CopyFrom(
                         File.ReadAllBytes(typeof(MockProxyAccountContract.MockProxyAccountContract).Assembly.Location))
                 }));
-            ProxyAccountAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
+            ProxyAccountContractAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
         }
         
         
@@ -107,7 +107,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
         internal ProxyAccountContractContainer.ProxyAccountContractStub GetProxyAccountContractStub(ECKeyPair keyPair)
         {
-            return GetTester<ProxyAccountContractContainer.ProxyAccountContractStub>(ProxyAccountAddress, keyPair);
+            return GetTester<ProxyAccountContractContainer.ProxyAccountContractStub>(ProxyAccountContractAddress, keyPair);
         }
 
         protected new async Task<IExecutionResult<Empty>> SubmitAndApproveProposalOfDefaultParliament(

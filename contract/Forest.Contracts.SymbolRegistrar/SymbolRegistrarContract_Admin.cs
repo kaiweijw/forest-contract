@@ -4,7 +4,6 @@ using System.Linq;
 using AElf;
 using AElf.Sdk.CSharp;
 using AElf.Types;
-using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Contracts.SymbolRegistrar
@@ -29,13 +28,27 @@ namespace Forest.Contracts.SymbolRegistrar
             State.Admin.Value = input.AdministratorAddress ?? Context.Sender;
             State.ReceivingAccount.Value = input.ReceivingAccount;
             State.SeedExpirationConfig.Value = SymbolRegistrarContractConstants.DefaultSeedExpirationTime;
-            Assert(input.ProxyAccountAddress != null && !input.ProxyAccountAddress.Value.IsNullOrEmpty(),
-                "ProxyAccountAddress required.");
-            State.ProxyAccountContract.Value = input.ProxyAccountAddress;
+            Assert(input.ProxyAccountContractAddress != null && !input.ProxyAccountContractAddress.Value.IsNullOrEmpty(),
+                "ProxyAccountContractAddress required.");
+            State.ProxyAccountContract.Value = input.ProxyAccountContractAddress;
             State.TokenContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
             State.ParliamentContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.ParliamentContractSystemName);
+            
+            var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix +
+                                              SymbolRegistrarContractConstants.CollectionSymbolSuffix);
+            
+            if (seedCollection?.Owner != null && !seedCollection.Owner.Value.IsEmpty)
+            {
+                State.SeedCollectionOwner.Value = seedCollection.Owner;
+                var proxyAccount =
+                    State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(seedCollection.Owner);
+                if (proxyAccount?.ProxyAccountHash != null && !proxyAccount.ProxyAccountHash.Value.IsEmpty)
+                {
+                    State.ProxyAccountHash.Value = proxyAccount.ProxyAccountHash;
+                }
+            }
 
             InitializeAuctionConfig();
             if (input.SpecialSeeds != null)
@@ -43,6 +56,9 @@ namespace Forest.Contracts.SymbolRegistrar
 
             if (input.SeedsPrices != null)
                 UpdateSeedsPrice(input.SeedsPrices);
+            
+            if (input.UniqueSeedsExternalPrices != null)
+                UpdateUniqueSeedsExternalPrice(input.UniqueSeedsExternalPrices);
 
             State.Initialized.Value = true;
             return new Empty();
@@ -99,7 +115,7 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             var ftListEmpty = (input.FtPriceList?.Value?.Count ?? 0) == 0;
             var nftListEmpty = (input.NftPriceList?.Value?.Count ?? 0) == 0;
-            
+
             if (ftListEmpty && nftListEmpty)
             {
                 return;
@@ -107,6 +123,7 @@ namespace Forest.Contracts.SymbolRegistrar
             var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
             if (!ftListEmpty)
             {
+                AssertPriceListLength(input.FtPriceList);
                 AssertPriceList(input.FtPriceList);
                 foreach (var ftPriceItem in input.FtPriceList.Value)
                 {
@@ -122,6 +139,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
             if (!nftListEmpty)
             {
+                AssertPriceListLength(input.NftPriceList);
                 AssertPriceList(input.NftPriceList);
                 foreach (var nftPriceItem in input.NftPriceList.Value)
                 {
@@ -139,6 +157,74 @@ namespace Forest.Contracts.SymbolRegistrar
             {
                 FtPriceList = input.FtPriceList,
                 NftPriceList = input.NftPriceList
+            });
+        }
+
+        public override Empty SetUniqueSeedsExternalPrice(UniqueSeedsExternalPriceInput input)
+        {
+            AssertAdmin();
+            UpdateUniqueSeedsExternalPrice(input);
+            return new Empty();
+        }
+
+        private void UpdateUniqueSeedsExternalPrice(UniqueSeedsExternalPriceInput input)
+        {
+            var ftListEmpty = (input.FtPriceList?.Value?.Count ?? 0) == 0;
+            var nftListEmpty = (input.NftPriceList?.Value?.Count ?? 0) == 0;
+            
+            if (ftListEmpty && nftListEmpty)
+            {
+                return;
+            }
+            var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
+            var addFtPriceList = new PriceList();
+            var addNftPriceList = new PriceList();
+            if (!ftListEmpty)
+            {
+                AssertUniquePriceListLength(input.FtPriceList);
+                AssertPriceList(input.FtPriceList);
+                foreach (var ftPriceItem in input.FtPriceList.Value)
+                {
+                    if (!priceSymbolExists.Contains(ftPriceItem.Symbol))
+                    {
+                        var tokenInfo = GetTokenInfo(ftPriceItem.Symbol);
+                        Assert(tokenInfo?.Symbol.Length > 0, "Price token " + ftPriceItem.Symbol + " not exists");
+                        priceSymbolExists.Add(ftPriceItem.Symbol);
+                    }
+                    var priceItem = State.UniqueExternalFTPrice[ftPriceItem.SymbolLength];
+                    if (priceItem == null || !priceItem.Equals(ftPriceItem))
+                    {
+                        addFtPriceList.Value.Add(ftPriceItem);
+                        State.UniqueExternalFTPrice[ftPriceItem.SymbolLength] = ftPriceItem;
+                    }
+                }
+            }
+
+            if (!nftListEmpty)
+            {
+                AssertUniquePriceListLength(input.NftPriceList);
+                AssertPriceList(input.NftPriceList);
+                foreach (var nftPriceItem in input.NftPriceList.Value)
+                {
+                    if (!priceSymbolExists.Contains(nftPriceItem.Symbol))
+                    {
+                        var tokenInfo = GetTokenInfo(nftPriceItem.Symbol);
+                        Assert(tokenInfo?.Symbol.Length > 0, "Price token " + nftPriceItem.Symbol + " not exists");
+                        priceSymbolExists.Add(nftPriceItem.Symbol);
+                    }
+                    var priceItem = State.UniqueExternalNFTPrice[nftPriceItem.SymbolLength];
+                    if (priceItem == null || !priceItem.Equals(nftPriceItem))
+                    {
+                        addNftPriceList.Value.Add(nftPriceItem);
+                        State.UniqueExternalNFTPrice[nftPriceItem.SymbolLength] = nftPriceItem;
+                    }
+                }
+            }
+
+            Context.Fire(new UniqueSeedsExternalPriceChanged()
+            {
+                FtPriceList = addFtPriceList,
+                NftPriceList = addNftPriceList
             });
         }
 

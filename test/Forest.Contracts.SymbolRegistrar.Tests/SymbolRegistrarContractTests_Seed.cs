@@ -20,8 +20,8 @@ namespace Forest.Contracts.SymbolRegistrar
             await AdminTokenContractStub.Create.SendAsync(
                 new CreateInput
                 {
-                    Owner = ProxyAccountAddress,
-                    Issuer = ProxyAccountAddress,
+                    Owner = ProxyAccountContractAddress,
+                    Issuer = ProxyAccountContractAddress,
                     Symbol = "SEED-0",
                     TokenName = "TOKEN SEED-0",
                     TotalSupply = 1,
@@ -36,7 +36,7 @@ namespace Forest.Contracts.SymbolRegistrar
             await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountAddress = ProxyAccountAddress,
+                ProxyAccountContractAddress = ProxyAccountContractAddress,
                 SpecialSeeds = new SpecialSeedList()
                 {
                     Value = { new SpecialSeed()
@@ -128,21 +128,21 @@ namespace Forest.Contracts.SymbolRegistrar
             {
                 To = User1.Address
             });
-            result.TransactionResult.Error.ShouldContain("Invalid Seed Symbol input");
+            result.TransactionResult.Error.ShouldContain("Invalid Symbol");
 
             result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
             {
                 Symbol = "",
                 To = User1.Address
             });
-            result.TransactionResult.Error.ShouldContain("Invalid Seed Symbol input");
+            result.TransactionResult.Error.ShouldContain("Invalid Symbol");
 
             result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
             {
                 Symbol = "LUCK-2",
                 To = User1.Address
             });
-            result.TransactionResult.Error.ShouldContain("Invalid Seed NFT Symbol input");
+            result.TransactionResult.Error.ShouldContain("Invalid NFT Symbol");
 
             result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput
             {
@@ -196,7 +196,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 Decimals = 0,
                 IsBurnable = true,
                 TotalSupply = 1,
-                Owner = ProxyAccountAddress,
+                Owner = ProxyAccountContractAddress,
                 Issuer = Admin.Address,
                 ExternalInfo = new ExternalInfo(),
                 LockWhiteList = { TokenContractAddress }
@@ -238,7 +238,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 Symbol = "LUCK",
                 To = User1.Address
             });
-            result.TransactionResult.Error.ShouldContain("Token already exists.");
+            result.TransactionResult.Error.ShouldContain("Symbol exists");
         }
         
          [Fact]
@@ -256,7 +256,7 @@ namespace Forest.Contracts.SymbolRegistrar
                     Decimals = 0,
                     IsBurnable = true,
                     TotalSupply = 1,
-                    Owner = ProxyAccountAddress,
+                    Owner = ProxyAccountContractAddress,
                     Issuer = Admin.Address,
                     ExternalInfo = new ExternalInfo(),
                     LockWhiteList = { TokenContractAddress }
@@ -309,7 +309,7 @@ namespace Forest.Contracts.SymbolRegistrar
         public async Task SetProxyAccountContract_Test()
         {
             await InitializeContract();
-            var result = await User1SymbolRegistrarContractStub.SetProxyAccountContract.SendWithExceptionAsync(ProxyAccountAddress);
+            var result = await User1SymbolRegistrarContractStub.SetProxyAccountContract.SendWithExceptionAsync(ProxyAccountContractAddress);
             result.TransactionResult.Error.ShouldContain("No permission.");
             result = await AdminSymbolRegistrarContractStub.SetProxyAccountContract.SendWithExceptionAsync(new Address());
             result.TransactionResult.Error.ShouldContain("Invalid param");

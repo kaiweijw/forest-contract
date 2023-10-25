@@ -1,3 +1,4 @@
+using System;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
@@ -58,7 +59,24 @@ namespace Forest.Contracts.SymbolRegistrar
 
         public override SpecialSeed GetSpecialSeed(StringValue input)
         {
-            return input.Value.Length == 0 ? null : State.SpecialSeedMap[input.Value];
+            var specialSeed = State.SpecialSeedMap[input.Value];
+            if (specialSeed == null)
+            {
+                return new SpecialSeed();
+            }
+
+            if (specialSeed.SeedType == SeedType.Unique && specialSeed.PriceAmount == 0 && string.IsNullOrWhiteSpace(specialSeed.PriceSymbol))
+            {
+                var isNFT = input.Value.Contains(SymbolRegistrarContractConstants.NFTSymbolSeparator);
+                var seedPrice = isNFT ? State.NFTPrice[input.Value.Length] : State.FTPrice[input.Value.Length];
+                var uniqueSeedPrice = isNFT ? State.UniqueExternalNFTPrice[input.Value.Length] : State.UniqueExternalFTPrice[input.Value.Length];
+                if (seedPrice != null && uniqueSeedPrice != null && seedPrice.Symbol == uniqueSeedPrice.Symbol)
+                {
+                    specialSeed.PriceSymbol = seedPrice.Symbol;
+                    specialSeed.PriceAmount = seedPrice.Amount + uniqueSeedPrice.Amount;
+                }
+            }
+            return specialSeed;
         }
         
         public override AuctionConfig GetAuctionConfig(Empty input)

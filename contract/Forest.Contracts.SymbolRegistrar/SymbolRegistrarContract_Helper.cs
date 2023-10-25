@@ -37,14 +37,32 @@ namespace Forest.Contracts.SymbolRegistrar
                 "Invalid symbol length.");
 
             var symbolPartition = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
-            Assert(symbolPartition.Length == 1 || symbolPartition.Length == 2, "Invalid symbol.");
+            Assert((symbolPartition.Length == 1 || symbolPartition.Length == 2) && symbolPartition[0].All(IsValidCreateSymbolChar), "Invalid symbol.");
+            if (symbolPartition.Length == 2)
+            {
+                Assert( symbolPartition[1] == SymbolRegistrarContractConstants.CollectionSymbolSuffix, "Invalid NFT Symbol");
+            }
+        }
+        
+        private bool IsValidCreateSymbolChar(char character)
+        {
+            return character >= 'A' && character <= 'Z';
         }
 
-        private void AssertPriceList(PriceList priceList)
+        private void AssertPriceListLength(PriceList priceList)
         {
             Assert(priceList?.Value?.Count == SymbolRegistrarContractConstants.MaxSymbolLength,
                 "price list length must be " + SymbolRegistrarContractConstants.MaxSymbolLength);
+        }
 
+        private void AssertUniquePriceListLength(PriceList priceList)
+        {
+            Assert(priceList?.Value?.Count <= SymbolRegistrarContractConstants.MaxSymbolLength,
+                "price list length must be less or equal " + SymbolRegistrarContractConstants.MaxSymbolLength);
+
+        }
+        private void AssertPriceList(PriceList priceList)
+        {
             var tracker = new int[SymbolRegistrarContractConstants.MaxSymbolLength];
             foreach (var priceItem in priceList.Value)
             {
@@ -57,7 +75,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 tracker[priceItem.SymbolLength - 1] = 1;
             }
         }
-
+        
         private void AssertCanDeal(string symbol)
         {
             var tokenInfo = GetTokenInfo(symbol);
@@ -130,10 +148,16 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             var symbols = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
             var tokenSymbol = symbols.First();
-            Assert(State.SymbolSeedMap[tokenSymbol] == null, "symbol seed existed");
+            var tokenInfo = GetTokenInfo(tokenSymbol);
+            Assert(tokenInfo.Symbol.Length < 1, "Symbol exists");
+            var tokenSeed = State.SymbolSeedMap[tokenSymbol];
+            Assert(string.IsNullOrWhiteSpace(tokenSeed) || State.SeedInfoMap[tokenSeed].ExpireTime < Context.CurrentBlockTime.Seconds, "symbol seed existed");
             var collectionSymbol = symbols.First() + SymbolRegistrarContractConstants.NFTSymbolSeparator +
                                    SymbolRegistrarContractConstants.CollectionSymbolSuffix;
-            Assert(State.SymbolSeedMap[collectionSymbol] == null, "symbol seed existed");
+            var collectionInfo = GetTokenInfo(collectionSymbol);
+            Assert(collectionInfo.Symbol.Length < 1, "Symbol exists");
+            var collectionSeed = State.SymbolSeedMap[collectionSymbol];
+            Assert(string.IsNullOrWhiteSpace(collectionSeed) || State.SeedInfoMap[collectionSeed].ExpireTime < Context.CurrentBlockTime.Seconds, "symbol seed existed");
         }
     }
 }

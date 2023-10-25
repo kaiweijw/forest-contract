@@ -142,7 +142,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 Symbol  = "LUCK",
                 IssueTo = User1.Address
             }));
-            seedExists.Message.ShouldContain("Seed exists");
+            seedExists.Message.ShouldContain("symbol seed existed");
 
             var specialSeedNotSupport = await Assert.ThrowsAsync<Exception>(() => User1SymbolRegistrarContractStub.Buy.SendAsync(new BuyInput
             {
@@ -300,7 +300,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 IssueTo = User1.Address
             }));
             res.ShouldNotBeNull();
-            res.Message.ShouldContain("Invalid OwnedSymbol");
+            res.Message.ShouldContain("Invalid NFT Symbol");
         }
 
         [Fact]

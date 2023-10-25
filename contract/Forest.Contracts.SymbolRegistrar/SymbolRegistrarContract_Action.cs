@@ -29,7 +29,7 @@ namespace Forest.Contracts.SymbolRegistrar
             
             var specialSeed = State.SpecialSeedMap[input.Symbol];
             Assert(specialSeed == null, "Special seed " + input.Symbol + " not support deal.");
-            AssertCanDeal(input.Symbol);
+            CheckSymbolExisted(input.Symbol);
 
             var price = GetDealPrice(input.Symbol);
             Assert(price != null, "Symbol price not exits");
@@ -44,7 +44,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 Amount = price.Amount,
             });
 
-            CreateSeed(issueTo, input.Symbol);
+            DoCreateSeed(issueTo, input.Symbol);
 
             Context.Fire(new Bought()
             {
@@ -63,7 +63,7 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty SetSeedExpirationConfig(SeedExpirationConfig input)
         {
             AssertInitialized();
-            AssertSaleController();
+            AssertAdmin();
 
             Assert(input != null, "Invalid input.");
             Assert(input.ExpirationTime > 0, "Invalid input expiration time.");
@@ -86,31 +86,16 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty CreateSeed(CreateSeedInput input)
         {
             AssertSaleController();
-            AssertSeedSymbol(input.Symbol);
             Assert(input.To != null && !input.To.Value.IsNullOrEmpty(), "To address is empty");
+            AssertSymbolPattern(input.Symbol);
             var specialSeed = State.SpecialSeedMap[input.Symbol];
             Assert(specialSeed == null || specialSeed.SeedType != SeedType.Disable, "seed " + input.Symbol + " not support create.");
-            CreateSeed(input.To, input.Symbol);
+            CheckSymbolExisted(input.Symbol);
+            DoCreateSeed(input.To, input.Symbol);
             return new Empty();
         }
         
-        private void AssertSeedSymbol(string symbol)
-        {
-            var words = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
-            Assert(words[0].Length > 0 && words[0].All(IsValidCreateSymbolChar), "Invalid Seed Symbol input");
-            if (words.Length == 1)
-            {
-                return;
-            }
-            Assert(words.Length == 2 && words[1] == SymbolRegistrarContractConstants.CollectionSymbolSuffix, "Invalid Seed NFT Symbol input");
-        }
-        
-        private bool IsValidCreateSymbolChar(char character)
-        {
-            return character >= 'A' && character <= 'Z';
-        }
-
-        private void CreateSeed(Address to, string symbol, long expireTime = 0)
+        private void DoCreateSeed(Address to, string symbol, long expireTime = 0)
         {
             var createResult = CreateSeedToken(Context.Self, symbol, expireTime);
             if (!createResult)
@@ -142,10 +127,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
         private bool CreateSeedToken(Address issuer, string symbol, long expireTime = 0)
         {
-            CheckSymbolExisted(symbol);
-            var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix + SymbolRegistrarContractConstants.CollectionSymbolSuffix);
-            Assert(seedCollection != null && seedCollection.Symbol == SymbolRegistrarContractConstants.SeedPrefix + 0, "seedCollection not existed");
-            
+            var seedCollectionOwner = GetSeedCollectionOwner();
             State.LastSeedId.Value = State.LastSeedId.Value.Add(1);
             var seedSymbol = SymbolRegistrarContractConstants.SeedPrefix + State.LastSeedId.Value;
             var seedTokenInfo = GetTokenInfo(seedSymbol);
@@ -158,7 +140,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 seedSymbol = SymbolRegistrarContractConstants.SeedPrefix + State.LastSeedId.Value;
                 seedTokenInfo = GetTokenInfo(seedSymbol);
             }
-            if (seedTokenInfo != null && seedTokenInfo.Symbol == seedSymbol)
+            if (seedTokenInfo != null && !string.IsNullOrWhiteSpace(seedTokenInfo.Symbol))
             {
                 return false;
             }
@@ -171,7 +153,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 Decimals = 0,
                 IsBurnable = true,
                 TotalSupply = 1,
-                Owner = seedCollection.Owner,
+                Owner = seedCollectionOwner,
                 Issuer = issuer,
                 ExternalInfo = new ExternalInfo(),
                 LockWhiteList = { State.TokenContract.Value }
@@ -187,15 +169,12 @@ namespace Forest.Contracts.SymbolRegistrar
                     State.SeedImageUrlPrefix.Value + seedSymbol + SymbolRegistrarContractConstants.NftImageUrlSuffix;
             }
 
-            var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(seedCollection.Owner);
-            Assert(proxyAccount != null && proxyAccount.ProxyAccountHash != null, "ProxyAccountHash not existed.");
-            
             State.ProxyAccountContract.ForwardCall.Send(
                 new ForwardCallInput
                 {
                     ContractAddress = State.TokenContract.Value,
                     MethodName = nameof(State.TokenContract.Create),
-                    ProxyAccountHash = proxyAccount.ProxyAccountHash,
+                    ProxyAccountHash = GetProxyAccountHash(),
                     Args = createInput.ToByteString()
                 });
             State.SeedInfoMap[seedSymbol] = new SeedInfo
@@ -206,6 +185,33 @@ namespace Forest.Contracts.SymbolRegistrar
                 ImageUrl = createInput.ExternalInfo.Value.GetValueOrDefault(SymbolRegistrarContractConstants.NftImageUrlExternalInfoKey, "")
             };
             return true;
+        }
+
+        private Address GetSeedCollectionOwner()
+        {
+            var owner = State.SeedCollectionOwner.Value;
+            if (owner != null && !owner.Value.IsNullOrEmpty())
+            {
+                return owner;
+            }
+            var seedCollection = GetTokenInfo(SymbolRegistrarContractConstants.SeedPrefix +
+                                              SymbolRegistrarContractConstants.CollectionSymbolSuffix);
+            Assert(seedCollection?.Owner != null && !seedCollection.Owner.Value.IsNullOrEmpty(), "SeedCollection not existed.");
+            State.SeedCollectionOwner.Value = seedCollection.Owner;
+            return seedCollection.Owner;
+        }
+
+        private Hash GetProxyAccountHash()
+        {
+            var proxyAccountHash = State.ProxyAccountHash.Value;
+            if (proxyAccountHash != null && !proxyAccountHash.Value.IsNullOrEmpty())
+            {
+                return proxyAccountHash;
+            }
+            var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(GetSeedCollectionOwner());
+            Assert(proxyAccount?.ProxyAccountHash != null, "ProxyAccountHash not existed.");
+            State.ProxyAccountHash.Value = proxyAccount.ProxyAccountHash;
+            return proxyAccount.ProxyAccountHash;
         }
     }
 }
