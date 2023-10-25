@@ -4,7 +4,6 @@ using System.Linq;
 using AElf;
 using AElf.Sdk.CSharp;
 using AElf.Types;
-using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Contracts.SymbolRegistrar
@@ -178,6 +177,8 @@ namespace Forest.Contracts.SymbolRegistrar
                 return;
             }
             var priceSymbolExists = new HashSet<string> { SymbolRegistrarContractConstants.ELFSymbol };
+            var addFtPriceList = new PriceList();
+            var addNftPriceList = new PriceList();
             if (!ftListEmpty)
             {
                 AssertUniquePriceListLength(input.FtPriceList);
@@ -190,7 +191,12 @@ namespace Forest.Contracts.SymbolRegistrar
                         Assert(tokenInfo?.Symbol.Length > 0, "Price token " + ftPriceItem.Symbol + " not exists");
                         priceSymbolExists.Add(ftPriceItem.Symbol);
                     }
-                    State.UniqueExternalFTPrice[ftPriceItem.SymbolLength] = ftPriceItem;
+                    var priceItem = State.UniqueExternalFTPrice[ftPriceItem.SymbolLength];
+                    if (priceItem == null || !priceItem.Equals(ftPriceItem))
+                    {
+                        addFtPriceList.Value.Add(ftPriceItem);
+                        State.UniqueExternalFTPrice[ftPriceItem.SymbolLength] = ftPriceItem;
+                    }
                 }
             }
 
@@ -206,14 +212,19 @@ namespace Forest.Contracts.SymbolRegistrar
                         Assert(tokenInfo?.Symbol.Length > 0, "Price token " + nftPriceItem.Symbol + " not exists");
                         priceSymbolExists.Add(nftPriceItem.Symbol);
                     }
-                    State.UniqueExternalNFTPrice[nftPriceItem.SymbolLength] = nftPriceItem;
+                    var priceItem = State.UniqueExternalNFTPrice[nftPriceItem.SymbolLength];
+                    if (priceItem == null || !priceItem.Equals(nftPriceItem))
+                    {
+                        addNftPriceList.Value.Add(nftPriceItem);
+                        State.UniqueExternalNFTPrice[nftPriceItem.SymbolLength] = nftPriceItem;
+                    }
                 }
             }
 
             Context.Fire(new UniqueSeedsExternalPriceChanged()
             {
-                FtPriceList = input.FtPriceList,
-                NftPriceList = input.NftPriceList
+                FtPriceList = addFtPriceList,
+                NftPriceList = addNftPriceList
             });
         }
 

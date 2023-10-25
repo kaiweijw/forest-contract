@@ -154,6 +154,15 @@ namespace Forest.Contracts.SymbolRegistrar
             uniqueSeedsPriceChanged.NftPriceList?.Value?.Count.ShouldBe(30);
             uniqueSeedsPriceChanged.FtPriceList?.Value?.Count.ShouldBe(0);
             
+            uniqueNftResult = await AdminSymbolRegistrarContractStub.SetUniqueSeedsExternalPrice.SendAsync(new UniqueSeedsExternalPriceInput()
+            {
+                NftPriceList = MockPriceList()
+            });
+            log = uniqueNftResult.TransactionResult.Logs.First(log => log.Name.Contains(nameof(UniqueSeedsExternalPriceChanged)));
+            uniqueSeedsPriceChanged = UniqueSeedsExternalPriceChanged.Parser.ParseFrom(log.NonIndexed);
+            uniqueSeedsPriceChanged.NftPriceList?.Value?.Count.ShouldBe(0);
+            uniqueSeedsPriceChanged.FtPriceList?.Value?.Count.ShouldBe(0);
+            
             // ft list only
             var uniqueFtResult = await AdminSymbolRegistrarContractStub.SetUniqueSeedsExternalPrice.SendAsync(new UniqueSeedsExternalPriceInput
             {
