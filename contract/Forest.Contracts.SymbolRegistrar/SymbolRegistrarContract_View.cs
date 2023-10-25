@@ -65,7 +65,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 return new SpecialSeed();
             }
 
-            if (specialSeed.SeedType == SeedType.Unique && specialSeed.PriceAmount == 0 && String.IsNullOrWhiteSpace(specialSeed.PriceSymbol))
+            if (specialSeed.SeedType == SeedType.Unique && specialSeed.PriceAmount == 0 && string.IsNullOrWhiteSpace(specialSeed.PriceSymbol))
             {
                 var isNFT = input.Value.Contains(SymbolRegistrarContractConstants.NFTSymbolSeparator);
                 var seedPrice = isNFT ? State.NFTPrice[input.Value.Length] : State.FTPrice[input.Value.Length];
