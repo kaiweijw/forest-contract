@@ -7,4 +7,6 @@ public static class AuctionContractConstants
 
     // 721 type NFT
     public const long DefaultAmount = 1;
+
+    public const long TenThousandConstant = 10000;
 }

@@ -66,7 +66,7 @@ namespace Forest.Contracts.Auction
             const long duration = 100;
             const long maxExtensionTime = 100;
             const long countdownTime = 50;
-            const int minMarkup = 10;
+            const int minMarkup = 1000;
             const long startPrice = 100;
 
             await Initialize();
@@ -211,22 +211,14 @@ namespace Forest.Contracts.Auction
             result = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
             {
                 AuctionId = log.AuctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 100
-                }
+                Amount = 100
             });
             result.TransactionResult.Error.ShouldContain("Bid price not high enough.");
 
             await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = log.AuctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 101
-                }
+                Amount = 101
             });
 
             await InitToken(User2Address, 500);
@@ -236,11 +228,7 @@ namespace Forest.Contracts.Auction
             result = await AuctionContractUser2Stub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
             {
                 AuctionId = log.AuctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 101
-                }
+                Amount = 101
             });
             result.TransactionResult.Error.ShouldContain("Bid price not high enough.");
 
@@ -256,11 +244,7 @@ namespace Forest.Contracts.Auction
             await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = log.AuctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 102
-                }
+                Amount = 102
             });
 
             output = await AuctionContractStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
@@ -275,12 +259,8 @@ namespace Forest.Contracts.Auction
             // bid after max extension time
             result = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
             {
-                AuctionId = log.AuctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 103
-                }
+                AuctionId = log.AuctionId, 
+                Amount = 103
             });
             result.TransactionResult.Error.ShouldContain("Auction finished. Bid failed.");
 
@@ -517,11 +497,7 @@ namespace Forest.Contracts.Auction
             var result = await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = userBid
-                }
+                Amount = userBid
             });
 
             var currentBlockTime = BlockTimeProvider.GetBlockTime();
@@ -566,12 +542,8 @@ namespace Forest.Contracts.Auction
 
             result = await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
-                AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = userBid2
-                }
+                AuctionId = auctionId, 
+                Amount = userBid2
             });
 
             {
@@ -598,11 +570,7 @@ namespace Forest.Contracts.Auction
             result = await AuctionContractUser2Stub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = user2Bid
-                }
+                Amount = user2Bid
             });
 
             {
@@ -639,18 +607,14 @@ namespace Forest.Contracts.Auction
             {
                 AuctionId = auctionId
             });
-            output.TransactionResult.Error.ShouldContain("Invalid input price.");
+            output.TransactionResult.Error.ShouldContain("Bid price not high enough.");
 
             output = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "TEST",
-                    Amount = 200
-                }
+                Amount = 200
             });
-            output.TransactionResult.Error.ShouldContain("Invalid input price symbol.");
+            output.TransactionResult.Error.ShouldContain("Insufficient allowance.");
 
             await Approve(TokenContractUserStub);
 
@@ -658,11 +622,7 @@ namespace Forest.Contracts.Auction
             output = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 200
-                }
+                Amount = 200
             });
             output.TransactionResult.Error.ShouldContain("Insufficient balance");
 
@@ -671,22 +631,14 @@ namespace Forest.Contracts.Auction
             output = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 100
-                }
+                Amount = 100
             });
             output.TransactionResult.Error.ShouldContain("Bid price not high enough.");
 
             await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 200
-                }
+                Amount = 200
             });
 
             var currentBlockTime = BlockTimeProvider.GetBlockTime();
@@ -696,11 +648,7 @@ namespace Forest.Contracts.Auction
             output = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 300
-                }
+                Amount = 300
             });
             output.TransactionResult.Error.ShouldContain("Auction finished. Bid failed.");
         }
@@ -716,11 +664,7 @@ namespace Forest.Contracts.Auction
             await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 150
-                }
+                Amount = 150
             });
             var output = await AuctionContractUserStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
             {
@@ -731,11 +675,7 @@ namespace Forest.Contracts.Auction
             await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 200
-                }
+                Amount = 200
             });
             
             var outputAfter = await AuctionContractUserStub.GetAuctionInfo.CallAsync(new GetAuctionInfoInput
@@ -750,11 +690,7 @@ namespace Forest.Contracts.Auction
             var result = await AuctionContractUserStub.PlaceBid.SendWithExceptionAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 300
-                }
+                Amount = 300
             });
             result.TransactionResult.Error.ShouldContain("Auction finished. Bid failed.");
         }
@@ -870,11 +806,7 @@ namespace Forest.Contracts.Auction
             await AuctionContractUserStub.PlaceBid.SendAsync(new PlaceBidInput
             {
                 AuctionId = auctionId,
-                Price = new Price
-                {
-                    Symbol = "ELF",
-                    Amount = 200
-                }
+                Amount = 200
             });
 
             result = await AuctionContractStub.Claim.SendWithExceptionAsync(new ClaimInput
