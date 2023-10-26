@@ -39,6 +39,17 @@ public partial class ForestContract
         });
         Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Insufficient funds");
 
+        var getTotalEffectiveOfferAmountInput = new GetTotalEffectiveOfferAmountInput()
+        {
+            Symbol = input.Symbol,
+            Address = Context.Sender,
+            Price = input.Price
+        };
+        var getTotalEffectiveOfferAmountOutput = GetTotalEffectiveOfferAmount(getTotalEffectiveOfferAmountInput);
+        var allowance = getTotalEffectiveOfferAmountOutput.Allowance;
+        var totalAmount = getTotalEffectiveOfferAmountOutput.TotalAmount.Add(input.Price.Amount.Mul(input.Quantity));
+        Assert(allowance >= totalAmount, $"Insufficient allowance of {input.Price.Symbol}");
+        
         var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
         Assert(tokenWhiteList.Contains(input.Price.Symbol), $"Price symbol {input.Price.Symbol} not available");
 

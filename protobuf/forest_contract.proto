@@ -86,6 +86,12 @@ service ForestContract {
   rpc GetBizConfig(google.protobuf.Empty) returns (BizConfig){
     option (aelf.is_view) = true;
   }
+  rpc GetTotalEffectiveOfferAmount(GetTotalEffectiveOfferAmountInput) returns (GetTotalEffectiveOfferAmountOutput){
+    option (aelf.is_view) = true;
+  }
+  rpc GetTotalEffectiveListedNFTAmount (GetTotalEffectiveListedNFTAmountInput) returns (GetTotalEffectiveListedNFTAmountOutput) {
+    option (aelf.is_view) = true;
+  }
 }
 
 // Structs.
@@ -400,4 +406,25 @@ message ListedNFTRemoved {
   aelf.Address owner = 3;
   ListDuration duration = 4;
   Price price = 5;
+}
+
+message GetTotalEffectiveOfferAmountInput {
+  string symbol = 1;
+  aelf.Address address = 2;
+  Price price = 3;
+}
+
+message GetTotalEffectiveOfferAmountOutput {
+  int64 allowance = 1;
+  int64 totalAmount = 2;
+}
+
+message GetTotalEffectiveListedNFTAmountInput {
+  string symbol = 1;
+  aelf.Address address = 2;
+}
+
+message GetTotalEffectiveListedNFTAmountOutput {
+  int64 allowance = 1;
+  int64 totalAmount = 2;
 }

@@ -1,3 +1,6 @@
+using AElf.Contracts.MultiToken;
+using AElf.CSharp.Core;
+using AElf.CSharp.Core.Extension;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
@@ -99,5 +102,74 @@ public partial class ForestContract
     public override BizConfig GetBizConfig(Empty input)
     {
         return State.BizConfig.Value;
+    }
+    
+    public override GetTotalEffectiveOfferAmountOutput GetTotalEffectiveOfferAmount(GetTotalEffectiveOfferAmountInput input)
+    {
+        Assert(input.Address != null, $"Invalid param Address");
+        Assert(input.Symbol != null, $"Invalid param Symbol");
+
+        OfferList offerList = State.OfferListMap[input.Symbol][input.Address];
+        var totalAmount = 0L;
+        if (offerList != null)
+        {
+            foreach (var offer in offerList.Value)
+            {
+                if(offer.ExpireTime >= Context.CurrentBlockTime && offer.Price.Symbol == input.Price.Symbol)
+                {
+                    totalAmount.Add(offer.Quantity.Mul(offer.Price.Amount));
+                }
+            }
+        }
+
+        var allowance = State.TokenContract.GetAllowance.Call(new GetAllowanceInput
+        {
+            Symbol = input.Price.Symbol,
+            Owner = input.Address,
+            Spender = Context.Self
+        });
+
+        var getTotalEffectiveOfferAmountOutput = new GetTotalEffectiveOfferAmountOutput()
+        {
+            Allowance = allowance.Allowance,
+            TotalAmount = totalAmount
+        };
+
+        return getTotalEffectiveOfferAmountOutput;
+    }
+    
+    public override GetTotalEffectiveListedNFTAmountOutput GetTotalEffectiveListedNFTAmount(GetTotalEffectiveListedNFTAmountInput input)
+    {
+        Assert(input.Address != null, $"Invalid param Address");
+        Assert(input.Symbol != null, $"Invalid param Symbol");
+
+        var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][input.Address];
+        var totalAmount = 0L;
+        if (listedNftInfoList != null)
+        {
+            foreach (var listedNftInfo in listedNftInfoList.Value)
+            {
+                var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours);
+                if(expireTime >= Context.CurrentBlockTime)
+                {
+                    totalAmount.Add(listedNftInfo.Quantity);
+                }
+            }
+        }
+
+        var allowance = State.TokenContract.GetAllowance.Call(new GetAllowanceInput
+        {
+            Symbol = input.Symbol,
+            Owner = input.Address,
+            Spender = Context.Self
+        });
+    
+        var getTotalEffectiveListedNftAmountOutput = new GetTotalEffectiveListedNFTAmountOutput()
+        {
+            Allowance = allowance.Allowance,
+            TotalAmount = totalAmount
+        };
+
+        return  getTotalEffectiveListedNftAmountOutput;
     }
 }
