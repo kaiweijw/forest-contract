@@ -117,7 +117,7 @@ public partial class ForestContract
             {
                 if(offer.ExpireTime >= Context.CurrentBlockTime && offer.Price.Symbol == input.Price.Symbol)
                 {
-                    totalAmount.Add(offer.Quantity.Mul(offer.Price.Amount));
+                    totalAmount = totalAmount.Add(offer.Quantity.Mul(offer.Price.Amount));
                 }
             }
         }
@@ -152,7 +152,7 @@ public partial class ForestContract
                 var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours);
                 if(expireTime >= Context.CurrentBlockTime)
                 {
-                    totalAmount.Add(listedNftInfo.Quantity);
+                    totalAmount = totalAmount.Add(listedNftInfo.Quantity);
                 }
             }
         }

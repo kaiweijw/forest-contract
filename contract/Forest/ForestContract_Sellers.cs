@@ -40,7 +40,7 @@ public partial class ForestContract
         var getTotalEffectiveListedNftAmountOutput = GetTotalEffectiveListedNFTAmount(getTotalEffectiveListedNftAmountInput);
         var allowance = getTotalEffectiveListedNftAmountOutput.Allowance;
         var totalAmount = getTotalEffectiveListedNftAmountOutput.TotalAmount.Add(input.Quantity);
-        Assert(allowance >= totalAmount, $"Insufficient allowance of {input.Price.Symbol}");
+        Assert(allowance >= totalAmount, $"Insufficient allowance of {input.Symbol}");
         
         var duration = AdjustListDuration(input.Duration);
         var whitelists = input.Whitelists;
@@ -230,13 +230,15 @@ public partial class ForestContract
         });
         Assert(balance.Balance >= input.Quantity, "Insufficient NFT balance.");
 
-        var allowance = State.TokenContract.GetAllowance.Call(new GetAllowanceInput
+        var getTotalEffectiveListedNftAmountInput = new GetTotalEffectiveListedNFTAmountInput()
         {
             Symbol = input.Symbol,
-            Owner = Context.Sender,
-            Spender = Context.Self
-        });
-        Assert(allowance.Allowance >= input.Quantity, $"Insufficient allowance of {input.Price.Symbol}");
+            Address = Context.Sender
+        };
+        var getTotalEffectiveListedNftAmountOutput = GetTotalEffectiveListedNFTAmount(getTotalEffectiveListedNftAmountInput);
+        var allowance = getTotalEffectiveListedNftAmountOutput.Allowance;
+        var amount = getTotalEffectiveListedNftAmountOutput.TotalAmount.Add(input.Quantity);
+        Assert(allowance >= amount, $"Insufficient allowance of {input.Symbol}");
         
         var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
