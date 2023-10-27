@@ -235,4 +235,17 @@ public partial class ForestContract
         totalAmount = totalAmount.Add(amount);
         State.OfferTotalAmountMap[address][priceSymbol] = totalAmount < 0? 0: totalAmount;
     }
+    
+    private void AssertAllowanceInsufficient(string symbol, Address address, long currentAmount)
+    {
+        var getTotalEffectiveListedNftAmountInput = new GetTotalEffectiveListedNFTAmountInput()
+        {
+            Symbol = symbol,
+            Address = address
+        };
+        var getTotalEffectiveListedNftAmountOutput = GetTotalEffectiveListedNFTAmount(getTotalEffectiveListedNftAmountInput);
+        var allowance = getTotalEffectiveListedNftAmountOutput.Allowance;
+        var amount = getTotalEffectiveListedNftAmountOutput.TotalAmount.Add(currentAmount);
+        Assert(allowance >= amount, $"Insufficient allowance of {symbol}");
+    }
 }

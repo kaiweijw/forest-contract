@@ -134,7 +134,7 @@ public partial class ForestContract
 
         var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][input.Address];
         var totalAmount = 0L;
-        if (listedNftInfoList != null)
+        if (listedNftInfoList != null && listedNftInfoList.Value.Count > 0)
         {
             foreach (var listedNftInfo in listedNftInfoList.Value)
             {
