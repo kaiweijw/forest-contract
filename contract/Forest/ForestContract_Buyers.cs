@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
@@ -39,15 +40,14 @@ public partial class ForestContract
         });
         Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Insufficient funds");
 
-        var getTotalEffectiveOfferAmountInput = new GetTotalEffectiveOfferAmountInput()
+        var getTotalOfferAmountInput = new GetTotalOfferAmountInput()
         {
-            Symbol = input.Symbol,
             Address = Context.Sender,
-            Price = input.Price
+            PriceSymbol = input.Price.Symbol
         };
-        var getTotalEffectiveOfferAmountOutput = GetTotalEffectiveOfferAmount(getTotalEffectiveOfferAmountInput);
-        var allowance = getTotalEffectiveOfferAmountOutput.Allowance;
-        var totalAmount = getTotalEffectiveOfferAmountOutput.TotalAmount.Add(input.Price.Amount.Mul(input.Quantity));
+        var getTotalOfferAmountOutput = GetTotalOfferAmount(getTotalOfferAmountInput);
+        var allowance = getTotalOfferAmountOutput.Allowance;
+        var totalAmount = getTotalOfferAmountOutput.TotalAmount.Add(input.Price.Amount.Mul(input.Quantity));
         Assert(allowance >= totalAmount, $"Insufficient allowance of {input.Price.Symbol}");
         
         var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
@@ -255,7 +255,8 @@ public partial class ForestContract
 
         OfferList offerList;
         var newOfferList = new OfferList();
-
+        var cancelOfferMap = new Dictionary<string, long>();
+        
         // Admin can remove expired offer.
         if (input.OfferFrom != null && input.OfferFrom != Context.Sender)
         {
@@ -265,6 +266,7 @@ public partial class ForestContract
 
             if (offerList != null)
             {
+                
                 foreach (var offer in offerList.Value)
                 {
                     if (offer.ExpireTime >= Context.CurrentBlockTime)
@@ -273,6 +275,8 @@ public partial class ForestContract
                     }
                     else
                     {
+                        var amount = cancelOfferMap[offer.Price.Symbol];
+                        cancelOfferMap[offer.Price.Symbol] = amount + offer.Quantity.Mul(offer.Price.Amount);
                         Context.Fire(new OfferRemoved
                         {
                             Symbol = input.Symbol,
@@ -284,6 +288,11 @@ public partial class ForestContract
                 }
 
                 State.OfferListMap[input.Symbol][input.OfferFrom] = newOfferList;
+                foreach (var cancelOffer in cancelOfferMap)
+                {
+                    ModifyOfferTotalAmount(input.OfferFrom, cancelOffer.Key, -cancelOffer.Value);
+                }
+                
             }
 
             return new Empty();
@@ -315,6 +324,8 @@ public partial class ForestContract
                 }
                 else
                 {
+                    var amount = cancelOfferMap[offerList.Value[i].Price.Symbol];
+                    cancelOfferMap[offerList.Value[i].Price.Symbol] = amount + offerList.Value[i].Quantity.Mul(offerList.Value[i].Price.Amount);
                     Context.Fire(new OfferRemoved
                     {
                         Symbol = input.Symbol,
@@ -324,7 +335,10 @@ public partial class ForestContract
                     });
                 }
             }
-
+            foreach (var cancelOffer in cancelOfferMap)
+            {
+                ModifyOfferTotalAmount(input.OfferFrom, cancelOffer.Key, -cancelOffer.Value);
+            }
             Context.Fire(new OfferCanceled
             {
                 Symbol = input.Symbol,
@@ -338,7 +352,7 @@ public partial class ForestContract
         }
 
         State.OfferListMap[input.Symbol][Context.Sender] = newOfferList;
-
+       
         return new Empty();
     }
 
@@ -414,7 +428,7 @@ public partial class ForestContract
         }
 
         State.OfferListMap[input.Symbol][Context.Sender] = offerList;
-
+        ModifyOfferTotalAmount(Context.Sender, input.Price.Symbol, input.Price.Amount.Mul(input.Quantity));
         var addressList = State.OfferAddressListMap[input.Symbol] ?? new AddressList();
 
         if (!addressList.Value.Contains(Context.Sender))

@@ -312,6 +312,7 @@ public partial class ForestContract
             PurchaseSymbol = price.Symbol,
             PurchaseAmount = totalAmount,
         });
+        ModifyOfferTotalAmount(input.OfferFrom, input.Price.Symbol, input.Quantity.Mul(input.Price.Amount));
         return new Empty();
     }
 }

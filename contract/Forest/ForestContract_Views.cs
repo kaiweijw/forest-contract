@@ -104,38 +104,27 @@ public partial class ForestContract
         return State.BizConfig.Value;
     }
     
-    public override GetTotalEffectiveOfferAmountOutput GetTotalEffectiveOfferAmount(GetTotalEffectiveOfferAmountInput input)
+    public override GetTotalOfferAmountOutput GetTotalOfferAmount(GetTotalOfferAmountInput input)
     {
         Assert(input.Address != null, $"Invalid param Address");
-        Assert(input.Symbol != null, $"Invalid param Symbol");
-
-        OfferList offerList = State.OfferListMap[input.Symbol][input.Address];
-        var totalAmount = 0L;
-        if (offerList != null)
-        {
-            foreach (var offer in offerList.Value)
-            {
-                if(offer.ExpireTime >= Context.CurrentBlockTime && offer.Price.Symbol == input.Price.Symbol)
-                {
-                    totalAmount = totalAmount.Add(offer.Quantity.Mul(offer.Price.Amount));
-                }
-            }
-        }
-
+        Assert(input.PriceSymbol != null, $"Invalid param PriceSymbol");
+        
+        var totalAmount= State.OfferTotalAmountMap[input.Address][input.PriceSymbol];
+        
         var allowance = State.TokenContract.GetAllowance.Call(new GetAllowanceInput
         {
-            Symbol = input.Price.Symbol,
+            Symbol = input.PriceSymbol,
             Owner = input.Address,
             Spender = Context.Self
         });
 
-        var getTotalEffectiveOfferAmountOutput = new GetTotalEffectiveOfferAmountOutput()
+        var getTotalOfferAmountOutput = new GetTotalOfferAmountOutput()
         {
             Allowance = allowance.Allowance,
             TotalAmount = totalAmount
         };
 
-        return getTotalEffectiveOfferAmountOutput;
+        return getTotalOfferAmountOutput;
     }
     
     public override GetTotalEffectiveListedNFTAmountOutput GetTotalEffectiveListedNFTAmount(GetTotalEffectiveListedNFTAmountInput input)

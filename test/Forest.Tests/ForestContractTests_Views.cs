@@ -264,14 +264,13 @@ public class ForestContractTests_Views : ForestContractTestBase
             offerList.Value.Count.ShouldBe(3);
             
             //query view:GetTotalEffectiveOfferAmountTest
-            var totalEffectiveOfferAmount = await BuyerForestContractStub.GetTotalEffectiveOfferAmount.CallAsync(new GetTotalEffectiveOfferAmountInput()
+            var totalOfferAmount = await BuyerForestContractStub.GetTotalOfferAmount.CallAsync(new GetTotalOfferAmountInput()
             {
-                Symbol = NftSymbol,
                 Address = User2Address,
-                Price = offerPrice,
+                PriceSymbol = offerPrice.Symbol,
             });
-            totalEffectiveOfferAmount.TotalAmount.ShouldBe(offerPrice.Amount*offerQuantity*3);
-            totalEffectiveOfferAmount.Allowance.ShouldBe(approveQuantity*dealQuantity*3L);
+            totalOfferAmount.TotalAmount.ShouldBe(offerPrice.Amount*offerQuantity*3);
+            totalOfferAmount.Allowance.ShouldBe(approveQuantity*dealQuantity*3L);
         }
         #endregion
     }
@@ -349,13 +348,13 @@ public class ForestContractTests_Views : ForestContractTestBase
             offerList.Value.Count.ShouldBe(3);
             
             //query view:GetTotalEffectiveOfferAmountTest
-            var totalEffectiveOfferAmount = await BuyerForestContractStub.GetTotalEffectiveOfferAmount.CallAsync(new GetTotalEffectiveOfferAmountInput()
+            var totalEffectiveOfferAmount = await BuyerForestContractStub.GetTotalOfferAmount.CallAsync(new GetTotalOfferAmountInput()
             {
-                Symbol = NftSymbol,
                 Address = User2Address,
-                Price = offerPrice,
+                PriceSymbol = offerPrice.Symbol,
             });
-            totalEffectiveOfferAmount.TotalAmount.ShouldBe(offerPrice.Amount*offerQuantity);
+            //contain expire offer 
+            totalEffectiveOfferAmount.TotalAmount.ShouldBe(offerPrice.Amount*offerQuantity*3L);
             totalEffectiveOfferAmount.Allowance.ShouldBe(approveQuantity*dealQuantity*3L);
         }
         #endregion
@@ -421,11 +420,10 @@ public class ForestContractTests_Views : ForestContractTestBase
             try
             {
                 //query view:GetTotalEffectiveOfferAmountTest
-                var totalEffectiveOfferAmount = await BuyerForestContractStub.GetTotalEffectiveOfferAmount.CallAsync(new GetTotalEffectiveOfferAmountInput()
+                var totalEffectiveOfferAmount = await BuyerForestContractStub.GetTotalOfferAmount.CallAsync(new GetTotalOfferAmountInput()
                 {
-                    Symbol = NftSymbol,
                     //Address = User2Address,
-                    Price = offerPrice,
+                    PriceSymbol = offerPrice.Symbol,
                 });
             }catch(Exception e)
             {

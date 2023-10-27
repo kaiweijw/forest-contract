@@ -228,4 +228,11 @@ public partial class ForestContract
         }
         return whitelistId;
     }
+    
+    private void ModifyOfferTotalAmount(Address address, string priceSymbol, long amount)
+    {
+        var totalAmount= State.OfferTotalAmountMap[address][priceSymbol];
+        totalAmount = totalAmount.Add(amount);
+        State.OfferTotalAmountMap[address][priceSymbol] = totalAmount < 0? 0: totalAmount;
+    }
 }
