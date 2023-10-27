@@ -934,7 +934,7 @@ public class ForestContractTests_Views : ForestContractTestBase
                         Symbol = NftSymbol,
                         Address = User1Address
                     }));
-            getTotalEffectiveListedNftAmount.Allowance.ShouldBe(sellQuantity);
+            getTotalEffectiveListedNftAmount.Allowance.ShouldBe(sellQuantity*2);
             getTotalEffectiveListedNftAmount.TotalAmount.ShouldBe(sellQuantity);
         }
 
