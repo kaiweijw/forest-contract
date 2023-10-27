@@ -298,6 +298,40 @@ public class ForestContractTests_Views : ForestContractTestBase
     }
 
     [Fact]
+    //admin:SetOfferTotalAmount
+    public async void GetTotalOfferAmountTest_Case6()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        var offerPrice = Elf(5_0000_0000);
+        var totalAmount = 1500;
+        #region Admin set
+        {
+            await AdminForestContractStub.SetOfferTotalAmount.SendAsync(
+                new SetOfferTotalAmountInput()
+                {
+                    Address = User2Address,
+                    PriceSymbol = offerPrice.Symbol,
+                    TotalAmount = totalAmount
+                });
+        }
+
+        #endregion
+        #region get
+        {
+            var totalOfferAmount = await BuyerForestContractStub.GetTotalOfferAmount.CallAsync(
+                new GetTotalOfferAmountInput()
+                {
+                    Address = User2Address,
+                    PriceSymbol = offerPrice.Symbol,
+                });
+            totalOfferAmount.TotalAmount.ShouldBe(totalAmount);
+            totalOfferAmount.Allowance.ShouldBe(0);
+        }
+
+        #endregion
+    }
+    [Fact]
     //seller no approve,no listWithPrice
     public async void GetTotalEffectiveListedNFTAmount_Case1()
     {

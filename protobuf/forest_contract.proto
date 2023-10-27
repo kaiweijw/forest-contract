@@ -54,6 +54,10 @@ service ForestContract {
   rpc SetBizConfig(BizConfig) returns (google.protobuf.Empty){
   }
 
+  rpc SetOfferTotalAmount(SetOfferTotalAmountInput) returns (google.protobuf.Empty){
+    
+  }
+
   // Views.
   rpc GetListedNFTInfoList (GetListedNFTInfoListInput) returns (ListedNFTInfoList) {
     option (aelf.is_view) = true;
@@ -92,6 +96,7 @@ service ForestContract {
   rpc GetTotalEffectiveListedNFTAmount (GetTotalEffectiveListedNFTAmountInput) returns (GetTotalEffectiveListedNFTAmountOutput) {
     option (aelf.is_view) = true;
   }
+  
 }
 
 // Structs.
@@ -426,6 +431,12 @@ message GetTotalEffectiveListedNFTAmountInput {
 message GetTotalEffectiveListedNFTAmountOutput {
   int64 allowance = 1;
   int64 totalAmount = 2;
+}
+
+message SetOfferTotalAmountInput{
+  aelf.Address address = 1;
+  string priceSymbol = 2;
+  int64 totalAmount = 3;
 }
 
 
