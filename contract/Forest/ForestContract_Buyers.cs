@@ -275,7 +275,9 @@ public partial class ForestContract
                     }
                     else
                     {
-                        var amount = cancelOfferMap[offer.Price.Symbol];
+                        var amount = cancelOfferMap.TryGetValue(offer.Price.Symbol, out var value)
+                            ? value
+                            : 0;
                         cancelOfferMap[offer.Price.Symbol] = amount + offer.Quantity.Mul(offer.Price.Amount);
                         Context.Fire(new OfferRemoved
                         {
@@ -324,7 +326,9 @@ public partial class ForestContract
                 }
                 else
                 {
-                    var amount = cancelOfferMap[offerList.Value[i].Price.Symbol];
+                    var amount = cancelOfferMap.TryGetValue(offerList.Value[i].Price.Symbol, out var value)
+                        ? value
+                        : 0;
                     cancelOfferMap[offerList.Value[i].Price.Symbol] = amount + offerList.Value[i].Quantity.Mul(offerList.Value[i].Price.Amount);
                     Context.Fire(new OfferRemoved
                     {

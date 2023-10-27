@@ -673,14 +673,15 @@ public class ForestContractTests_Deal : ForestContractTestBase
         // after publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-5));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(-1));
-
+        var listQuantity = 5;
+        
         #region ListWithFixedPrice
 
         {
             await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
             {
                 Symbol = NftSymbol,
-                Quantity = 5,
+                Quantity = listQuantity,
                 IsWhitelistAvailable = true,
                 Price = sellPrice,
                 Whitelists = new WhitelistInfoList()
@@ -773,6 +774,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         #region deal
 
         {
+            await UserTokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = listQuantity + dealQuantity });
             var executionResult = await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
             {
                 Symbol = NftSymbol,
@@ -1084,12 +1086,13 @@ public class ForestContractTests_Deal : ForestContractTestBase
         var sellPrice = Elf(5_0000_0000);
         var offerPrice = Elf(5_0000_0000);
         var offerQuantity = 1;
-        var dealQuantity = 1;
+        var dealQuantity = 2;
         var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
 
         #region user buy
 
         {
+            await User3TokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = ForestContractAddress, Symbol = offerPrice.Symbol, Amount = offerPrice.Amount * offerQuantity });
             // user3 make offer to user1
             await Buyer2ForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
@@ -1125,6 +1128,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         {
             try
             {
+                await UserTokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = dealQuantity-1 });
                 await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
                 {
                     Symbol = NftSymbol,
@@ -1305,6 +1309,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
         var offerPrice = Elf(3_0000_0000);
         var offerQuantity = 8;
         var dealQuantity = 7;
+        var listQuantity = 5;
         var serviceFee = dealQuantity * offerPrice.Amount * ServiceFeeRate / 10000;
 
         // after publicTime
@@ -1317,7 +1322,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
             {
                 Symbol = NftSymbol,
-                Quantity = 5,
+                Quantity = listQuantity,
                 IsWhitelistAvailable = true,
                 Price = sellPrice,
                 Whitelists = new WhitelistInfoList()
@@ -1411,6 +1416,8 @@ public class ForestContractTests_Deal : ForestContractTestBase
         {
             try
             {
+                await UserTokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = listQuantity + dealQuantity });
+
                 await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
                 {
                     Symbol = NftSymbol,
@@ -1430,6 +1437,199 @@ public class ForestContractTests_Deal : ForestContractTestBase
             {
                 e.Message.ShouldContain("Need to delist at least");
             }
+        }
+
+        #endregion
+    }
+
+    [Fact]
+    //deal nft allowance enough
+    public async void Deal_Allowance_Case1()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+
+
+        var sellPrice = Elf(5_0000_0000);
+        var offerPrice = Elf(5_0000_0000);
+        var offerQuantity = 2;
+        var dealQuantity = 2;
+        var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
+
+        #region user buy
+
+        {
+            // user2 make offer to user1
+            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = offerQuantity,
+                Price = offerPrice,
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
+            });
+        }
+
+        #endregion
+
+        #region check offer list
+
+        {
+            // list offers just sent
+            var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
+            {
+                Symbol = NftSymbol,
+                Address = User2Address,
+            }).Result.Output;
+            offerList.Value.Count.ShouldBeGreaterThan(0);
+            offerList.Value[0].To.ShouldBe(User1Address);
+            offerList.Value[0].From.ShouldBe(User2Address);
+            offerList.Value[0].Quantity.ShouldBe(offerQuantity);
+        }
+
+        #endregion
+
+        var sellerNftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+        {
+            Symbol = NftSymbol,
+            Owner = User1Address
+        });
+        
+        #region deal
+
+        {
+            await UserTokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = dealQuantity });
+            var executionResult = await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
+            {
+                Symbol = NftSymbol,
+                Price = offerPrice,
+                OfferFrom = User2Address,
+                Quantity = dealQuantity
+            });
+
+            var log1 = OfferRemoved.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(OfferRemoved))
+                .NonIndexed);
+            log1.OfferFrom.ShouldBe(User2Address);
+            log1.Symbol.ShouldBe(NftSymbol);
+            log1.ExpireTime.ShouldNotBeNull();
+            log1.OfferTo.ShouldBe(User1Address);
+
+            var log2 = Sold.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(Sold))
+                .NonIndexed);
+            log2.NftSymbol.ShouldBe(NftSymbol);
+            log2.NftFrom.ShouldBe(User1Address);
+            log2.NftQuantity.ShouldBe(dealQuantity);
+            log2.PurchaseAmount.ShouldBe(1000000000);
+            log2.NftTo.ShouldBe(User2Address);
+            log2.PurchaseSymbol.ShouldBe("ELF");
+            
+        }
+
+        #endregion
+
+        #region check seller NFT
+
+        {
+            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            nftBalance.Output.Balance.ShouldBe(sellerNftBalance.Output.Balance - dealQuantity);
+        }
+
+        #endregion
+
+        #region check buyer NFT
+
+        {
+            var nftBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User2Address
+            });
+            nftBalance.Output.Balance.ShouldBe(dealQuantity);
+        }
+
+        #endregion
+        
+    }
+    
+     [Fact]
+    //deal nft allowance not enough
+    public async void Deal_Allowance_Case2()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+
+
+        var sellPrice = Elf(5_0000_0000);
+        var offerPrice = Elf(5_0000_0000);
+        var offerQuantity = 2;
+        var dealQuantity = 2;
+        var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
+
+        #region user buy
+
+        {
+            // user2 make offer to user1
+            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = offerQuantity,
+                Price = offerPrice,
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
+            });
+        }
+
+        #endregion
+
+        #region check offer list
+
+        {
+            // list offers just sent
+            var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
+            {
+                Symbol = NftSymbol,
+                Address = User2Address,
+            }).Result.Output;
+            offerList.Value.Count.ShouldBeGreaterThan(0);
+            offerList.Value[0].To.ShouldBe(User1Address);
+            offerList.Value[0].From.ShouldBe(User2Address);
+            offerList.Value[0].Quantity.ShouldBe(offerQuantity);
+        }
+
+        #endregion
+
+        var sellerNftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+        {
+            Symbol = NftSymbol,
+            Owner = User1Address
+        });
+        
+        #region deal
+
+        {
+            await UserTokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = dealQuantity-1 });
+            var errorMessage = "";
+            try
+            {
+                var executionResult = await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
+                {
+                    Symbol = NftSymbol,
+                    Price = offerPrice,
+                    OfferFrom = User2Address,
+                    Quantity = dealQuantity
+                });
+            }
+            catch (Exception e)
+            {
+                errorMessage = e.Message;
+            }
+            errorMessage.ShouldContain("Insufficient allowance");
         }
 
         #endregion
