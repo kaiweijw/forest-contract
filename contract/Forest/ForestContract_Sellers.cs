@@ -244,7 +244,7 @@ public partial class ForestContract
 
         Assert(offer.Quantity >= input.Quantity, "Deal quantity exceeded.");
         offer.Quantity = offer.Quantity.Sub(input.Quantity);
-        ModifyOfferTotalAmount(input.OfferFrom, input.Price.Symbol, input.Quantity.Mul(input.Price.Amount));
+        ModifyOfferTotalAmount(input.OfferFrom, input.Price.Symbol, -input.Quantity.Mul(input.Price.Amount));
         if (offer.Quantity == 0)
         {
             State.OfferListMap[input.Symbol][input.OfferFrom].Value.Remove(offer);
