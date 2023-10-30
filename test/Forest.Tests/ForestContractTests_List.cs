@@ -1180,4 +1180,61 @@ public class ForestContractListTests : ForestContractTestBase
             errorMessage.ShouldContain("Insufficient allowance");
         }
     }
+    
+    [Fact]
+    //seller nft allownce equal enough
+    public async void ListWithFixedPrice15Test()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        var sellPrice = Elf(3);
+        var listQuantity = 2;
+        {
+            await UserTokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = listQuantity});
+            var executionResult = await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            {
+                Symbol = NftSymbol,
+                Quantity = listQuantity,
+                IsWhitelistAvailable = true,
+                Price = sellPrice
+            });
+            var log1 = ListedNFTAdded.Parser
+                .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(ListedNFTAdded))
+                    .NonIndexed);
+            log1.Owner.ShouldBe(User1Address);
+            log1.Quantity.ShouldBe(listQuantity);
+            log1.Symbol.ShouldBe(NftSymbol);
+            log1.Price.Symbol.ShouldBe(ElfSymbol);
+            log1.Price.Amount.ShouldBe(sellPrice.Amount);
+            log1.Duration.StartTime.ShouldNotBeNull();
+        }
+    }
+    [Fact]
+    //seller nft allownce gretter enough
+    public async void ListWithFixedPrice16Test()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+        var sellPrice = Elf(3);
+        var listQuantity = 2;
+        {
+            await UserTokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = listQuantity+1});
+            var executionResult = await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput
+            {
+                Symbol = NftSymbol,
+                Quantity = listQuantity,
+                IsWhitelistAvailable = true,
+                Price = sellPrice
+            });
+            var log1 = ListedNFTAdded.Parser
+                .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(ListedNFTAdded))
+                    .NonIndexed);
+            log1.Owner.ShouldBe(User1Address);
+            log1.Quantity.ShouldBe(listQuantity);
+            log1.Symbol.ShouldBe(NftSymbol);
+            log1.Price.Symbol.ShouldBe(ElfSymbol);
+            log1.Price.Amount.ShouldBe(sellPrice.Amount);
+            log1.Duration.StartTime.ShouldNotBeNull();
+        }
+    }
 }
