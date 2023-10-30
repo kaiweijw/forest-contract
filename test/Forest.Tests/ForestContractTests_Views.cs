@@ -768,7 +768,7 @@ public class ForestContractTests_Views : ForestContractTestBase
                 errorMessgae = e.Message;
             }
 
-            errorMessgae.ShouldContain("Operation failed. The seller");
+            errorMessgae.ShouldContain("The allowance you set is less than required. Please reset it.");
 
             var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
                 new GetListedNFTInfoListInput
@@ -800,7 +800,7 @@ public class ForestContractTests_Views : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.Message.ShouldContain("Operation failed. The seller");
+                e.Message.ShouldContain("The allowance you set is less than required. Please reset it.");
             }
         }
 

@@ -48,7 +48,7 @@ public partial class ForestContract
         var getTotalOfferAmountOutput = GetTotalOfferAmount(getTotalOfferAmountInput);
         var allowance = getTotalOfferAmountOutput.Allowance;
         var totalAmount = getTotalOfferAmountOutput.TotalAmount.Add(input.Price.Amount.Mul(input.Quantity));
-        Assert(allowance >= totalAmount, $"Operation failed. The buyer's allowance for {input.Price.Symbol} is insufficient. You can wait for the buyer to reset allowance or explore other offers to accept.");
+        Assert(allowance >= totalAmount, $"The allowance you set is less than required. Please reset it.");
         
         var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
         Assert(tokenWhiteList.Contains(input.Price.Symbol), $"Price symbol {input.Price.Symbol} not available");

@@ -1849,7 +1849,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
             {
                 errorMessage = e.Message;
             }
-            errorMessage.ShouldContain("Operation failed. The buyer");
+            errorMessage.ShouldContain("The allowance you set is less than required. Please reset it.");
         }
         #endregion
       
@@ -2082,7 +2082,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
             {
                 errorMessage = e.Message;
             }
-            errorMessage.ShouldContain("Operation failed. The buyer");
+            errorMessage.ShouldContain("The allowance you set is less than required. Please reset it.");
         }
         
         #endregion
