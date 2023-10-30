@@ -1849,7 +1849,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
             {
                 errorMessage = e.Message;
             }
-            errorMessage.ShouldContain("Insufficient allowance");
+            errorMessage.ShouldContain("Operation failed. The buyer");
         }
         #endregion
       
@@ -2082,7 +2082,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
             {
                 errorMessage = e.Message;
             }
-            errorMessage.ShouldContain("Insufficient allowance");
+            errorMessage.ShouldContain("Operation failed. The buyer");
         }
         
         #endregion
@@ -2169,7 +2169,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
             {
                 errorMessage = e.Message;
             }
-            errorMessage.ShouldContain("Insufficient allowance");
+            errorMessage.ShouldContain("[TransferFrom]Insufficient allowance");
         }
         
         #endregion

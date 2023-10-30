@@ -1177,7 +1177,7 @@ public class ForestContractListTests : ForestContractTestBase
             {
                 errorMessage = e.Message;
             }
-            errorMessage.ShouldContain("Insufficient allowance");
+            errorMessage.ShouldContain("Operation failed. The seller");
         }
     }
     

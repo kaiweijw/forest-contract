@@ -246,6 +246,6 @@ public partial class ForestContract
         var getTotalEffectiveListedNftAmountOutput = GetTotalEffectiveListedNFTAmount(getTotalEffectiveListedNftAmountInput);
         var allowance = getTotalEffectiveListedNftAmountOutput.Allowance;
         var amount = getTotalEffectiveListedNftAmountOutput.TotalAmount.Add(currentAmount);
-        Assert(allowance >= amount, $"Insufficient allowance of {symbol}");
+        Assert(allowance >= amount, $"Operation failed. The seller's allowance for {symbol} is insufficient. You can wait for the seller to reset allowance or explore other NFTs you like.");
     }
 }

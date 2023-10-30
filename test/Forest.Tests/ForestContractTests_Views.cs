@@ -768,7 +768,7 @@ public class ForestContractTests_Views : ForestContractTestBase
                 errorMessgae = e.Message;
             }
 
-            errorMessgae.ShouldContain("Insufficient allowance of " + NftSymbol);
+            errorMessgae.ShouldContain("Operation failed. The seller");
 
             var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
                 new GetListedNFTInfoListInput
@@ -800,7 +800,7 @@ public class ForestContractTests_Views : ForestContractTestBase
             }
             catch (Exception e)
             {
-                e.Message.ShouldContain("Insufficient allowance of " + NftSymbol);
+                e.Message.ShouldContain("Operation failed. The seller");
             }
         }
 
