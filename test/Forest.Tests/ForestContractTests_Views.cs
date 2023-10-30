@@ -994,7 +994,7 @@ public class ForestContractTests_Views : ForestContractTestBase
             
             var offerList2 = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
             {
-                Symbol = NftSymbol,
+                Symbol = NftSymbol2,
                 Address = User2Address,
             }).Result.Output;
             offerList2.Value.Count.ShouldBe(1);
