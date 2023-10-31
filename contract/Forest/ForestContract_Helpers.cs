@@ -239,35 +239,21 @@ public partial class ForestContract
     
     private void AssertAllowanceInsufficient(string symbol, Address address, long currentAmount)
     {
-        var getTotalEffectiveListedNftAmountOutput = GetEffectiveListedNFTTotalAmount(address, symbol);
-        var allowance = getTotalEffectiveListedNftAmountOutput.Allowance;
-        var amount = getTotalEffectiveListedNftAmountOutput.TotalAmount.Add(currentAmount);
+        var getTotalEffectiveListedNftAmount = GetEffectiveListedNFTTotalAmount(address, symbol);
+        var allowance = GetAllowance(address, symbol);
+        var amount = getTotalEffectiveListedNftAmount.Add(currentAmount);
         Assert(allowance >= amount, $"The allowance you set is less than required. Please reset it.");
     }
     
-    private GetTotalOfferAmountOutput GetOfferTotalAmount(Address address, string symbol)
+    private long GetOfferTotalAmount(Address address, string symbol)
     {
         Assert(address != null, $"Invalid param Address");
         Assert(symbol != null, $"Invalid param PriceSymbol");
         
         var totalAmount= State.OfferTotalAmountMap[address][symbol];
-        
-        var allowance = State.TokenContract.GetAllowance.Call(new GetAllowanceInput
-        {
-            Symbol = symbol,
-            Owner = address,
-            Spender = Context.Self
-        });
-
-        var getTotalOfferAmountOutput = new GetTotalOfferAmountOutput()
-        {
-            Allowance = allowance.Allowance,
-            TotalAmount = totalAmount
-        };
-
-        return getTotalOfferAmountOutput;
+        return totalAmount;
     }
-    private GetTotalEffectiveListedNFTAmountOutput GetEffectiveListedNFTTotalAmount(Address address, string symbol)
+    private long GetEffectiveListedNFTTotalAmount(Address address, string symbol)
     {
         Assert(address != null, $"Invalid param Address");
         Assert(symbol != null, $"Invalid param Symbol");
@@ -285,20 +271,19 @@ public partial class ForestContract
                 }
             }
         }
+        return  totalAmount;
+    }
 
+    private long GetAllowance(Address address, string symbol)
+    {
+        Assert(address != null, $"Invalid param Address");
+        Assert(symbol != null, $"Invalid param Symbol");
         var allowance = State.TokenContract.GetAllowance.Call(new GetAllowanceInput
         {
             Symbol = symbol,
             Owner = address,
             Spender = Context.Self
         });
-    
-        var getTotalEffectiveListedNftAmountOutput = new GetTotalEffectiveListedNFTAmountOutput()
-        {
-            Allowance = allowance.Allowance,
-            TotalAmount = totalAmount
-        };
-
-        return  getTotalEffectiveListedNftAmountOutput;
+        return allowance?.Allowance ?? 0;
     }
 }

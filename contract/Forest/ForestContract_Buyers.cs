@@ -41,8 +41,8 @@ public partial class ForestContract
         Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Insufficient funds");
         
         var getTotalOfferAmountOutput = GetOfferTotalAmount(Context.Sender, input.Price.Symbol);
-        var allowance = getTotalOfferAmountOutput.Allowance;
-        var totalAmount = getTotalOfferAmountOutput.TotalAmount.Add(input.Price.Amount.Mul(input.Quantity));
+        var allowance = GetAllowance(Context.Sender, input.Price.Symbol);
+        var totalAmount = getTotalOfferAmountOutput.Add(input.Price.Amount.Mul(input.Quantity));
         Assert(allowance >= totalAmount, $"The allowance you set is less than required. Please reset it.");
         
         var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;

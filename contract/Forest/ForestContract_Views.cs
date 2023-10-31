@@ -108,13 +108,27 @@ public partial class ForestContract
     {
         Assert(input.Address != null, $"Invalid param Address");
         Assert(input.PriceSymbol != null, $"Invalid param PriceSymbol");
-        return GetOfferTotalAmount(input.Address, input.PriceSymbol);
+        var totalAmount = GetOfferTotalAmount(input.Address, input.PriceSymbol);
+        var allowance = GetAllowance(input.Address, input.PriceSymbol);
+        var getTotalOfferAmountOutput = new GetTotalOfferAmountOutput()
+        {
+            Allowance = allowance,
+            TotalAmount = totalAmount
+        };
+        return getTotalOfferAmountOutput;
     }
     
     public override GetTotalEffectiveListedNFTAmountOutput GetTotalEffectiveListedNFTAmount(GetTotalEffectiveListedNFTAmountInput input)
     {
         Assert(input.Address != null, $"Invalid param Address");
         Assert(input.Symbol != null, $"Invalid param Symbol");
-        return GetEffectiveListedNFTTotalAmount(input.Address, input.Symbol);
+        var totalAmount = GetEffectiveListedNFTTotalAmount(input.Address, input.Symbol);
+        var allowance = GetAllowance(input.Address, input.Symbol);
+        var getTotalEffectiveListedNftAmountOutput = new GetTotalEffectiveListedNFTAmountOutput()
+        {
+            Allowance = allowance,
+            TotalAmount = totalAmount
+        };
+        return getTotalEffectiveListedNftAmountOutput;
     }
 }
