@@ -2,6 +2,7 @@ using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
+using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Forest.Whitelist;
@@ -238,14 +239,66 @@ public partial class ForestContract
     
     private void AssertAllowanceInsufficient(string symbol, Address address, long currentAmount)
     {
-        var getTotalEffectiveListedNftAmountInput = new GetTotalEffectiveListedNFTAmountInput()
-        {
-            Symbol = symbol,
-            Address = address
-        };
-        var getTotalEffectiveListedNftAmountOutput = GetTotalEffectiveListedNFTAmount(getTotalEffectiveListedNftAmountInput);
+        var getTotalEffectiveListedNftAmountOutput = GetEffectiveListedNFTTotalAmount(address, symbol);
         var allowance = getTotalEffectiveListedNftAmountOutput.Allowance;
         var amount = getTotalEffectiveListedNftAmountOutput.TotalAmount.Add(currentAmount);
         Assert(allowance >= amount, $"The allowance you set is less than required. Please reset it.");
+    }
+    
+    private GetTotalOfferAmountOutput GetOfferTotalAmount(Address address, string symbol)
+    {
+        Assert(address != null, $"Invalid param Address");
+        Assert(symbol != null, $"Invalid param PriceSymbol");
+        
+        var totalAmount= State.OfferTotalAmountMap[address][symbol];
+        
+        var allowance = State.TokenContract.GetAllowance.Call(new GetAllowanceInput
+        {
+            Symbol = symbol,
+            Owner = address,
+            Spender = Context.Self
+        });
+
+        var getTotalOfferAmountOutput = new GetTotalOfferAmountOutput()
+        {
+            Allowance = allowance.Allowance,
+            TotalAmount = totalAmount
+        };
+
+        return getTotalOfferAmountOutput;
+    }
+    private GetTotalEffectiveListedNFTAmountOutput GetEffectiveListedNFTTotalAmount(Address address, string symbol)
+    {
+        Assert(address != null, $"Invalid param Address");
+        Assert(symbol != null, $"Invalid param Symbol");
+
+        var listedNftInfoList = State.ListedNFTInfoListMap[symbol][address];
+        var totalAmount = 0L;
+        if (listedNftInfoList != null)
+        {
+            foreach (var listedNftInfo in listedNftInfoList.Value)
+            {
+                var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours);
+                if(expireTime >= Context.CurrentBlockTime)
+                {
+                    totalAmount = totalAmount.Add(listedNftInfo.Quantity);
+                }
+            }
+        }
+
+        var allowance = State.TokenContract.GetAllowance.Call(new GetAllowanceInput
+        {
+            Symbol = symbol,
+            Owner = address,
+            Spender = Context.Self
+        });
+    
+        var getTotalEffectiveListedNftAmountOutput = new GetTotalEffectiveListedNFTAmountOutput()
+        {
+            Allowance = allowance.Allowance,
+            TotalAmount = totalAmount
+        };
+
+        return  getTotalEffectiveListedNftAmountOutput;
     }
 }

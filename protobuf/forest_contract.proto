@@ -415,12 +415,12 @@ message ListedNFTRemoved {
 
 message GetTotalOfferAmountInput {
   aelf.Address address = 1;
-  string priceSymbol = 2;
+  string price_symbol = 2;
 }
 
 message GetTotalOfferAmountOutput {
   int64 allowance = 1;
-  int64 totalAmount = 2;
+  int64 total_amount = 2;
 }
 
 message GetTotalEffectiveListedNFTAmountInput {
@@ -430,13 +430,13 @@ message GetTotalEffectiveListedNFTAmountInput {
 
 message GetTotalEffectiveListedNFTAmountOutput {
   int64 allowance = 1;
-  int64 totalAmount = 2;
+  int64 total_amount = 2;
 }
 
 message SetOfferTotalAmountInput{
   aelf.Address address = 1;
-  string priceSymbol = 2;
-  int64 totalAmount = 3;
+  string price_symbol = 2;
+  int64 total_amount = 3;
 }
 
 

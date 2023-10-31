@@ -108,57 +108,13 @@ public partial class ForestContract
     {
         Assert(input.Address != null, $"Invalid param Address");
         Assert(input.PriceSymbol != null, $"Invalid param PriceSymbol");
-        
-        var totalAmount= State.OfferTotalAmountMap[input.Address][input.PriceSymbol];
-        
-        var allowance = State.TokenContract.GetAllowance.Call(new GetAllowanceInput
-        {
-            Symbol = input.PriceSymbol,
-            Owner = input.Address,
-            Spender = Context.Self
-        });
-
-        var getTotalOfferAmountOutput = new GetTotalOfferAmountOutput()
-        {
-            Allowance = allowance.Allowance,
-            TotalAmount = totalAmount
-        };
-
-        return getTotalOfferAmountOutput;
+        return GetOfferTotalAmount(input.Address, input.PriceSymbol);
     }
     
     public override GetTotalEffectiveListedNFTAmountOutput GetTotalEffectiveListedNFTAmount(GetTotalEffectiveListedNFTAmountInput input)
     {
         Assert(input.Address != null, $"Invalid param Address");
         Assert(input.Symbol != null, $"Invalid param Symbol");
-
-        var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][input.Address];
-        var totalAmount = 0L;
-        if (listedNftInfoList != null && listedNftInfoList.Value.Count > 0)
-        {
-            foreach (var listedNftInfo in listedNftInfoList.Value)
-            {
-                var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours);
-                if(expireTime >= Context.CurrentBlockTime)
-                {
-                    totalAmount = totalAmount.Add(listedNftInfo.Quantity);
-                }
-            }
-        }
-
-        var allowance = State.TokenContract.GetAllowance.Call(new GetAllowanceInput
-        {
-            Symbol = input.Symbol,
-            Owner = input.Address,
-            Spender = Context.Self
-        });
-    
-        var getTotalEffectiveListedNftAmountOutput = new GetTotalEffectiveListedNFTAmountOutput()
-        {
-            Allowance = allowance.Allowance,
-            TotalAmount = totalAmount
-        };
-
-        return  getTotalEffectiveListedNftAmountOutput;
+        return GetEffectiveListedNFTTotalAmount(input.Address, input.Symbol);
     }
 }
