@@ -37,18 +37,17 @@ namespace Forest.Contracts.SymbolRegistrar
                 "Invalid symbol length.");
 
             var symbolPartition = symbol.Split(SymbolRegistrarContractConstants.NFTSymbolSeparator);
-            Assert((symbolPartition.Length == 1 || symbolPartition.Length == 2) && symbolPartition[0].All(IsValidCreateSymbolChar), "Invalid symbol.");
+            Assert(symbolPartition.Length == 1 || symbolPartition.Length == 2, "Invalid symbol.");
+            foreach (var c in symbolPartition[0])
+            {
+                Assert(c >= 'A' && c <= 'Z', "Invalid symbol.");
+            }
             if (symbolPartition.Length == 2)
             {
                 Assert( symbolPartition[1] == SymbolRegistrarContractConstants.CollectionSymbolSuffix, "Invalid NFT Symbol");
             }
         }
         
-        private bool IsValidCreateSymbolChar(char character)
-        {
-            return character >= 'A' && character <= 'Z';
-        }
-
         private void AssertPriceListLength(PriceList priceList)
         {
             Assert(priceList?.Value?.Count == SymbolRegistrarContractConstants.MaxSymbolLength,
@@ -74,16 +73,6 @@ namespace Forest.Contracts.SymbolRegistrar
                 Assert(priceItem.Amount > 0, "Invalid amount");
                 tracker[priceItem.SymbolLength - 1] = 1;
             }
-        }
-        
-        private void AssertCanDeal(string symbol)
-        {
-            var tokenInfo = GetTokenInfo(symbol);
-            Assert(tokenInfo.Symbol.Length < 1, "Symbol exists");
-            var seed = State.SymbolSeedMap[symbol];
-            if (seed == null) return;
-            var seedInfo = State.SeedInfoMap[seed];
-            Assert(seedInfo.ExpireTime < Context.CurrentBlockTime.Seconds, "Seed exists");
         }
 
         private PriceItem GetDealPrice(string symbol)
