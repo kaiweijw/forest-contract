@@ -239,10 +239,10 @@ public partial class ForestContract
     
     private void AssertAllowanceInsufficient(string symbol, Address address, long currentAmount)
     {
-        var getTotalEffectiveListedNftAmount = GetEffectiveListedNFTTotalAmount(address, symbol);
+        var amount = GetEffectiveListedNFTTotalAmount(address, symbol);
         var allowance = GetAllowance(address, symbol);
-        var amount = getTotalEffectiveListedNftAmount.Add(currentAmount);
-        Assert(allowance >= amount, $"The allowance you set is less than required. Please reset it.");
+        var totalAmount = amount.Add(currentAmount);
+        Assert(allowance >= totalAmount, $"The allowance you set is less than required. Please reset it.");
     }
     
     private long GetOfferTotalAmount(Address address, string symbol)
