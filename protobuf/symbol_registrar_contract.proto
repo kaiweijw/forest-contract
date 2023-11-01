@@ -93,6 +93,10 @@ service SymbolRegistrarContract {
     rpc GetSeedsPrice(google.protobuf.Empty) returns (GetSeedsPriceOutput) {
         option (aelf.is_view) = true;
     }
+    
+    rpc GetUniqueSeedsExternalPrice(google.protobuf.Empty) returns (GetUniqueSeedsExternalPriceOutput) {
+        option (aelf.is_view) = true;
+    }
 
     rpc GetSpecialSeed(google.protobuf.StringValue) returns (SpecialSeed) {
         option (aelf.is_view) = true;
@@ -200,6 +204,11 @@ message UniqueSeedsExternalPriceInput {
 }
 
 message GetSeedsPriceOutput {
+    PriceList ft_price_list = 1;
+    PriceList nft_price_list = 2;
+}
+
+message GetUniqueSeedsExternalPriceOutput {
     PriceList ft_price_list = 1;
     PriceList nft_price_list = 2;
 }

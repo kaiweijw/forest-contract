@@ -57,6 +57,32 @@ namespace Forest.Contracts.SymbolRegistrar
             };
         }
 
+        public override GetUniqueSeedsExternalPriceOutput GetUniqueSeedsExternalPrice(Empty input)
+        {
+            var ftPriceList = new PriceList();
+            var nftPriceList = new PriceList();
+            for (var i = 0; i < SymbolRegistrarContractConstants.MaxSymbolLength; i++)
+            {
+                var ftPrice = State.UniqueExternalFTPrice[i + 1];
+                if (ftPrice != null)
+                {
+                    ftPriceList.Value.Add(ftPrice);
+                }
+
+                var nftPrice = State.UniqueExternalNFTPrice[i + 1];
+                if (nftPrice != null)
+                {
+                    nftPriceList.Value.Add(nftPrice);
+                }
+            }
+
+            return new GetUniqueSeedsExternalPriceOutput()
+            {
+                FtPriceList = ftPriceList,
+                NftPriceList = nftPriceList,
+            };
+        }
+
         public override SpecialSeed GetSpecialSeed(StringValue input)
         {
             var specialSeed = State.SpecialSeedMap[input.Value];
