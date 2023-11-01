@@ -106,8 +106,6 @@ public partial class ForestContract
     
     public override GetTotalOfferAmountOutput GetTotalOfferAmount(GetTotalOfferAmountInput input)
     {
-        Assert(input.Address != null, $"Invalid param Address");
-        Assert(input.PriceSymbol != null, $"Invalid param PriceSymbol");
         var totalAmount = GetOfferTotalAmount(input.Address, input.PriceSymbol);
         var allowance = GetAllowance(input.Address, input.PriceSymbol);
         var getTotalOfferAmountOutput = new GetTotalOfferAmountOutput()
@@ -120,8 +118,6 @@ public partial class ForestContract
     
     public override GetTotalEffectiveListedNFTAmountOutput GetTotalEffectiveListedNFTAmount(GetTotalEffectiveListedNFTAmountInput input)
     {
-        Assert(input.Address != null, $"Invalid param Address");
-        Assert(input.Symbol != null, $"Invalid param Symbol");
         var totalAmount = GetEffectiveListedNFTTotalAmount(input.Address, input.Symbol);
         var allowance = GetAllowance(input.Address, input.Symbol);
         var getTotalEffectiveListedNftAmountOutput = new GetTotalEffectiveListedNFTAmountOutput()
