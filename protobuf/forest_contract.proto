@@ -54,6 +54,10 @@ service ForestContract {
   rpc SetBizConfig(BizConfig) returns (google.protobuf.Empty){
   }
 
+  rpc SetOfferTotalAmount(SetOfferTotalAmountInput) returns (google.protobuf.Empty){
+    
+  }
+
   // Views.
   rpc GetListedNFTInfoList (GetListedNFTInfoListInput) returns (ListedNFTInfoList) {
     option (aelf.is_view) = true;
@@ -86,6 +90,13 @@ service ForestContract {
   rpc GetBizConfig(google.protobuf.Empty) returns (BizConfig){
     option (aelf.is_view) = true;
   }
+  rpc GetTotalOfferAmount(GetTotalOfferAmountInput) returns (GetTotalOfferAmountOutput){
+    option (aelf.is_view) = true;
+  }
+  rpc GetTotalEffectiveListedNFTAmount (GetTotalEffectiveListedNFTAmountInput) returns (GetTotalEffectiveListedNFTAmountOutput) {
+    option (aelf.is_view) = true;
+  }
+  
 }
 
 // Structs.
@@ -401,3 +412,31 @@ message ListedNFTRemoved {
   ListDuration duration = 4;
   Price price = 5;
 }
+
+message GetTotalOfferAmountInput {
+  aelf.Address address = 1;
+  string price_symbol = 2;
+}
+
+message GetTotalOfferAmountOutput {
+  int64 allowance = 1;
+  int64 total_amount = 2;
+}
+
+message GetTotalEffectiveListedNFTAmountInput {
+  string symbol = 1;
+  aelf.Address address = 2;
+}
+
+message GetTotalEffectiveListedNFTAmountOutput {
+  int64 allowance = 1;
+  int64 total_amount = 2;
+}
+
+message SetOfferTotalAmountInput{
+  aelf.Address address = 1;
+  string price_symbol = 2;
+  int64 total_amount = 3;
+}
+
+

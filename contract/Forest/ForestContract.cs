@@ -115,5 +115,16 @@ namespace Forest
         {
             Assert(State.Admin.Value != null, "Contract not initialized.");
         }
+        
+        public override Empty SetOfferTotalAmount(SetOfferTotalAmountInput input)
+        {
+            AssertSenderIsAdmin();
+            Assert(input.Address != null, $"Invalid param Address");
+            Assert(input.PriceSymbol != null, $"Invalid param PriceSymbol");
+            Assert(input.TotalAmount >= 0, "Invalid param TotalAmount");
+            
+            State.OfferTotalAmountMap[input.Address][input.PriceSymbol] = input.TotalAmount;
+            return new Empty();
+        }
     }
 }
