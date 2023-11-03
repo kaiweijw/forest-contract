@@ -110,6 +110,7 @@ public partial class ForestContract
         var allowance = GetAllowance(input.Address, input.PriceSymbol);
         var getTotalOfferAmountOutput = new GetTotalOfferAmountOutput()
         {
+            Symbol = input.PriceSymbol,
             Allowance = allowance,
             TotalAmount = totalAmount
         };
@@ -122,9 +123,12 @@ public partial class ForestContract
         var allowance = GetAllowance(input.Address, input.Symbol);
         var getTotalEffectiveListedNftAmountOutput = new GetTotalEffectiveListedNFTAmountOutput()
         {
+            Symbol = input.Symbol,
             Allowance = allowance,
             TotalAmount = totalAmount
         };
+        
         return getTotalEffectiveListedNftAmountOutput;
     }
+    
 }
