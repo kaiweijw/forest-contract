@@ -17,7 +17,7 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty AddSpecialSeeds(SpecialSeedList input)
         {
             if (State.Initialized.Value)
-                AssertAdmin();
+                AssertSaleController();
             else
                 AssertContractAuthor();
             Assert(input.Value.Count <= SymbolRegistrarContractConstants.MaxAddSpecialSeedCount, "Seed list max limit exceeded.");
