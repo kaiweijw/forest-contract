@@ -30,6 +30,13 @@ namespace Forest.Contracts.SymbolRegistrar
             AssertContractInitialize();
             Assert(State.Admin.Value == Context.Sender, "No permission.");
         }
+        
+        
+        private void AssertAssociateOrganization()
+        {
+            AssertContractInitialize();
+            Assert(State.AssociateOrganization.Value == Context.Sender, "No permission.");
+        }
 
         private void AssertSymbolPattern(string symbol)
         {

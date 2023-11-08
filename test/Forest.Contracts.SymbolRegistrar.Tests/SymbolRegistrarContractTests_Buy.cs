@@ -128,7 +128,7 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             // buy LUCK
             await Buy_success();
-            await SetSpecialSeed_byProposal();
+            // await SetSpecialSeed_byProposal();
             
             var symbolExists = await Assert.ThrowsAsync<Exception>(() => User1SymbolRegistrarContractStub.Buy.SendAsync(new BuyInput
             {

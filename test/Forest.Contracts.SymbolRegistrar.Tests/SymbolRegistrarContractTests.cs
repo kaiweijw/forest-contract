@@ -1,6 +1,10 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AElf;
+using AElf.Contracts.Association;
 using AElf.Contracts.MultiToken;
+using AElf.Standards.ACS3;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
@@ -24,10 +28,34 @@ namespace Forest.Contracts.SymbolRegistrar
         [Fact]
         public async Task InitializeContract()
         {
+            var organizationMemberList = new OrganizationMemberList();
+            var proposerWhiteList = new ProposerWhiteList();
+            organizationMemberList.OrganizationMembers.Add(User1.Address);
+            organizationMemberList.OrganizationMembers.Add(User2.Address);
+            organizationMemberList.OrganizationMembers.Add(User3.Address);
+            proposerWhiteList.Proposers.Add(User1.Address);
+            proposerWhiteList.Proposers.Add(User2.Address);
+            proposerWhiteList.Proposers.Add(User3.Address);
+            var createOrganizationInput = new CreateOrganizationInput
+            {
+                OrganizationMemberList = organizationMemberList,
+                ProposerWhiteList = proposerWhiteList,
+                CreationToken = HashHelper.ComputeFrom("InitializeContract"),
+                ProposalReleaseThreshold =  new ProposalReleaseThreshold
+                {
+                    MaximalRejectionThreshold = 1,
+                    MinimalApprovalThreshold = 2,
+                    MaximalAbstentionThreshold = 0,
+                    MinimalVoteThreshold = 2
+                },
+            };
+            var organizationAddress = await User1AssociationContractStub.CreateOrganization.SendAsync(createOrganizationInput);
             await AdminSymbolRegistrarContractStub.Initialize.SendAsync(new InitializeInput()
             {
                 ReceivingAccount = Admin.Address,
-                ProxyAccountContractAddress = ProxyAccountContractAddress
+                ProxyAccountContractAddress = ProxyAccountContractAddress,
+                AdministratorAddress = Admin.Address,
+                AssociateOrganizationAddress = organizationAddress.Output
             });
             await AdminSymbolRegistrarContractStub.AddIssueChain.SendAsync(new IssueChainList
             {
@@ -35,6 +63,18 @@ namespace Forest.Contracts.SymbolRegistrar
             });
         }
         
+        async Task<Dictionary<AElf.Types.Address, List<AssociationContractImplContainer.AssociationContractImplStub>>> InitializeAssociateOrganizationAsync()
+        {
+            var dictionary = new Dictionary<Address, List<AssociationContractImplContainer.AssociationContractImplStub>>();
+            await InitializeContract(); 
+            var associateOrganization = await User1SymbolRegistrarContractStub.GetAssociateOrganization.CallAsync(new Empty());
+            var stubs = new List<AssociationContractImplContainer.AssociationContractImplStub>();
+            stubs.Add(User1AssociationContractStub); 
+            stubs.Add(User2AssociationContractStub); 
+            stubs.Add(User3AssociationContractStub);
+            dictionary.Add(associateOrganization, stubs);
+            return dictionary;
+        }
         [Fact]
         public async Task SetSeedsPrice_success()
         {
@@ -57,39 +97,7 @@ namespace Forest.Contracts.SymbolRegistrar
 
         }
         
-        [Fact]
-        public async Task SetSpecialSeed_byProposal()
-        {
-            await InitializeContractIfNecessary();
-
-            // create proposal and approve
-            var result = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
-                new SpecialSeedList
-                {
-                    Value = { _specialUsd, _specialEth }
-                });
-            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
-
-            // logs
-            var logEvent = result.TransactionResult.Logs.First(log => log.Name.Contains(nameof(SpecialSeedAdded)));
-            var specialSeedAdded = SpecialSeedAdded.Parser.ParseFrom(logEvent.NonIndexed);
-            specialSeedAdded.AddList.Value.Count.ShouldBe(2);
-
-            // query seed list and verify
-            var seedUsd = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
-            {
-                Value = _specialUsd.Symbol
-            });
-            seedUsd.Symbol.ShouldBe(_specialUsd.Symbol);
-
-
-            var seedEth = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
-            {
-                Value = _specialEth.Symbol
-            });
-            seedEth.Symbol.ShouldBe(_specialEth.Symbol);
-        }
-
+     
 
         internal async Task InitElfBalance(Address to, long amount = 10000_0000_0000)
         {

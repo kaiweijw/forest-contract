@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AElf.Contracts.Association;
 using AElf.Types;
 using Forest.Contracts.SymbolRegistrar.Helper;
 using Google.Protobuf;
@@ -12,31 +14,91 @@ namespace Forest.Contracts.SymbolRegistrar
 {
     public class SymbolRegistrarContractTests_SpecialSeed : SymbolRegistrarContractTests
     {
-        [Fact]
-        public async Task SetSpecialSeed_notInit_notAuthor_fail()
+        private async Task<List<AssociationContractImplContainer.AssociationContractImplStub>> InitListAsync()
         {
+            var stubs = new List<AssociationContractImplContainer.AssociationContractImplStub>();
+            stubs.Add(User1AssociationContractStub);
+            stubs.Add(User2AssociationContractStub);
+            stubs.Add(User3AssociationContractStub);
+            return stubs;
+        }
+
+        private async Task<Dictionary<AElf.Types.Address, List<AssociationContractImplContainer.AssociationContractImplStub>>> InitializeAssociateOrganizationAsync()
+        {
+            var dictionary = new Dictionary<Address, List<AssociationContractImplContainer.AssociationContractImplStub>>();
+            await InitializeContract();
+            var associateOrganization = await User1SymbolRegistrarContractStub.GetAssociateOrganization.CallAsync(new Empty());
+            var associationContractImplStubs = await InitListAsync();
+            dictionary.Add(associateOrganization, associationContractImplStubs);
+            return dictionary;
+        }
+
+        [Fact]
+        private async Task<Dictionary<AElf.Types.Address, List<AssociationContractImplContainer.AssociationContractImplStub>>> SetSpecialSeed_byProposal()
+        {
+            var dictionary = await InitializeAssociateOrganizationAsync();
+
             // create proposal and approve
-            var result = await Assert.ThrowsAsync<Exception>(() => SubmitAndApproveProposalOfDefaultParliament(
+            var result = await SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddSpecialSeeds",
+                new SpecialSeedList
+                {
+                    Value = { _specialUsd, _specialEth }
+                }, dictionary.First().Value, dictionary.First().Key);
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+
+
+            // logs
+            var logEvent = result.TransactionResult.Logs.First(log => log.Name.Contains(nameof(SpecialSeedAdded)));
+            var specialSeedAdded = SpecialSeedAdded.Parser.ParseFrom(logEvent.NonIndexed);
+            specialSeedAdded.AddList.Value.Count.ShouldBe(2);
+
+            // query seed list and verify
+            var seedUsd = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
+            {
+                Value = _specialUsd.Symbol
+            });
+            seedUsd.Symbol.ShouldBe(_specialUsd.Symbol);
+
+
+            var seedEth = await AdminSymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
+            {
+                Value = _specialEth.Symbol
+            });
+            seedEth.Symbol.ShouldBe(_specialEth.Symbol);
+            return dictionary;
+        }
+
+
+        [Fact]
+        public async Task SetSpecialSeed_notInit_associateOrganization_fail()
+        {
+            var stubs = new List<AssociationContractImplContainer.AssociationContractImplStub>();
+            stubs.Add(User1AssociationContractStub);
+            stubs.Add(User2AssociationContractStub);
+            stubs.Add(User3AssociationContractStub);
+            // create proposal and approve
+            var result = await Assert.ThrowsAsync<Exception>(() => SubmitAndApproveProposalOfDefaultAssociation(
                 SymbolRegistrarContractAddress,
                 "AddSpecialSeeds",
                 new SpecialSeedList
                 {
                     Value = { _specialUsd, _specialEth }
-                }));
-            result.Message.ShouldContain("No permission");
+                }, stubs, Admin.Address));
+            result.Message.ShouldContain("No registered organization");
         }
+
 
         [Fact]
         public async Task SetSpecialSeed_update_success()
         {
-            await InitializeContract();
+            var dictionary = await InitializeAssociateOrganizationAsync();
 
             // create proposal and approve
-            var result = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
+            var result = await SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress,
                 "AddSpecialSeeds", new SpecialSeedList
                 {
                     Value = { _specialUsd, _specialEth }
-                });
+                }, dictionary.First().Value, dictionary.First().Key);
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
 
             var usd = await User1SymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
@@ -45,46 +107,18 @@ namespace Forest.Contracts.SymbolRegistrar
             });
             usd.ShouldNotBeNull();
             usd.PriceAmount.ShouldBe(100_0000_0000);
-
-            _specialUsd.PriceAmount = 200_0000_0000;
-            result = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
-                "AddSpecialSeeds", new SpecialSeedList
-                {
-                    Value = { _specialUsd, _specialEth }
-                });
-            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
-            usd = await User1SymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
-            {
-                Value = _specialUsd.Symbol
-            });
-            usd.ShouldNotBeNull();
-            usd.PriceAmount.ShouldBe(200_0000_0000);
-        }
-
-        [Fact]
-        public async Task SetSpecialSeed_notParliament_fail()
-        {
-            await InitializeContract();
-
-            var result = await Assert.ThrowsAsync<Exception>(() =>
-                User1SymbolRegistrarContractStub.AddSpecialSeeds.SendAsync(new SpecialSeedList
-                {
-                    Value = { _specialUsd, _specialEth }
-                }));
-            result.Message.ShouldContain("No permission");
         }
 
 
         [Fact]
         public async Task SetSpecialSeed_notExists_removeSuccess()
         {
-            await SetSpecialSeed_byProposal();
-
-            var removeResult = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
+            var dictionary = await SetSpecialSeed_byProposal();
+            var removeResult = await SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress,
                 "RemoveSpecialSeeds", new RemoveSpecialSeedInput
                 {
                     Symbols = { _specialBtc.Symbol }
-                });
+                }, dictionary.First().Value, dictionary.First().Key);
             removeResult.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             removeResult.TransactionResult.Logs.Where(log => log.Name == nameof(SpecialSeedRemoved)).Count()
                 .ShouldBe(0);
@@ -93,22 +127,22 @@ namespace Forest.Contracts.SymbolRegistrar
         [Fact]
         public async Task SetSpecialSeed_removeSuccess()
         {
-            await SetSpecialSeed_byProposal();
+            var dictionary = await SetSpecialSeed_byProposal();
 
             // remove and add
-            var addResult = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
+            var addResult = await SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress,
                 "AddSpecialSeeds",
                 new SpecialSeedList
                 {
                     Value = { _specialBtc }
-                });
+                }, dictionary.First().Value, dictionary.First().Key);
             addResult.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
 
-            var removeResult = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
+            var removeResult = await SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress,
                 "RemoveSpecialSeeds", new RemoveSpecialSeedInput
                 {
                     Symbols = { _specialUsd.Symbol }
-                });
+                }, dictionary.First().Value, dictionary.First().Key);
             removeResult.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
 
             // logs
@@ -142,31 +176,30 @@ namespace Forest.Contracts.SymbolRegistrar
         [Fact]
         public async Task RemoveSpecialSeed_duplicate_success()
         {
-            await SetSpecialSeed_byProposal();
-            
-            var removeResult = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
+            var dictionary = await SetSpecialSeed_byProposal();
+
+            var removeResult = await SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress,
                 "RemoveSpecialSeeds", new RemoveSpecialSeedInput
                 {
                     Symbols = { _specialUsd.Symbol, _specialUsd.Symbol }
-                });
+                }, dictionary.First().Value, dictionary.First().Key);
             removeResult.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             var logEvent =
                 removeResult.TransactionResult.Logs.First(log => log.Name.Contains(nameof(SpecialSeedRemoved)));
             var specialSeedRemoved = SpecialSeedRemoved.Parser.ParseFrom(logEvent.NonIndexed);
-            specialSeedRemoved.RemoveList.Value.Count.ShouldBe(1);            
-            
-            
-            var removeResult2 = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
+            specialSeedRemoved.RemoveList.Value.Count.ShouldBe(1);
+
+
+            var removeResult2 = await SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress,
                 "RemoveSpecialSeeds", new RemoveSpecialSeedInput
                 {
                     Symbols = { _specialUsd.Symbol }
-                });
+                }, dictionary.First().Value, dictionary.First().Key);
             removeResult2.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             removeResult2.TransactionResult.Logs.FirstOrDefault(log => log.Name.Contains(nameof(SpecialSeedRemoved)), null).ShouldBeNull();
-            
         }
-        
-        
+
+
         [Fact]
         public async Task SetSpecialSeed_remove_notInit_success()
         {
@@ -205,67 +238,67 @@ namespace Forest.Contracts.SymbolRegistrar
         [Fact]
         public async Task SetSpecialSeed_fail()
         {
-            await InitializeContract();
+            var dictionary = await SetSpecialSeed_byProposal();
 
             // Price symbol not exists
             var notExits = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddSpecialSeeds",
                     new SpecialSeedList
                     {
                         Value = { _specialUsd_errorPrice, _specialEth }
-                    })
+                    }, dictionary.First().Value, dictionary.First().Key)
             );
             notExits.Message.ShouldContain("not exists");
 
             // Invalid issue chain
             var invalidIssueChain = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddSpecialSeeds",
                     new SpecialSeedList
                     {
                         Value = { _specialUsd, _specialEth_noIssueChainId }
-                    })
+                    }, dictionary.First().Value, dictionary.First().Key)
             );
             invalidIssueChain.Message.ShouldContain("Invalid issue chain");
 
 
             // long name
             var invalidSymbolLength = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddSpecialSeeds",
                     new SpecialSeedList
                     {
                         Value = { _specialUsd, _specialLongName }
-                    })
+                    }, dictionary.First().Value, dictionary.First().Key)
             );
             invalidSymbolLength.Message.ShouldContain("Invalid symbol length");
 
             // invalid NFT symbol
             var invalidPriceAmount = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddSpecialSeeds",
                     new SpecialSeedList
                     {
                         Value = { _specialUsd, _specialInvalidPriceAmount }
-                    })
+                    }, dictionary.First().Value, dictionary.First().Key)
             );
             invalidPriceAmount.Message.ShouldContain("Invalid price amount");
 
 
             // Invalid issue chain contract
             var invalidIssueChainContract = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddSpecialSeeds",
                     new SpecialSeedList
                     {
                         Value = { _specialUsd, _specialEth_noIssueChainContractAddress }
-                    })
+                    }, dictionary.First().Value, dictionary.First().Key)
             );
             invalidIssueChainContract.Message.ShouldContain("Invalid issue chain contract");
 
             // duplicate symbol
             var duplicateSymbol = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddSpecialSeeds",
                     new SpecialSeedList
                     {
                         Value = { _specialUsd, _specialUsd, _specialEth }
-                    })
+                    }, dictionary.First().Value, dictionary.First().Key)
             );
             duplicateSymbol.Message.ShouldContain("Duplicate symbol");
         }
@@ -273,7 +306,7 @@ namespace Forest.Contracts.SymbolRegistrar
         [Fact]
         public async Task AddSpecialSeed_maxLimitExceeded_fail()
         {
-            await InitializeContract();
+            var dictionary = await SetSpecialSeed_byProposal();
 
             const int length = 600;
             var batchSpecialSeedList = new SpecialSeedList();
@@ -284,23 +317,23 @@ namespace Forest.Contracts.SymbolRegistrar
             }
 
             var maxLimitExceeded = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
-                    batchSpecialSeedList)
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddSpecialSeeds",
+                    batchSpecialSeedList, dictionary.First().Value, dictionary.First().Key)
             );
             maxLimitExceeded.Message.ShouldContain("max limit exceeded");
         }
-        
+
         [Fact]
         public async Task SetUniqueSpecialSeed_update_success()
         {
-            await InitializeContract();
+            var dictionary = await SetSpecialSeed_byProposal();
 
             // create proposal and approve
-            var result = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress,
+            var result = await SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress,
                 "AddUniqueSeeds", new UniqueSeedList()
                 {
                     Symbols = { "LUCK" }
-                });
+                }, dictionary.First().Value, dictionary.First().Key);
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             var log = result.TransactionResult.Logs.First(l => l.Name == nameof(SpecialSeedAdded));
             var specialSeedAdded = SpecialSeedAdded.Parser.ParseFrom(log.NonIndexed);
@@ -313,7 +346,7 @@ namespace Forest.Contracts.SymbolRegistrar
             specialSeedAdded.AddList.Value[1].Symbol.ShouldBe("LUCK-0");
             specialSeedAdded.AddList.Value[1].PriceAmount.ShouldBe(0);
             specialSeedAdded.AddList.Value[1].PriceSymbol.ShouldBeEmpty();
-            
+
             await AdminSymbolRegistrarContractStub.SetSeedsPrice.SendAsync(new SeedsPriceInput
             {
                 NftPriceList = MockPriceList(),
@@ -332,7 +365,7 @@ namespace Forest.Contracts.SymbolRegistrar
             luck.ShouldNotBeNull();
             luck.PriceAmount.ShouldBe(MockPriceList().Value[3].Amount * 2);
             luck.PriceSymbol.ShouldBe(MockPriceList().Value[3].Symbol);
-            
+
             luck = await User1SymbolRegistrarContractStub.GetSpecialSeed.CallAsync(new StringValue
             {
                 Value = "LUCK-0"
@@ -345,35 +378,35 @@ namespace Forest.Contracts.SymbolRegistrar
         [Fact]
         public async Task SetUniqueSpecialSeed_fail()
         {
-            await InitializeContract();
+            var dictionary = await SetSpecialSeed_byProposal();
 
             // long name
             var invalidSymbolLength = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddUniqueSeeds",
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddUniqueSeeds",
                     new UniqueSeedList()
                     {
                         Symbols = { _specialLongName.Symbol }
-                    })
+                    }, dictionary.First().Value, dictionary.First().Key)
             );
             invalidSymbolLength.Message.ShouldContain("Invalid symbol length");
 
             // invalid symbol
             var invalidSymbol = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddUniqueSeeds",
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddUniqueSeeds",
                     new UniqueSeedList()
                     {
                         Symbols = { _specialInvalidSymbol.Symbol }
-                    })
+                    }, dictionary.First().Value, dictionary.First().Key)
             );
             invalidSymbol.Message.ShouldContain("Invalid symbol");
 
             // invalid NFT symbol
             var invalidNftSymbol = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddUniqueSeeds",
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddUniqueSeeds",
                     new UniqueSeedList()
                     {
                         Symbols = { _specialInvalidNftSymbol.Symbol }
-                    })
+                    }, dictionary.First().Value, dictionary.First().Key)
             );
             invalidNftSymbol.Message.ShouldContain("Invalid nft symbol");
         }
@@ -381,7 +414,7 @@ namespace Forest.Contracts.SymbolRegistrar
         [Fact]
         public async Task AddUniqueSpecialSeed_maxLimitExceeded_fail()
         {
-            await InitializeContract();
+            var dictionary = await SetSpecialSeed_byProposal();
 
             const int length = 600;
             var batchSpecialSeedList = new UniqueSeedList();
@@ -391,11 +424,10 @@ namespace Forest.Contracts.SymbolRegistrar
             }
 
             var maxLimitExceeded = await Assert.ThrowsAsync<Exception>(() =>
-                SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddUniqueSeeds",
-                    batchSpecialSeedList)
+                SubmitAndApproveProposalOfDefaultAssociation(SymbolRegistrarContractAddress, "AddUniqueSeeds",
+                    batchSpecialSeedList, dictionary.First().Value, dictionary.First().Key)
             );
             maxLimitExceeded.Message.ShouldContain("max limit exceeded");
         }
-
     }
 }

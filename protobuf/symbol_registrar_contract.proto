@@ -50,6 +50,9 @@ service SymbolRegistrarContract {
     rpc SetAdmin(aelf.Address) returns (google.protobuf.Empty){
     }
 
+    rpc SetAssociateOrganization (aelf.Address) returns (google.protobuf.Empty) {
+    }
+
     rpc SetLastSeedId(google.protobuf.Int64Value) returns (google.protobuf.Empty) {
     }
     
@@ -89,6 +92,9 @@ service SymbolRegistrarContract {
 
     // View
 
+    rpc GetAssociateOrganization (google.protobuf.Empty) returns (aelf.Address) {
+        option (aelf.is_view) = true;
+    }
     // get seed price with length
     rpc GetSeedsPrice(google.protobuf.Empty) returns (GetSeedsPriceOutput) {
         option (aelf.is_view) = true;
@@ -150,6 +156,7 @@ message InitializeInput {
     aelf.Address proxy_account_contract_address = 5;
     AuctionConfig auction_config = 6;
     UniqueSeedsExternalPriceInput unique_seeds_external_prices = 7;
+    aelf.Address  associate_organization_address = 8;
 }
 
 

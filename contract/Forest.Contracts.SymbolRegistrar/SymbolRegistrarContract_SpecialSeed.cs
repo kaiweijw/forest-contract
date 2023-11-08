@@ -17,7 +17,7 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty AddSpecialSeeds(SpecialSeedList input)
         {
             if (State.Initialized.Value)
-                AssertAdmin();
+                AssertAssociateOrganization();
             else
                 AssertContractAuthor();
             Assert(input.Value.Count <= SymbolRegistrarContractConstants.MaxAddSpecialSeedCount, "Seed list max limit exceeded.");
@@ -27,9 +27,11 @@ namespace Forest.Contracts.SymbolRegistrar
             for (var index = 0; index < input?.Value?.Count; index++)
             {
                 var item = input.Value[index];
-                Assert(item.PriceAmount > 0, "Invalid price amount");
+                Assert(item.PriceAmount >= 0, "Invalid price amount.");
+                Assert(item.PriceAmount == 0 || item.PriceSymbol?.Length > 0, "PriceSymbol required when PriceAmount not empty");
                 AssertSymbolPattern(item.Symbol);
-                if (!priceSymbolExists.Contains(item.PriceSymbol))
+                
+                if (item.PriceSymbol?.Length > 0 && !priceSymbolExists.Contains(item.PriceSymbol))
                 {
                     var tokenInfo = GetTokenInfo(item.PriceSymbol);
                     Assert(tokenInfo?.Symbol.Length > 0, "Price token " + item.PriceSymbol + " not exists");
@@ -59,9 +61,9 @@ namespace Forest.Contracts.SymbolRegistrar
 
         public override Empty RemoveSpecialSeeds(RemoveSpecialSeedInput input)
         {
-            
+
             if (State.Initialized.Value)
-                Assert(GetDefaultParliamentController().OwnerAddress == Context.Sender, "No permission.");
+                AssertAssociateOrganization();
             else 
                 AssertContractAuthor();
             
@@ -88,7 +90,7 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty AddUniqueSeeds(UniqueSeedList input)
         {
             if (State.Initialized.Value)
-                Assert(GetDefaultParliamentController().OwnerAddress == Context.Sender, "No permission.");
+                AssertAssociateOrganization();
             else
                 AssertContractAuthor();
             Assert(input.Symbols.Count <= SymbolRegistrarContractConstants.MaxAddSpecialSeedCount, "Seed list max limit exceeded.");
