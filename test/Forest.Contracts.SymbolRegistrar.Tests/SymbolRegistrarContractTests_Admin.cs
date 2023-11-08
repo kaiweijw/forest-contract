@@ -292,7 +292,7 @@ namespace Forest.Contracts.SymbolRegistrar
             result.TransactionResult.Error.ShouldContain("Contract not initialized.");
 
             await InitializeContract();
-            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig
+            result = await User1SymbolRegistrarContractStub.SetAuctionConfig
                 .SendWithExceptionAsync(new AuctionConfig());
             result.TransactionResult.Error.ShouldContain("No sale controller permission.");
 
@@ -333,7 +333,7 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             await InitializeContract();
             var controllerList = await AdminSymbolRegistrarContractStub.GetSaleController.CallAsync(new Empty());
-            controllerList.Controllers.Count.ShouldBe(0);
+            controllerList.Controllers.Count.ShouldBe(1);
             var result = await User1SymbolRegistrarContractStub.AddSaleController.SendWithExceptionAsync(new AddSaleControllerInput
             {
                 Addresses = new ControllerList
@@ -346,12 +346,12 @@ namespace Forest.Contracts.SymbolRegistrar
             {
                 Addresses = new ControllerList
                 {
-                    Controllers = { Admin.Address }
+                    Controllers = { User1.Address }
                 }
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             var saleControllerAdded = SaleControllerAdded.Parser.ParseFrom(result.TransactionResult.Logs.First(e => e.Name == nameof(SaleControllerAdded)).NonIndexed);
-            saleControllerAdded.Addresses.Controllers.ShouldContain(Admin.Address);
+            saleControllerAdded.Addresses.Controllers.ShouldContain(User1.Address);
             
             result = await AdminSymbolRegistrarContractStub.AddSaleController.SendWithExceptionAsync(new AddSaleControllerInput
             {
@@ -369,7 +369,7 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             await InitializeContract();
             var controllerList = await AdminSymbolRegistrarContractStub.GetSaleController.CallAsync(new Empty());
-            controllerList.Controllers.Count.ShouldBe(0);
+            controllerList.Controllers.Count.ShouldBe(1);
             var result = await User1SymbolRegistrarContractStub.RemoveSaleController.SendWithExceptionAsync(new RemoveSaleControllerInput()
             {
                 Addresses = new ControllerList
