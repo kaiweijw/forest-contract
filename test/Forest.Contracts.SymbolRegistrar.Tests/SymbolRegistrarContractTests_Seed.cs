@@ -55,7 +55,7 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             await InitializeContract();
             await InitSeed();
-            var result = await User1SymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput()
+            var result = await AdminSymbolRegistrarContractStub.CreateSeed.SendWithExceptionAsync(new CreateSeedInput()
             {
                 Symbol = "LUCK",
                 To = User1.Address
