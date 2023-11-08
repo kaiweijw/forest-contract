@@ -75,14 +75,6 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             await InitializeContractIfNecessary();
 
-            // create proposal and approve
-            // var result = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
-            //     new SpecialSeedList
-            //     {
-            //         Value = { _specialUsd, _specialEth }
-            //     });
-            // result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
-
             var result = await AdminSymbolRegistrarContractStub.AddSpecialSeeds.SendAsync(new SpecialSeedList
             {
                 Value = { _specialUsd, _specialEth }
