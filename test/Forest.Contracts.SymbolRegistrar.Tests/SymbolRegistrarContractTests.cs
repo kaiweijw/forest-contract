@@ -21,7 +21,6 @@ namespace Forest.Contracts.SymbolRegistrar
             });
         }
         
-        
         [Fact]
         public async Task InitializeContract()
         {
@@ -30,22 +29,10 @@ namespace Forest.Contracts.SymbolRegistrar
                 ReceivingAccount = Admin.Address,
                 ProxyAccountContractAddress = ProxyAccountContractAddress
             });
-            
             await AdminSymbolRegistrarContractStub.AddIssueChain.SendAsync(new IssueChainList
             {
                 IssueChain = { "ETH", "BTC" }
             });
-            
-            var addController = await AdminSymbolRegistrarContractStub.AddSaleController.SendAsync(
-                new AddSaleControllerInput
-                {
-                    Addresses = new ControllerList
-                    {
-                        Controllers = { Admin.Address }
-                    }
-                });
-            addController.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
-
         }
         
         [Fact]
@@ -75,11 +62,14 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             await InitializeContractIfNecessary();
 
-            var result = await AdminSymbolRegistrarContractStub.AddSpecialSeeds.SendAsync(new SpecialSeedList
-            {
-                Value = { _specialUsd, _specialEth }
-            });
-            
+            // create proposal and approve
+            var result = await SubmitAndApproveProposalOfDefaultParliament(SymbolRegistrarContractAddress, "AddSpecialSeeds",
+                new SpecialSeedList
+                {
+                    Value = { _specialUsd, _specialEth }
+                });
+            result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+
             // logs
             var logEvent = result.TransactionResult.Logs.First(log => log.Name.Contains(nameof(SpecialSeedAdded)));
             var specialSeedAdded = SpecialSeedAdded.Parser.ParseFrom(logEvent.NonIndexed);
@@ -178,16 +168,6 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             SeedType = SeedType.Unique,
             Symbol = "USD",
-            PriceSymbol = "ELF",
-            PriceAmount = 100_0000_0000,
-        };
-
-        
-        
-        internal SpecialSeed _specialSeed0 = new()
-        {
-            SeedType = SeedType.Unique,
-            Symbol = "SEED-0",
             PriceSymbol = "ELF",
             PriceAmount = 100_0000_0000,
         };
