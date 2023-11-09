@@ -232,7 +232,7 @@ namespace Forest.Contracts.SymbolRegistrar
                         Symbols = { _specialUsd.Symbol }
                     }));
 
-            adminResult.Message.ShouldContain("No permission");
+            adminResult.Message.ShouldContain("No Associate permission.");
         }
 
         [Fact]
