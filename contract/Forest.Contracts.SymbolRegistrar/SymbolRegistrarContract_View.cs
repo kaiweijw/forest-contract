@@ -17,6 +17,11 @@ namespace Forest.Contracts.SymbolRegistrar
             return State.Admin.Value;
         }
 
+        public override Address GetAssociateOrganization(Empty input)
+        {
+            return State.AssociateOrganization.Value;
+        }
+
         public override Address GetReceivingAccountAddress(Empty input)
         {
             return State.ReceivingAccount.Value;

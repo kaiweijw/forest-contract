@@ -37,6 +37,7 @@
         </ContractCode>
     </ItemGroup>
     <ItemGroup>
+      <PackageReference Include="AElf.Contracts.MultiToken" Version="1.5.0" />
       <PackageReference Include="AElf.Sdk.CSharp" Version="1.5.0" />
     </ItemGroup>
 </Project>
