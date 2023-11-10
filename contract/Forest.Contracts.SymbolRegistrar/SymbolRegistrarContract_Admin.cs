@@ -314,7 +314,7 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty SetAuctionConfig(AuctionConfig input)
         {
             AssertInitialized();
-            AssertSaleController();
+            AssertAdmin();
 
             Assert(input != null, "Invalid input.");
             Assert(input.Duration > 0, "Invalid input duration.");
