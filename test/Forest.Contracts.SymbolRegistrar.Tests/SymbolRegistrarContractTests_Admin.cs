@@ -292,9 +292,9 @@ namespace Forest.Contracts.SymbolRegistrar
             result.TransactionResult.Error.ShouldContain("Contract not initialized.");
 
             await InitializeContract();
-            result = await AdminSymbolRegistrarContractStub.SetAuctionConfig
+            result = await User1SymbolRegistrarContractStub.SetAuctionConfig
                 .SendWithExceptionAsync(new AuctionConfig());
-            result.TransactionResult.Error.ShouldContain("No sale controller permission.");
+            result.TransactionResult.Error.ShouldContain("No permission");
 
             await InitSaleController(Admin.Address);
             result = await AdminSymbolRegistrarContractStub.SetAuctionConfig.SendWithExceptionAsync(new AuctionConfig
