@@ -9,7 +9,7 @@ public class SymbolRegistrarContractConstants
     public const long DefaultDuration = 60 * 60 * 24 * 14; // 14 days
     public const long DefaultCountdownTime = 60 * 10; // 10 minutes
     public const long DefaultMaxExtensionTime = 60 * 60 * 24 * 7; // 7 days
-    public const int DefaultMinMarkup = 10; // 10%
+    public const int DefaultMinMarkup = 1000; // 10%
 
     public const long DefaultSeedExpirationTime = 60 * 60 * 24 * 365; // 365 days
 

@@ -24,7 +24,12 @@ namespace Forest.Contracts.SymbolRegistrar
                 "PaymentReceiverAddress required.");
             Assert(input.AdministratorAddress == null || !input.AdministratorAddress.Value.IsNullOrEmpty(), 
                 "Invalid administrator address.");
+            
+            
+            Assert(input.AssociateOrganizationAddress == null || !input.AssociateOrganizationAddress.Value.IsNullOrEmpty(), 
+                "Invalid AssociateOrganizationAddress address.");
 
+            State.AssociateOrganization.Value = input.AssociateOrganizationAddress;
             State.Admin.Value = input.AdministratorAddress ?? Context.Sender;
             State.ReceivingAccount.Value = input.ReceivingAccount;
             State.SeedExpirationConfig.Value = SymbolRegistrarContractConstants.DefaultSeedExpirationTime;
@@ -61,6 +66,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 UpdateUniqueSeedsExternalPrice(input.UniqueSeedsExternalPrices);
 
             State.Initialized.Value = true;
+            
             return new Empty();
         }
 
@@ -69,6 +75,15 @@ namespace Forest.Contracts.SymbolRegistrar
             AssertAdmin();
             Assert(input != null && !input.Value.IsNullOrEmpty(), "Invalid param");
             State.Admin.Value = input;
+            return new Empty();
+        }
+        
+        
+        public override Empty SetAssociateOrganization(Address input)
+        {
+            AssertAssociateOrganization();
+            Assert(input != null && !input.Value.IsNullOrEmpty(), "Invalid param");
+            State.AssociateOrganization.Value = input;
             return new Empty();
         }
 

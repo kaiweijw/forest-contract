@@ -128,7 +128,6 @@ namespace Forest.Contracts.SymbolRegistrar
         {
             // buy LUCK
             await Buy_success();
-            await SetSpecialSeed_byProposal();
             
             var symbolExists = await Assert.ThrowsAsync<Exception>(() => User1SymbolRegistrarContractStub.Buy.SendAsync(new BuyInput
             {
@@ -143,14 +142,7 @@ namespace Forest.Contracts.SymbolRegistrar
                 IssueTo = User1.Address
             }));
             seedExists.Message.ShouldContain("symbol seed existed");
-
-            var specialSeedNotSupport = await Assert.ThrowsAsync<Exception>(() => User1SymbolRegistrarContractStub.Buy.SendAsync(new BuyInput
-            {
-                Symbol  = _specialUsd.Symbol,
-                IssueTo = User1.Address
-            }));
-            specialSeedNotSupport.Message.ShouldContain("not support deal");
-
+            
             // token exits
             var newSymbol = await User1TokenContractStub.Create.SendAsync(new CreateInput
             {

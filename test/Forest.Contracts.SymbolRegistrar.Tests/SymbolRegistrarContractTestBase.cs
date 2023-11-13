@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Boilerplate.TestBase;
+using AElf.Contracts.Association;
 using AElf.Contracts.MultiToken;
 using AElf.Contracts.Parliament;
 using AElf.ContractTestBase.ContractTestKit;
@@ -37,6 +39,13 @@ namespace Forest.Contracts.SymbolRegistrar
         internal TokenContractContainer.TokenContractStub User1TokenContractStub { get; set; }
         internal TokenContractContainer.TokenContractStub User2TokenContractStub { get; set; }
         internal TokenContractContainer.TokenContractStub User3TokenContractStub { get; set; }
+        
+        internal AssociationContractImplContainer.AssociationContractImplStub AdminAssociationContractStub { get; set; }
+
+        internal AssociationContractImplContainer.AssociationContractImplStub User1AssociationContractStub { get; set; }
+        internal AssociationContractImplContainer.AssociationContractImplStub User2AssociationContractStub { get; set; }
+        internal AssociationContractImplContainer.AssociationContractImplStub User3AssociationContractStub { get; set; }
+
 
         internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub AdminSymbolRegistrarContractStub { get; set; }
         internal SymbolRegistrarContractContainer.SymbolRegistrarContractStub User1SymbolRegistrarContractStub { get; set; }
@@ -60,6 +69,11 @@ namespace Forest.Contracts.SymbolRegistrar
             User1SymbolRegistrarContractStub = GetSymbolRetistrarStub(User1.KeyPair);
             User2SymbolRegistrarContractStub = GetSymbolRetistrarStub(User2.KeyPair);
             User3SymbolRegistrarContractStub = GetSymbolRetistrarStub(User3.KeyPair);
+            AdminAssociationContractStub =  GetAssociateContractTester(Admin.KeyPair);
+            User1AssociationContractStub = GetAssociateContractTester(User1.KeyPair);
+            User2AssociationContractStub = GetAssociateContractTester(User2.KeyPair);
+            User3AssociationContractStub = GetAssociateContractTester(User3.KeyPair);
+
             
             AdminProxyAccountContractStubContractStub = GetProxyAccountContractStub(Admin.KeyPair);
             
@@ -158,5 +172,60 @@ namespace Forest.Contracts.SymbolRegistrar
             return GetTester<ParliamentContractImplContainer.ParliamentContractImplStub>(ParliamentContractAddress,
                 keyPair);
         }
+
+        //================================Association contract========================================================
+        private async Task<Hash> CreateAssociationProposalAsync(Address contractAddress, Address organizationAddress,
+                                                                string methodName, IMessage input, AssociationContractImplContainer.AssociationContractImplStub stub)
+        {
+            var proposal = new CreateProposalInput
+            {
+                OrganizationAddress = organizationAddress,
+                ContractMethodName = methodName,
+                ExpiredTime = TimestampHelper.GetUtcNow().AddHours(1),
+                Params = input.ToByteString(),
+                ToAddress = contractAddress
+            };
+            var createResult = await stub.CreateProposal.SendAsync(proposal);
+            var proposalId = createResult.Output;
+            return proposalId;
+        }
+
+
+        private async Task ApproveAssociationWithMinersAsync(Hash proposalId)
+        {
+            var miners = Accounts.Take(MinersCount).Select(a => a.KeyPair).ToList();
+            foreach (var bp in miners)
+            {
+                var tester = GetAssociateContractTester(bp);
+                var approveResult = await tester.Approve.SendAsync(proposalId);
+                approveResult.TransactionResult.Error.ShouldBeNullOrEmpty();
+            }
+        }
+
+
+        internal async Task<IExecutionResult<Empty>> SubmitAndApproveProposalOfDefaultAssociation(
+            Address contractAddress,
+            string methodName,
+            IMessage message,
+            List<AssociationContractImplContainer.AssociationContractImplStub> stubs, Address defaultAssociationAddress)
+        {
+            var proposalId = await CreateAssociationProposalAsync(contractAddress,
+                defaultAssociationAddress, methodName, message, stubs[0]);
+            foreach (var stub in stubs)
+            {
+                var approveResult = await stub.Approve.SendAsync(proposalId);
+                approveResult.TransactionResult.Error.ShouldBeNullOrEmpty();
+            }
+
+            return await stubs[0].Release.SendAsync(proposalId);
+        }
+
+
+        internal AssociationContractImplContainer.AssociationContractImplStub GetAssociateContractTester(ECKeyPair keyPair)
+        {
+            return GetTester<AssociationContractImplContainer.AssociationContractImplStub>(AssociationContractAddress,
+                keyPair);
+        }
+        
     }
 }
