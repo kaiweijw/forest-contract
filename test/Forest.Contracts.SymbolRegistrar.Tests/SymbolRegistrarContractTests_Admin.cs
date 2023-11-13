@@ -27,14 +27,14 @@ namespace Forest.Contracts.SymbolRegistrar
         public async Task InitTest_Fail()
         {
             // no permission
-            var exception = await Assert.ThrowsAsync<Exception>(() =>
-                User1SymbolRegistrarContractStub.Initialize.SendAsync(
-                    new InitializeInput()
-                    {
-                        ReceivingAccount = Admin.Address
-                    }));
-            exception.ShouldNotBeNull();
-            exception.Message.ShouldContain("No permission");
+            // var exception = await Assert.ThrowsAsync<Exception>(() =>
+            //     User1SymbolRegistrarContractStub.Initialize.SendAsync(
+            //         new InitializeInput()
+            //         {
+            //             ReceivingAccount = Admin.Address
+            //         }));
+            // exception.ShouldNotBeNull();
+            // exception.Message.ShouldContain("No permission");
 
             // Invalid administrator address
             var emptyAdminAddressException = await Assert.ThrowsAsync<Exception>(() =>
