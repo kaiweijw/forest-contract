@@ -67,6 +67,7 @@ public partial class WhitelistContract
         {
             tagInfoList.Value.Add(GetTagInfoByHash(tagId));
         }
+
         return tagInfoList;
     }
 
@@ -230,6 +231,7 @@ public partial class WhitelistContract
                 whitelistIdList.WhitelistId.Add(whitelistId);
             }
         }
+
         return whitelistIdList;
     }
 }

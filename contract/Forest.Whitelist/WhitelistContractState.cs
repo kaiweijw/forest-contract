@@ -5,7 +5,6 @@ namespace Forest.Whitelist;
 
 public class WhitelistContractState : ContractState
 {
-
     /// <summary>
     ///TagInfo id -> TagInfo(name,info).
     /// </summary>
