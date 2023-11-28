@@ -1,3 +1,6 @@
+using AElf.Contracts.MultiToken;
+using AElf.CSharp.Core;
+using AElf.CSharp.Core.Extension;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
@@ -100,4 +103,32 @@ public partial class ForestContract
     {
         return State.BizConfig.Value;
     }
+    
+    public override GetTotalOfferAmountOutput GetTotalOfferAmount(GetTotalOfferAmountInput input)
+    {
+        var totalAmount = GetOfferTotalAmount(input.Address, input.PriceSymbol);
+        var allowance = GetAllowance(input.Address, input.PriceSymbol);
+        var getTotalOfferAmountOutput = new GetTotalOfferAmountOutput()
+        {
+            Symbol = input.PriceSymbol,
+            Allowance = allowance,
+            TotalAmount = totalAmount
+        };
+        return getTotalOfferAmountOutput;
+    }
+    
+    public override GetTotalEffectiveListedNFTAmountOutput GetTotalEffectiveListedNFTAmount(GetTotalEffectiveListedNFTAmountInput input)
+    {
+        var totalAmount = GetEffectiveListedNFTTotalAmount(input.Address, input.Symbol);
+        var allowance = GetAllowance(input.Address, input.Symbol);
+        var getTotalEffectiveListedNftAmountOutput = new GetTotalEffectiveListedNFTAmountOutput()
+        {
+            Symbol = input.Symbol,
+            Allowance = allowance,
+            TotalAmount = totalAmount
+        };
+        
+        return getTotalEffectiveListedNftAmountOutput;
+    }
+    
 }

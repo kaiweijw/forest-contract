@@ -31,6 +31,8 @@ public partial class ForestContract
             Owner = Context.Sender
         });
         Assert(balance.Balance >= input.Quantity, "Check sender NFT balance failed.");
+        
+        AssertAllowanceInsufficient(input.Symbol, Context.Sender, input.Quantity);
 
         var duration = AdjustListDuration(input.Duration);
         var whitelists = input.Whitelists;
@@ -219,7 +221,8 @@ public partial class ForestContract
             Owner = Context.Sender
         });
         Assert(balance.Balance >= input.Quantity, "Insufficient NFT balance.");
-
+        
+        AssertAllowanceInsufficient(input.Symbol, Context.Sender, input.Quantity);
         var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol,
@@ -241,6 +244,7 @@ public partial class ForestContract
 
         Assert(offer.Quantity >= input.Quantity, "Deal quantity exceeded.");
         offer.Quantity = offer.Quantity.Sub(input.Quantity);
+        ModifyOfferTotalAmount(input.OfferFrom, input.Price.Symbol, -input.Quantity.Mul(input.Price.Amount));
         if (offer.Quantity == 0)
         {
             State.OfferListMap[input.Symbol][input.OfferFrom].Value.Remove(offer);
