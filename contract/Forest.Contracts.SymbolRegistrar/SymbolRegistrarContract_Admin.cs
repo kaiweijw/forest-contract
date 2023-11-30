@@ -18,7 +18,10 @@ namespace Forest.Contracts.SymbolRegistrar
         public override Empty Initialize(InitializeInput input)
         {
             Assert(!State.Initialized.Value, "Contract has bean Initialized.");
-            // AssertContractAuthor();
+            if (Context.ChainId != SymbolRegistrarContractConstants.MainChainId)
+            {
+                AssertContractAuthor();
+            }
 
             Assert(input.ReceivingAccount != null && !input.ReceivingAccount.Value.IsNullOrEmpty(),
                 "PaymentReceiverAddress required.");

@@ -22,4 +22,5 @@ public class SymbolRegistrarContractConstants
     public const string SeedExpireTimeExternalInfoKey = "__seed_exp_time";
     public const string NftImageUrlExternalInfoKey = "__nft_image_url";
     public const string NftImageUrlSuffix = ".svg";
+    public const int MainChainId = 9992731;
 }
