@@ -29,6 +29,8 @@ service ForestContract {
   }
   rpc Delist (DelistInput) returns (google.protobuf.Empty) {
   }
+  rpc BatchDeList(BatchDeListInput) returns (google.protobuf.Empty){
+  }
 
   // For Buyers.
   rpc MakeOffer (MakeOfferInput) returns (google.protobuf.Empty) {
@@ -134,6 +136,13 @@ enum ListType {
   FIXED_PRICE = 1;
 }
 
+enum BatchDeListType {
+  LESS_THAN = 0;
+  LESS_THAN_OR_EQUALS = 1;
+  GREATER_THAN = 2;
+  GREATER_THAN_OR_EQUALS = 3;
+}
+
 message ListDuration {
   google.protobuf.Timestamp start_time = 1;
   google.protobuf.Timestamp public_time = 2;
@@ -197,6 +206,12 @@ message DelistInput {
   string symbol = 1;
   Price price = 2;
   int64 quantity = 4;
+}
+
+message BatchDeListInput{
+  string symbol = 1;
+  Price price = 2;
+  BatchDeListType batch_delist_type = 3;
 }
 
 message MakeOfferInput {
