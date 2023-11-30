@@ -403,6 +403,11 @@ public class ForestContractTests_Security : ForestContractTestBase
         #region user2 make offer to user1
 
         {
+            await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+            {
+                Spender = ForestContractAddress, Symbol = offerPrice.Symbol,
+                Amount = offerQuantity * offerPrice.Amount
+            });
             await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
                 Symbol = NftSymbol,
@@ -434,6 +439,11 @@ public class ForestContractTests_Security : ForestContractTestBase
         #region user3 make offer to user1
 
         {
+            await User3TokenContractStub.Approve.SendAsync(new ApproveInput()
+            {
+                Spender = ForestContractAddress, Symbol = offerPrice.Symbol,
+                Amount = offerQuantity * offerPrice.Amount
+            });
             await Buyer2ForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
             {
                 Symbol = NftSymbol,
@@ -964,6 +974,8 @@ public class ForestContractTests_Security : ForestContractTestBase
 
         #region user1 ListWithFixedPrice qty=8
 
+        await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+            { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = listQuantity });
         await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
         {
             Symbol = NftSymbol,
@@ -1008,6 +1020,8 @@ public class ForestContractTests_Security : ForestContractTestBase
 
         try
         {
+            await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+                { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = dealQuantity+listQuantity });
             await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
             {
                 Symbol = NftSymbol,
@@ -1048,7 +1062,8 @@ public class ForestContractTests_Security : ForestContractTestBase
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10));
 
         #region user1 ListWithFixedPrice qty=8
-
+        await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+            { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = listQuantity });
         await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
         {
             Symbol = NftSymbol,
@@ -1320,6 +1335,11 @@ public class ForestContractTests_Security : ForestContractTestBase
 
         var bizConfig = await Seller1ForestContractStub.GetBizConfig.SendAsync(new Empty());
 
+        await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+        {
+            Spender = ForestContractAddress, Symbol = offerPrice.Symbol,
+            Amount = bizConfig.Output.MaxListCount*offerPrice.Amount
+        });
         for (var i = 0; i < bizConfig.Output.MaxListCount; i++)
         {
             // user2 make offer to user1
@@ -1333,6 +1353,7 @@ public class ForestContractTests_Security : ForestContractTestBase
             });
         }
 
+      
         var offerList = await BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
         {
             Symbol = NftSymbol2,
@@ -1341,6 +1362,11 @@ public class ForestContractTests_Security : ForestContractTestBase
         offerList.Output.Value.Count.ShouldBe(bizConfig.Output.MaxListCount);
         #endregion
 
+        await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+        {
+            Spender = ForestContractAddress, Symbol = offerPrice.Symbol,
+            Amount = bizConfig.Output.MaxListCount*offerPrice.Amount + offerPrice.Amount
+        });
         #region create one more offer, got exception
         var exception = await Assert.ThrowsAsync<Exception>(() => Buyer1ForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
         {

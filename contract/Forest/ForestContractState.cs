@@ -35,7 +35,7 @@ namespace Forest
         public MappedState<string, AddressList> OfferAddressListMap { get; set; }
 
         /// <summary>
-        /// Symbol -> Token Id -> Offer Maker -> Offer List
+        /// Symbol ->  Offer Maker address -> Offer List
         /// </summary>
         public MappedState<string, Address, OfferList> OfferListMap { get; set; }
 
@@ -47,5 +47,11 @@ namespace Forest
         public MappedState<string, Address> RoyaltyFeeReceiverMap { get; set; }
         public MappedState<string, CertainNFTRoyaltyInfo> CertainNFTRoyaltyMap { get; set; }
         public MappedState<string, StringList> TokenWhiteListMap { get; set; }
+        
+        /// <summary>
+        /// Address -> Token Symbol -> TotalAmount
+        /// </summary>
+        public MappedState<Address, string, long> OfferTotalAmountMap { get; set; }
+
     }
 }
