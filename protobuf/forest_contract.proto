@@ -31,6 +31,8 @@ service ForestContract {
   }
   rpc BatchDeList(BatchDeListInput) returns (google.protobuf.Empty){
   }
+  rpc BatchBuyNow(BatchBuyNowInput) returns (google.protobuf.Empty){
+  }
 
   // For Buyers.
   rpc MakeOffer (MakeOfferInput) returns (google.protobuf.Empty) {
@@ -212,6 +214,18 @@ message BatchDeListInput{
   string symbol = 1;
   Price price = 2;
   BatchDeListType batch_delist_type = 3;
+}
+
+message BatchBuyNowInput{
+  string symbol = 1;
+  repeated FixPriceList fix_price_list= 2;
+}
+
+message FixPriceList{
+  aelf.Address offer_to = 1;
+  int64 quantity = 2;
+  Price price = 3;
+  google.protobuf.Timestamp start_time = 4;
 }
 
 message MakeOfferInput {
