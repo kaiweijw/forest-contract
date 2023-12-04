@@ -65,6 +65,59 @@ public class DealService
 
         return dealResultList;
     }
+    
+    public IEnumerable<DealResult> GetDealResultList(string symbol, FixPriceList fixPriceList
+        ,ListedNFTInfoList listedNftInfoList, out long needToDealQuantity)
+    {
+        var dealResultList = new List<DealResult>();
+        needToDealQuantity = fixPriceList.Quantity;
+        var currentIndex = 0;
+        var blockTime = _context.CurrentBlockTime;
+        foreach (var listedNftInfo in listedNftInfoList.Value.Where(i =>
+                     i.Price.Symbol == fixPriceList.Price.Symbol
+                     && blockTime >= i.Duration.StartTime
+                     && blockTime >= i.Duration.PublicTime).OrderByDescending(i => i.Duration.PublicTime))
+        {
+            if (listedNftInfo.Quantity >= needToDealQuantity)
+            {
+                var dealResult = new DealResult
+                {
+                    Symbol = symbol,
+                    Quantity = needToDealQuantity,
+                    PurchaseSymbol = fixPriceList.Price.Symbol,
+                    PurchaseAmount = listedNftInfo.Price.Amount,
+                    Duration = listedNftInfo.Duration,
+                    Index = currentIndex
+                };
+                // Fulfill demands.
+                dealResultList.Add(dealResult);
+                needToDealQuantity = 0;
+            }
+            else
+            {
+                var dealResult = new DealResult
+                {
+                    Symbol = symbol,
+                    Quantity = needToDealQuantity,
+                    PurchaseSymbol = fixPriceList.Price.Symbol,
+                    PurchaseAmount = listedNftInfo.Price.Amount,
+                    Duration = listedNftInfo.Duration,
+                    Index = currentIndex
+                };
+                dealResultList.Add(dealResult);
+                needToDealQuantity = needToDealQuantity.Sub(listedNftInfo.Quantity);
+            }
+
+            if (needToDealQuantity == 0)
+            {
+                break;
+            }
+
+            currentIndex = currentIndex.Add(1);
+        }
+       
+        return dealResultList;
+    }
 }
 
 public class GetDealResultListInput
