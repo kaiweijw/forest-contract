@@ -199,6 +199,82 @@ public partial class ForestContract
     }
 
     /// <summary>
+    /// Batch delete 
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    /// <exception cref="AssertionException"></exception>
+    public override Empty BatchDeList(BatchDeListInput input)
+    {
+        AssertContractInitialized();
+        Assert(input.Price != null, "Need to specific list price.");
+        Assert(input.Price.Amount > 0, "Incorrect listing price.");
+        Assert(input.BatchDelistType != null, "Incorrect listing batchDelistType.");
+        var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        {
+            Symbol = input.Symbol
+        });
+        Assert(!string.IsNullOrWhiteSpace(tokenInfo.Symbol), "this NFT Info not exists.");
+
+        var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
+        if (listedNftInfoList == null)
+        {
+            throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
+        }
+
+        var fixedPriceListedNftInfoList =
+            listedNftInfoList.Value.Where(i => i.ListType == ListType.FixedPrice).ToList();
+
+        if (fixedPriceListedNftInfoList == null)
+        {
+            throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
+        }
+
+        switch (input.BatchDelistType)
+        {
+            case BatchDeListType.GreaterThan:
+                fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
+                    .Where(i => (i.Price.Amount > input.Price.Amount)).ToList();
+                break;
+            case BatchDeListType.GreaterThanOrEquals:
+                fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
+                    .Where(i => (i.Price.Amount >= input.Price.Amount)).ToList();
+                break;
+            case BatchDeListType.LessThan:
+                fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
+                    .Where(i => (i.Price.Amount < input.Price.Amount)).ToList();
+                break;
+            case BatchDeListType.LessThanOrEquals:
+                fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
+                    .Where(i => (i.Price.Amount <= input.Price.Amount)).ToList();
+                break;
+            default:
+                throw new AssertionException("BatchDeListType not exists.");
+        }
+
+        if (fixedPriceListedNftInfoList == null)
+        {
+            throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
+        }
+
+        foreach (var listedNftInfo in fixedPriceListedNftInfoList)
+        {
+            var projectId = CalculateProjectId(input.Symbol, Context.Sender);
+            var whitelistId = State.WhitelistIdMap[projectId];
+            State.ListedNFTInfoListMap[input.Symbol][Context.Sender].Value.Remove(listedNftInfo);
+            Context.Fire(new ListedNFTRemoved
+            {
+                Symbol = listedNftInfo.Symbol,
+                Duration = listedNftInfo.Duration,
+                Owner = listedNftInfo.Owner,
+                Price = listedNftInfo.Price
+            });
+        }
+
+        return new Empty();
+    }
+
+    /// <summary>
     /// Sender is the seller.
     /// </summary>
     /// <param name="input"></param>
