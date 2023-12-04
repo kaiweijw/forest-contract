@@ -258,7 +258,7 @@ public partial class ForestContract
         Assert(nftInfo.Supply > 0, "NFT does not exist.");
 
         var dealService = GetDealService();
-        var normalPriceDealResultList = dealService.GetDealResultList(symbol, input,
+        var normalPriceDealResultList = dealService.GetDealResultListForBatchBuy(symbol, input,
             new ListedNFTInfoList
             {
                 Value = { affordableNftInfoList }

@@ -66,7 +66,7 @@ public class DealService
         return dealResultList;
     }
     
-    public IEnumerable<DealResult> GetDealResultList(string symbol, FixPriceList fixPriceList
+    public IEnumerable<DealResult> GetDealResultListForBatchBuy(string symbol, FixPriceList fixPriceList
         ,ListedNFTInfoList listedNftInfoList, out long needToDealQuantity)
     {
         var dealResultList = new List<DealResult>();
