@@ -225,11 +225,19 @@ public partial class ForestContract
         var fixedPriceListedNftInfoList =
             listedNftInfoList.Value.Where(i => i.ListType == ListType.FixedPrice).ToList();
 
-        if (fixedPriceListedNftInfoList == null)
+        if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
         {
             throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
         }
+        
+        fixedPriceListedNftInfoList =
+            fixedPriceListedNftInfoList.Where(i => i.Price.Symbol == input.Price.Symbol).ToList();
 
+        if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
+        {
+            throw new AssertionException("The same price symbol listed NFT Info not exists. (Or already delisted.)");
+        }
+        
         switch (input.BatchDelistType)
         {
             case BatchDeListType.GreaterThan:
@@ -252,7 +260,7 @@ public partial class ForestContract
                 throw new AssertionException("BatchDeListType not exists.");
         }
 
-        if (fixedPriceListedNftInfoList == null)
+        if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
         {
             throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
         }
