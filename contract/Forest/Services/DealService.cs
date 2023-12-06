@@ -76,7 +76,8 @@ public class DealService
         foreach (var listedNftInfo in listedNftInfoList.Value.Where(i =>
                      i.Price.Symbol == fixPriceList.Price.Symbol
                      && blockTime >= i.Duration.StartTime
-                     && blockTime >= i.Duration.PublicTime).OrderByDescending(i => i.Duration.PublicTime))
+                     && blockTime >= i.Duration.PublicTime
+                     ).OrderByDescending(i => i.Duration.PublicTime))
         {
             if (listedNftInfo.Quantity >= needToDealQuantity)
             {

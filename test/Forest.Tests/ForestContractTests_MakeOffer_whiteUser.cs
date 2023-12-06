@@ -7,8 +7,10 @@ using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Forest;
 
@@ -107,7 +109,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
             await UserTokenContractStub.Issue.SendAsync(new IssueInput()
             {
                 Symbol = NftSymbol,
-                Amount = 10,
+                Amount = 20,
                 To = User1Address
             });
 
@@ -118,7 +120,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
             });
 
             tokenInfo.Output.TotalSupply.ShouldBe(100);
-            tokenInfo.Output.Supply.ShouldBe(10);
+            tokenInfo.Output.Supply.ShouldBe(20);
 
             var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
             {
@@ -126,6 +128,20 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
                 Owner = User1Address
             });
             //nftBalance.Output.Balance.ShouldBe(10);
+            
+            await UserTokenContractStub.Transfer.SendAsync(new TransferInput()
+            {
+                To = User3Address,
+                Symbol = NftSymbol,
+                Amount = 10
+            });
+            var tokenInfo3 = await UserTokenContractStub.GetTokenInfo.SendAsync(new GetTokenInfoInput()
+            {
+                Symbol = NftSymbol,
+            });
+
+            tokenInfo3.Output.TotalSupply.ShouldBe(100);
+            tokenInfo3.Output.Supply.ShouldBe(20);
         }
 
         #endregion
@@ -148,6 +164,14 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
                 Symbol = ElfSymbol,
                 Amount = InitializeElfAmount
             });
+            
+            // transfer thousand ELF to buyer
+            await TokenContractStub.Transfer.SendAsync(new TransferInput()
+            {
+                To = User3Address,
+                Symbol = ElfSymbol,
+                Amount = InitializeElfAmount
+            });
         }
 
         #endregion
@@ -165,6 +189,20 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
 
             // approve contract handle ELF of buyer   
             await User2TokenContractStub.Approve.SendAsync(new ApproveInput()
+            {
+                Symbol = ElfSymbol,
+                Amount = InitializeElfAmount,
+                Spender = ForestContractAddress
+            });
+            
+            // approve contract handle ELF of buyer   
+            await User3TokenContractStub.Approve.SendAsync(new ApproveInput()
+            {
+                Symbol = NftSymbol,
+                Amount = 5,
+                Spender = ForestContractAddress
+            });
+            await User3TokenContractStub.Approve.SendAsync(new ApproveInput()
             {
                 Symbol = ElfSymbol,
                 Amount = InitializeElfAmount,

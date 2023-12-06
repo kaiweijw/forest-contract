@@ -265,7 +265,7 @@ public partial class ForestContract
         var listedNftInfoList = State.ListedNFTInfoListMap[symbol][input.OfferTo];
 
         makeOfferService.GetAffordableNftInfoList(symbol, input, out var affordableNftInfoList);
-
+        Assert(affordableNftInfoList != null, "affordableNftInfoList doen not exist");
         Assert(nftInfo.Supply > 0, "NFT does not exist.");
 
         var dealService = GetDealService();
