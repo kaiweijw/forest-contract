@@ -393,6 +393,8 @@ message OfferAdded {
   Price price = 5;
   int64 quantity = 6;
   google.protobuf.Timestamp expire_time = 7;
+  int64 origin_balance = 8;
+  string origin_balance_symbol = 9;
 }
 
 message OfferChanged {
@@ -403,6 +405,8 @@ message OfferChanged {
   Price price = 5;
   int64 quantity = 6;
   google.protobuf.Timestamp expire_time = 7;
+  int64 origin_balance = 8;
+  string origin_balance_symbol = 9;
 }
 
 message OfferRemoved {
