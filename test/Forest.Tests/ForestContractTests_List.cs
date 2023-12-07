@@ -1971,7 +1971,7 @@ public class ForestContractListTests : ForestContractTestBase
         });
 
         var exception = await Assert.ThrowsAsync<Exception>(act);
-        exception.Message.ShouldContain("Listed NFT Info not exists. (Or already delisted.)");
+        exception.Message.ShouldContain("this NFT Info not exists.");
         
     }
     
