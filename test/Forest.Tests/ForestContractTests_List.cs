@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
-using AElf.CSharp.Core.Extension;
 using Forest.Whitelist;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
