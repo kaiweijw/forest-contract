@@ -259,8 +259,7 @@ public partial class ForestContract
 
         var makeOfferService = GetMakeOfferService();
         makeOfferService.ValidateFixPriceList(input);
-
-        var blockTime = Context.CurrentBlockTime;
+        
         var sender = Context.Sender;
         var listedNftInfoList = State.ListedNFTInfoListMap[symbol][input.OfferTo];
 
@@ -275,17 +274,16 @@ public partial class ForestContract
                 Value = { affordableNftInfoList }
             }
             , out long needToDealQuantity).ToList();
-        Assert(needToDealQuantity == 0, "NormalDealQuantity doen not exist");
         Assert(normalPriceDealResultList.Count > 0, "NormalPrice does not exist.");
 
         var toRemove = new ListedNFTInfoList();
         foreach (var dealResult in normalPriceDealResultList)
         {
             var listedNftInfo = affordableNftInfoList[dealResult.Index];
+
             if (!TryDealWithFixedPriceForBatch(sender, symbol, input, dealResult
                     , listedNftInfo, out var dealQuantity))
                 continue;
-            dealResult.Quantity = dealResult.Quantity.Sub(dealQuantity);
             listedNftInfo.Quantity = listedNftInfo.Quantity.Sub(dealQuantity);
             input.Quantity = input.Quantity.Sub(dealQuantity);
             if (listedNftInfo.Quantity == 0)
@@ -503,10 +501,26 @@ public partial class ForestContract
     private bool TryDealWithFixedPriceForBatch(Address sender, string symbol, FixPriceList input, DealResult dealResult,
         ListedNFTInfo listedNftInfo, out long actualQuantity)
     {
+        var senderBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+        {
+            Symbol = symbol,
+            Owner = input.OfferTo
+        });
+        if (senderBalance == null || senderBalance.Balance == 0)
+        {
+            actualQuantity = 0;
+            return false;
+        } 
         var usePrice = input.Price.Clone();
         usePrice.Amount = Math.Min(input.Price.Amount, dealResult.PurchaseAmount);
         actualQuantity = Math.Min(input.Quantity, listedNftInfo.Quantity);
-
+        actualQuantity = Math.Min(actualQuantity, senderBalance.Balance);
+        
+        if (actualQuantity == 0)
+        {
+            return false;
+        } 
+        
         var totalAmount = usePrice.Amount.Mul(actualQuantity);
         PerformDeal(new PerformDealInput
         {

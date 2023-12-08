@@ -99,7 +99,7 @@ public class DealService
                 var dealResult = new DealResult
                 {
                     Symbol = symbol,
-                    Quantity = needToDealQuantity,
+                    Quantity = listedNftInfo.Quantity,
                     PurchaseSymbol = fixPriceList.Price.Symbol,
                     PurchaseAmount = listedNftInfo.Price.Amount,
                     Duration = listedNftInfo.Duration,
