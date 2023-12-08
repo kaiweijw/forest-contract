@@ -228,7 +228,7 @@ public partial class ForestContractTests_MakeOffer
     }
     
     [Fact]
-    public async void BatchBuyNow_Buy_From_OneUser_Listing_Records_Success2()
+    public async void BatchBuyNow_Buy_From_OneUser_Sender_Balance_Is_Zero_Success()
     {
         await InitializeForestContract();
         await PrepareNftData();

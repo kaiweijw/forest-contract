@@ -223,6 +223,7 @@ public partial class ForestContract
         });
         Assert(nftInfo != null, "Invalid symbol data");
         var untradedList = new List<FixPriceList>();
+        var userBalanceDic = new Dictionary<string,long>();
         foreach (var fixPrice in input.FixPriceList)
         {
             var result = SingleMakeOfferForBatchBuyNow(input.Symbol, new FixPriceList()
@@ -231,14 +232,15 @@ public partial class ForestContract
                 Quantity = fixPrice.Quantity,
                 Price = fixPrice.Price,
                 StartTime = fixPrice.StartTime
-            });
+            }, userBalanceDic);
             untradedList.Add(result);
         }
 
         return new Empty();
     }
 
-    private FixPriceList SingleMakeOfferForBatchBuyNow(string symbol, FixPriceList input)
+    private FixPriceList SingleMakeOfferForBatchBuyNow(string symbol, FixPriceList input
+        , Dictionary<string,long> userBalanceDic)
     {
         Assert(input.Quantity > 0, "Invalid param Quantity.");
         Assert(input.Price.Amount > 0, "Invalid price amount.");
@@ -282,7 +284,7 @@ public partial class ForestContract
             var listedNftInfo = affordableNftInfoList[dealResult.Index];
 
             if (!TryDealWithFixedPriceForBatch(sender, symbol, input, dealResult
-                    , listedNftInfo, out var dealQuantity))
+                    , listedNftInfo, userBalanceDic,out var dealQuantity))
                 continue;
             listedNftInfo.Quantity = listedNftInfo.Quantity.Sub(dealQuantity);
             input.Quantity = input.Quantity.Sub(dealQuantity);
@@ -499,14 +501,26 @@ public partial class ForestContract
     /// Sender is buyer.
     /// </summary>
     private bool TryDealWithFixedPriceForBatch(Address sender, string symbol, FixPriceList input, DealResult dealResult,
-        ListedNFTInfo listedNftInfo, out long actualQuantity)
+        ListedNFTInfo listedNftInfo, Dictionary<string,long> userBalanceDic ,out long actualQuantity)
     {
-        var senderBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+        var userBalanceKey = symbol + input.OfferTo;
+        long senderBalanceCount;
+        if (userBalanceDic.TryGetValue(userBalanceKey,out senderBalanceCount))
         {
-            Symbol = symbol,
-            Owner = input.OfferTo
-        });
-        if (senderBalance == null || senderBalance.Balance == 0)
+            senderBalanceCount = userBalanceDic[userBalanceKey];
+        }
+        else
+        {
+            var senderBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+            {
+                Symbol = symbol,
+                Owner = input.OfferTo
+            });
+            senderBalanceCount = senderBalance.Balance;
+            userBalanceDic.Add(userBalanceKey,senderBalanceCount);
+        }
+        
+        if (senderBalanceCount== 0)
         {
             actualQuantity = 0;
             return false;
@@ -514,13 +528,16 @@ public partial class ForestContract
         var usePrice = input.Price.Clone();
         usePrice.Amount = Math.Min(input.Price.Amount, dealResult.PurchaseAmount);
         actualQuantity = Math.Min(input.Quantity, listedNftInfo.Quantity);
-        actualQuantity = Math.Min(actualQuantity, senderBalance.Balance);
+        actualQuantity = Math.Min(actualQuantity, senderBalanceCount);
         
         if (actualQuantity == 0)
         {
             return false;
-        } 
-        
+        }
+
+        senderBalanceCount -= actualQuantity;
+        userBalanceDic[userBalanceKey]=senderBalanceCount;
+
         var totalAmount = usePrice.Amount.Mul(actualQuantity);
         PerformDeal(new PerformDealInput
         {
