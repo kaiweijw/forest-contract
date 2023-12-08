@@ -146,7 +146,7 @@ internal class MakeOfferService
         return listedNftInfoList.Value.Where(i =>
                 i.Symbol == symbol && i.Price.Symbol == input.Price.Symbol && i.Price.Amount == input.Price.Amount
                 && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours)
-                && input.StartTime == i.Duration.StartTime)
+                && input.StartTime.Seconds == i.Duration.StartTime.Seconds)
             .OrderBy(i => i.Duration.StartTime)
             .Take(maxDealCount > 0 ? maxDealCount : ForestContract.DefaultMaxOfferDealCount)
             .ToList();
