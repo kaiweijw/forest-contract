@@ -217,14 +217,7 @@ message DelistInput {
 message BatchDeListInput{
   string symbol = 1;
   Price price = 2;
-  BatchDeListType batch_delist_type = 3;
-}
-
-enum BatchDeListType {
-  LESS_THAN = 0;
-  LESS_THAN_OR_EQUALS = 1;
-  GREATER_THAN = 2;
-  GREATER_THAN_OR_EQUALS = 3;
+  int32 batch_delist_type = 3;
 }
 
 message MakeOfferInput {

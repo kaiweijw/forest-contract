@@ -240,19 +240,19 @@ public partial class ForestContract
         
         switch (input.BatchDelistType)
         {
-            case BatchDeListType.GreaterThan:
+            case BatchDeListTypeGreaterThan:
                 fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
                     .Where(i => (i.Price.Amount > input.Price.Amount)).ToList();
                 break;
-            case BatchDeListType.GreaterThanOrEquals:
+            case BatchDeListTypeGreaterThanOrEquals:
                 fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
                     .Where(i => (i.Price.Amount >= input.Price.Amount)).ToList();
                 break;
-            case BatchDeListType.LessThan:
+            case BatchDeListTypeLessThan:
                 fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
                     .Where(i => (i.Price.Amount < input.Price.Amount)).ToList();
                 break;
-            case BatchDeListType.LessThanOrEquals:
+            case BatchDeListTypeLessThanOrEquals:
                 fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
                     .Where(i => (i.Price.Amount <= input.Price.Amount)).ToList();
                 break;

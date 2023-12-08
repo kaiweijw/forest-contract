@@ -1164,7 +1164,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice1
             },
-            BatchDelistType = BatchDeListType.LessThan
+            BatchDelistType = ForestContract.BatchDeListTypeLessThan
         });
 
         var exception = await Assert.ThrowsAsync<Exception>(act);
@@ -1216,7 +1216,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice3
             },
-            BatchDelistType = BatchDeListType.LessThan
+            BatchDelistType = ForestContract.BatchDeListTypeLessThan
         });
         await QueryLastByStartAscListInfo(inputListQuantity4, inputSellPrice4);
         await QueryFirstByStartAscListInfo(inputListQuantity3, inputSellPrice3);
@@ -1292,7 +1292,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice1
             },
-            BatchDelistType = BatchDeListType.LessThanOrEquals
+            BatchDelistType = ForestContract.BatchDeListTypeLessThanOrEquals
         });
         await QueryLastByStartAscListInfo(inputListQuantity4, inputSellPrice4);
         await QueryFirstByStartAscListInfo(inputListQuantity3, inputSellPrice3);
@@ -1368,7 +1368,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice2
             },
-            BatchDelistType = BatchDeListType.LessThanOrEquals
+            BatchDelistType = ForestContract.BatchDeListTypeLessThanOrEquals
         });
         await QueryLastByStartAscListInfo(inputListQuantity4, inputSellPrice4);
         await QueryFirstByStartAscListInfo(inputListQuantity3, inputSellPrice3);
@@ -1444,7 +1444,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice3
             },
-            BatchDelistType = BatchDeListType.LessThanOrEquals
+            BatchDelistType = ForestContract.BatchDeListTypeLessThanOrEquals
         });
         await QueryLastByStartAscListInfo(inputListQuantity4, inputSellPrice4);
         await QueryFirstByStartAscListInfo(inputListQuantity4, inputSellPrice4);
@@ -1531,7 +1531,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice1
             },
-            BatchDelistType = BatchDeListType.GreaterThanOrEquals
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThanOrEquals
         });
         
         executionResult1.TransactionResult.Logs.Count.ShouldBe(4);
@@ -1627,7 +1627,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice1
             },
-            BatchDelistType = BatchDeListType.GreaterThan
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
         });
         
         executionResult1.TransactionResult.Logs.Count.ShouldBe(2);
@@ -1704,7 +1704,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice2
             },
-            BatchDelistType = BatchDeListType.GreaterThan
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
         });
         
         executionResult1.TransactionResult.Logs.Count.ShouldBe(2);
@@ -1782,7 +1782,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice3
             },
-            BatchDelistType = BatchDeListType.GreaterThan
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
         });
         
         executionResult1.TransactionResult.Logs.Count.ShouldBe(1);
@@ -1848,7 +1848,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice4
             },
-            BatchDelistType = BatchDeListType.GreaterThanOrEquals
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThanOrEquals
         });
         
         executionResult1.TransactionResult.Logs.Count.ShouldBe(1);
@@ -1915,7 +1915,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice4
             },
-            BatchDelistType = BatchDeListType.GreaterThan
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
         });
 
         var exception = await Assert.ThrowsAsync<Exception>(act);
@@ -1967,7 +1967,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputSellPrice4
             },
-            BatchDelistType = BatchDeListType.GreaterThan
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
         });
 
         var exception = await Assert.ThrowsAsync<Exception>(act);
@@ -2020,7 +2020,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = -1
             },
-            BatchDelistType = BatchDeListType.GreaterThan
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
         });
 
         var exception = await Assert.ThrowsAsync<Exception>(act);
@@ -2073,7 +2073,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELFA",
                 Amount = inputListQuantity1
             },
-            BatchDelistType = BatchDeListType.GreaterThan
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
         });
 
         var exception = await Assert.ThrowsAsync<Exception>(act);
@@ -2126,7 +2126,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputListQuantity1
             },
-            BatchDelistType = (BatchDeListType)5
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan+1
         });
 
         var exception = await Assert.ThrowsAsync<Exception>(act);
