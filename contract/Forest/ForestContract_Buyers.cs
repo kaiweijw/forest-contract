@@ -30,7 +30,7 @@ public partial class ForestContract
         {
             Symbol = input.Symbol,
         });
-        Assert(nftInfo != null, "Invalid symbol data");
+        Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
         Assert(input.Quantity <= nftInfo?.TotalSupply, "Offer quantity beyond totalSupply");
 
         var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
@@ -221,19 +221,17 @@ public partial class ForestContract
         {
             Symbol = input.Symbol,
         });
-        Assert(nftInfo != null && !nftInfo.Symbol.Equals(""), "Invalid symbol data");
-        var untradedList = new List<FixPriceList>();
+        Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
         var userBalanceDic = new Dictionary<string,long>();
         foreach (var fixPrice in input.FixPriceList)
         {
-            var result = SingleMakeOfferForBatchBuyNow(input.Symbol, new FixPriceList()
+           SingleMakeOfferForBatchBuyNow(input.Symbol, new FixPriceList()
             {
                 OfferTo = fixPrice.OfferTo,
                 Quantity = fixPrice.Quantity,
                 Price = fixPrice.Price,
                 StartTime = fixPrice.StartTime
             }, userBalanceDic);
-            untradedList.Add(result);
         }
 
         return new Empty();
@@ -249,7 +247,7 @@ public partial class ForestContract
         {
             Symbol = symbol,
         });
-        Assert(nftInfo != null, "Invalid symbol data");
+        Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
         Assert(input.Quantity <= nftInfo?.TotalSupply, "Offer quantity beyond totalSupply");
 
         var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
@@ -274,8 +272,7 @@ public partial class ForestContract
             new ListedNFTInfoList
             {
                 Value = { affordableNftInfoList }
-            }
-            , out long needToDealQuantity).ToList();
+            }).ToList();
         Assert(normalPriceDealResultList.Count > 0, "NormalPrice does not exist.");
 
         var toRemove = new ListedNFTInfoList();

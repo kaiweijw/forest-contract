@@ -67,10 +67,11 @@ public class DealService
     }
 
     public IEnumerable<DealResult> GetDealResultListForBatchBuy(string symbol, FixPriceList fixPriceList
-        ,ListedNFTInfoList listedNftInfoList, out long needToDealQuantity)
+        ,ListedNFTInfoList listedNftInfoList)
     {
+        
         var dealResultList = new List<DealResult>();
-        needToDealQuantity = fixPriceList.Quantity;
+        var needToDealQuantity = fixPriceList.Quantity;
         var currentIndex = 0;
         var blockTime = _context.CurrentBlockTime;
         foreach (var listedNftInfo in listedNftInfoList.Value.Where(i =>

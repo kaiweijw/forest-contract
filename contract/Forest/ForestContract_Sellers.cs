@@ -311,7 +311,7 @@ public partial class ForestContract
         {
             Symbol = input.Symbol,
         });
-        Assert(nftInfo != null, "Invalid symbol data");
+        Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
 
         var offer = State.OfferListMap[input.Symbol][input.OfferFrom]?.Value
             .FirstOrDefault(o => o.From == input.OfferFrom
