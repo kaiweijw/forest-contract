@@ -2124,7 +2124,7 @@ public class ForestContractListTests : ForestContractTestBase
                 Symbol = "ELF",
                 Amount = inputListQuantity1
             },
-            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan+1
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThanOrEquals+1
         });
 
         var exception = await Assert.ThrowsAsync<Exception>(act);
