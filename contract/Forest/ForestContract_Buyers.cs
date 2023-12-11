@@ -221,7 +221,7 @@ public partial class ForestContract
         {
             Symbol = input.Symbol,
         });
-        Assert(nftInfo != null, "Invalid symbol data");
+        Assert(nftInfo != null && !nftInfo.Symbol.Equals(""), "Invalid symbol data");
         var untradedList = new List<FixPriceList>();
         var userBalanceDic = new Dictionary<string,long>();
         foreach (var fixPrice in input.FixPriceList)
