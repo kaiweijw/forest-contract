@@ -219,7 +219,7 @@ public partial class ForestContract
         var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
         if (listedNftInfoList == null)
         {
-            throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
+            return new Empty();
         }
 
         var fixedPriceListedNftInfoList =
@@ -227,7 +227,7 @@ public partial class ForestContract
 
         if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
         {
-            throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
+            return new Empty();
         }
         
         fixedPriceListedNftInfoList =
@@ -235,7 +235,7 @@ public partial class ForestContract
 
         if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
         {
-            throw new AssertionException("The same price symbol listed NFT Info not exists. (Or already delisted.)");
+            return new Empty();
         }
         
         switch (input.BatchDelistType)
@@ -262,7 +262,7 @@ public partial class ForestContract
 
         if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
         {
-            throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
+            return new Empty();
         }
 
         foreach (var listedNftInfo in fixedPriceListedNftInfoList)

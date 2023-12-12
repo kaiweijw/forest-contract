@@ -1154,7 +1154,7 @@ public class ForestContractListTests : ForestContractTestBase
         await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
         //basic end
         
-        Func<Task> act = () => Seller1ForestContractStub.BatchDeList.SendAsync(new BatchDeListInput
+        var executionResult1 =  await Seller1ForestContractStub.BatchDeList.SendAsync(new BatchDeListInput
         {
             Symbol = NftSymbol,
             Price = new Price()
@@ -1164,9 +1164,8 @@ public class ForestContractListTests : ForestContractTestBase
             },
             BatchDelistType = ForestContract.BatchDeListTypeLessThan
         });
-
-        var exception = await Assert.ThrowsAsync<Exception>(act);
-        exception.Message.ShouldContain("Listed NFT Info not exists. (Or already delisted.)");
+        
+        executionResult1.TransactionResult.Logs.Count.ShouldBe(0);
     }
 
     [Fact]
@@ -1244,7 +1243,87 @@ public class ForestContractListTests : ForestContractTestBase
         log2.Duration.PublicTime.ShouldNotBeNull();
         log2.Price.Amount.ShouldBe(inputSellPrice1);
     }
+    
+    [Fact]
+    public async void Delist23Test_NoPriceFit()
+    {
+        //basic begin
+        int approveQuantity = 0;
+        await InitializeForestContract();
+        await PrepareNftData();
 
+        int inputListQuantity1 = 1;
+        int inputSellPrice1 = 2;
+        approveQuantity += inputListQuantity1;
+        await InitListInfo(inputListQuantity1, inputSellPrice1, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+
+        int inputListQuantity2 = 2;
+        int inputSellPrice2 = 2;
+        approveQuantity += inputListQuantity2;
+        await InitListInfo(inputListQuantity2, inputSellPrice2, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity2, inputSellPrice2);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+
+        int inputListQuantity3 = 3;
+        int inputSellPrice3 = 4;
+        approveQuantity += inputListQuantity3;
+        await InitListInfo(inputListQuantity3, inputSellPrice3, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity3, inputSellPrice3);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        
+        int inputListQuantity4 = 5;
+        int inputSellPrice4 = 5;
+        approveQuantity += inputListQuantity4;
+        await InitListInfo(inputListQuantity4, inputSellPrice4, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity4, inputSellPrice4);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        //basic end
+        
+        var executionResult1 = await Seller1ForestContractStub.BatchDeList.SendAsync(new BatchDeListInput
+        {
+            Symbol = NftSymbol,
+            Price = new Price()
+            {
+                Symbol = "ELF",
+                Amount = inputSellPrice1-1
+            },
+            BatchDelistType = ForestContract.BatchDeListTypeLessThan
+        });
+        await QueryLastByStartAscListInfo(inputListQuantity4, inputSellPrice4);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        
+        executionResult1.TransactionResult.Logs.Count.ShouldBe(0);
+        
+    }
+
+    [Fact]
+    public async void Delist23Test_NoListing()
+    {
+        //basic begin
+        int approveQuantity = 0;
+        await InitializeForestContract();
+        await PrepareNftData();
+        
+        //basic end
+        
+        var executionResult1 = await Seller1ForestContractStub.BatchDeList.SendAsync(new BatchDeListInput
+        {
+            Symbol = NftSymbol,
+            Price = new Price()
+            {
+                Symbol = "ELF",
+                Amount = 10
+            },
+            BatchDelistType = ForestContract.BatchDeListTypeLessThan
+        });
+
+        executionResult1.TransactionResult.Logs.Count.ShouldBe(0);
+        
+    }
+
+    
     [Fact]
     public async void Delist24Test()
     {
@@ -1904,8 +1983,7 @@ public class ForestContractListTests : ForestContractTestBase
         await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
         //basic end
         
-        
-        Func<Task> act = () => Seller1ForestContractStub.BatchDeList.SendAsync(new BatchDeListInput
+        var executionResult1 =  await Seller1ForestContractStub.BatchDeList.SendAsync(new BatchDeListInput
         {
             Symbol = NftSymbol,
             Price = new Price()
@@ -1915,9 +1993,8 @@ public class ForestContractListTests : ForestContractTestBase
             },
             BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
         });
-
-        var exception = await Assert.ThrowsAsync<Exception>(act);
-        exception.Message.ShouldContain("Listed NFT Info not exists. (Or already delisted.)");
+        
+        executionResult1.TransactionResult.Logs.Count.ShouldBe(0);
     }
     
     [Fact]
@@ -1960,6 +2037,59 @@ public class ForestContractListTests : ForestContractTestBase
         Func<Task> act = () => Seller1ForestContractStub.BatchDeList.SendAsync(new BatchDeListInput
         {
             Symbol = NftSymbol+"A",
+            Price = new Price()
+            {
+                Symbol = "ELF",
+                Amount = inputSellPrice4
+            },
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
+        });
+
+        var exception = await Assert.ThrowsAsync<Exception>(act);
+        exception.Message.ShouldContain("this NFT Info not exists.");
+        
+    }
+    
+    [Fact]
+    public async void Delist33Test_Symbol_Is_Null()
+    {
+        //basic begin
+        int approveQuantity = 0;
+        await InitializeForestContract();
+        await PrepareNftData();
+
+        int inputListQuantity1 = 1;
+        int inputSellPrice1 = 2;
+        approveQuantity += inputListQuantity1;
+        await InitListInfo(inputListQuantity1, inputSellPrice1, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+
+        int inputListQuantity2 = 2;
+        int inputSellPrice2 = 2;
+        approveQuantity += inputListQuantity2;
+        await InitListInfo(inputListQuantity2, inputSellPrice2, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity2, inputSellPrice2);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+
+        int inputListQuantity3 = 3;
+        int inputSellPrice3 = 4;
+        approveQuantity += inputListQuantity3;
+        await InitListInfo(inputListQuantity3, inputSellPrice3, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity3, inputSellPrice3);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        
+        int inputListQuantity4 = 5;
+        int inputSellPrice4 = 5;
+        approveQuantity += inputListQuantity4;
+        await InitListInfo(inputListQuantity4, inputSellPrice4, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity4, inputSellPrice4);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        //basic end
+        
+        Func<Task> act = () => Seller1ForestContractStub.BatchDeList.SendAsync(new BatchDeListInput
+        {
+            Symbol = "",
             Price = new Price()
             {
                 Symbol = "ELF",
@@ -2027,7 +2157,7 @@ public class ForestContractListTests : ForestContractTestBase
     }
     
     [Fact]
-    public async void Delist35Test()
+    public async void Delist34Test_Price_Is_Null()
     {
         //basic begin
         int approveQuantity = 0;
@@ -2068,15 +2198,65 @@ public class ForestContractListTests : ForestContractTestBase
             Symbol = NftSymbol,
             Price = new Price()
             {
-                Symbol = "ELFA",
-                Amount = inputListQuantity1
+                Symbol = "ELF"
             },
             BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
         });
 
         var exception = await Assert.ThrowsAsync<Exception>(act);
-        exception.Message.ShouldContain("The same price symbol listed NFT Info not exists. (Or already delisted.)");
+        exception.Message.ShouldContain("Incorrect listing price.");
         
+    }
+    
+    [Fact]
+    public async void Delist35Test()
+    {
+        //basic begin
+        int approveQuantity = 0;
+        await InitializeForestContract();
+        await PrepareNftData();
+
+        int inputListQuantity1 = 1;
+        int inputSellPrice1 = 2;
+        approveQuantity += inputListQuantity1;
+        await InitListInfo(inputListQuantity1, inputSellPrice1, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+
+        int inputListQuantity2 = 2;
+        int inputSellPrice2 = 2;
+        approveQuantity += inputListQuantity2;
+        await InitListInfo(inputListQuantity2, inputSellPrice2, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity2, inputSellPrice2);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+
+        int inputListQuantity3 = 3;
+        int inputSellPrice3 = 4;
+        approveQuantity += inputListQuantity3;
+        await InitListInfo(inputListQuantity3, inputSellPrice3, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity3, inputSellPrice3);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        
+        int inputListQuantity4 = 5;
+        int inputSellPrice4 = 5;
+        approveQuantity += inputListQuantity4;
+        await InitListInfo(inputListQuantity4, inputSellPrice4, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity4, inputSellPrice4);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        //basic end
+        
+        var executionResult1 =  await Seller1ForestContractStub.BatchDeList.SendAsync(new BatchDeListInput
+        {
+            Symbol = NftSymbol,
+            Price = new Price()
+            {
+                Symbol = "ELFA",
+                Amount = inputListQuantity1
+            },
+            BatchDelistType = ForestContract.BatchDeListTypeGreaterThan
+        });
+        
+        executionResult1.TransactionResult.Logs.Count.ShouldBe(0);
     }
 
     [Fact]
@@ -2132,6 +2312,81 @@ public class ForestContractListTests : ForestContractTestBase
         
     }
 
+    [Fact]
+    public async void Delist36Test_BatchDelistType_Is_Null()
+    {
+        //basic begin
+        int approveQuantity = 0;
+        await InitializeForestContract();
+        await PrepareNftData();
+
+        int inputListQuantity1 = 1;
+        int inputSellPrice1 = 2;
+        approveQuantity += inputListQuantity1;
+        await InitListInfo(inputListQuantity1, inputSellPrice1, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+
+        int inputListQuantity2 = 2;
+        int inputSellPrice2 = 2;
+        approveQuantity += inputListQuantity2;
+        await InitListInfo(inputListQuantity2, inputSellPrice2, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity2, inputSellPrice2);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+
+        int inputListQuantity3 = 3;
+        int inputSellPrice3 = 4;
+        approveQuantity += inputListQuantity3;
+        await InitListInfo(inputListQuantity3, inputSellPrice3, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity3, inputSellPrice3);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        
+        int inputListQuantity4 = 5;
+        int inputSellPrice4 = 5;
+        approveQuantity += inputListQuantity4;
+        await InitListInfo(inputListQuantity4, inputSellPrice4, approveQuantity);
+        await QueryLastByStartAscListInfo(inputListQuantity4, inputSellPrice4);
+        await QueryFirstByStartAscListInfo(inputListQuantity1, inputSellPrice1);
+        //basic end
+        
+        var executionResult1 = await Seller1ForestContractStub.BatchDeList.SendAsync(new BatchDeListInput
+        {
+            Symbol = NftSymbol,
+            Price = new Price()
+            {
+                Symbol = "ELF",
+                Amount = inputSellPrice3
+            },
+            //BatchDelistType = ForestContract.BatchDeListTypeLessThan
+        });
+        await QueryLastByStartAscListInfo(inputListQuantity4, inputSellPrice4);
+        await QueryFirstByStartAscListInfo(inputListQuantity3, inputSellPrice3);
+        
+        executionResult1.TransactionResult.Logs.Count.ShouldBe(2);
+        
+        var log1 = ListedNFTRemoved.Parser
+            .ParseFrom(executionResult1.TransactionResult.Logs.First(l => l.Name == nameof(ListedNFTRemoved))
+                .NonIndexed);
+        log1.Owner.ShouldBe(User1Address);
+        //log1.Quantity.ShouldBe(inputListQuantity1);
+        log1.Symbol.ShouldBe(NftSymbol);
+        log1.Duration.ShouldNotBeNull();
+        log1.Duration.DurationHours.ShouldBe(4392L);
+        log1.Duration.StartTime.ShouldNotBeNull();
+        log1.Duration.PublicTime.ShouldNotBeNull();
+        log1.Price.Amount.ShouldBe(inputSellPrice1);
+        
+        var log2 = ListedNFTRemoved.Parser
+            .ParseFrom(executionResult1.TransactionResult.Logs.Skip(1).First(l => l.Name == nameof(ListedNFTRemoved))
+                .NonIndexed);
+        log2.Owner.ShouldBe(User1Address);
+        log2.Symbol.ShouldBe(NftSymbol);
+        log2.Duration.ShouldNotBeNull();
+        log2.Duration.DurationHours.ShouldBe(4392L);
+        log2.Duration.StartTime.ShouldNotBeNull();
+        log2.Duration.PublicTime.ShouldNotBeNull();
+        log2.Price.Amount.ShouldBe(inputSellPrice1);
+    }
     
     [Fact]
     public async void TransferTest()
