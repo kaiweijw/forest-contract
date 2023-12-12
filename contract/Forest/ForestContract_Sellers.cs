@@ -356,21 +356,6 @@ public partial class ForestContract
         var price = offer.Price;
         var totalAmount = price.Amount.Mul(input.Quantity);
 
-        var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
-        if (listedNftInfoList != null && listedNftInfoList.Value.Any())
-        {
-            var firstListedNftInfo = listedNftInfoList.Value.First();
-            // Listed with fixed price.
-            var nftBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput
-            {
-                Symbol = input.Symbol,
-                Owner = Context.Sender,
-            }).Balance;
-            var listedQuantity = listedNftInfoList.Value.Where(i => i.Owner == Context.Sender).Sum(i => i.Quantity);
-            Assert(nftBalance >= listedQuantity.Add(input.Quantity),
-                $"Need to delist at least {listedQuantity.Add(input.Quantity).Sub(nftBalance)} NFT(s) before deal.");
-        }
-
         PerformDeal(new PerformDealInput
         {
             NFTFrom = Context.Sender,
