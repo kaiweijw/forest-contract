@@ -1769,17 +1769,40 @@ public class ForestContractTests_Deal : ForestContractTestBase
         await InitializeForestContract();
         await PrepareNftData();
         
-        var sellPrice = Elf(5_0000_0000);
-        var offerPrice = Elf(5_0000_0000);
-        var offerQuantity = 2;
-        var dealQuantity = 2;
-        var listQuantity = 1;
+        var sellPrice = Elf(1000);
+        var offerPrice = Elf(1000);
+        var offerQuantity = 6;
+        var dealQuantity = 6;
+        var listQuantity = 6;
         var serviceFee = dealQuantity * offerPrice.Amount * ServiceFeeRate / 10000;
 
         // after publicTime
         var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddSeconds(1));
         var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddSeconds(1));
 
+        
+        #region approve transfer
+
+        {
+            // approve contract handle NFT of seller   
+            await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+            {
+                Symbol = NftSymbol,
+                Amount = 20,
+                Spender = ForestContractAddress
+            });
+            
+            // approve contract handle ELF of buyer   
+            await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+            {
+                Symbol = ElfSymbol,
+                Amount = InitializeElfAmount,
+                Spender = ForestContractAddress
+            });
+        }
+
+        #endregion
+        
         #region ListWithFixedPrice
 
         {
@@ -1860,8 +1883,8 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 .NonIndexed);
             log2.NftSymbol.ShouldBe(NftSymbol);
             log2.NftFrom.ShouldBe(User1Address);
-            log2.NftQuantity.ShouldBe(2);
-            log2.PurchaseAmount.ShouldBe(1000000000);
+            log2.NftQuantity.ShouldBe(6);
+            log2.PurchaseAmount.ShouldBe(6000L);
             log2.NftTo.ShouldBe(User2Address);
             log2.PurchaseSymbol.ShouldBe("ELF");
 
@@ -1869,7 +1892,7 @@ public class ForestContractTests_Deal : ForestContractTestBase
             var log3 = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
                 .First(l => l.Name == nameof(Transferred))
                 .NonIndexed);
-            log3.Amount.ShouldBe(900000000);
+            log3.Amount.ShouldBe(5400L);
         }
 
         #endregion
