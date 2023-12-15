@@ -1460,15 +1460,9 @@ public class ForestContractTests_Deal : ForestContractTestBase
 
         #endregion
 
-        var sellerNftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
-        {
-            Symbol = NftSymbol,
-            Owner = User1Address
-        });
-        
         #region deal
 
-        {
+        {   
             await UserTokenContractStub.Approve.SendAsync(new ApproveInput() { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = dealQuantity+1 });
             
             var errorMessage = "";
