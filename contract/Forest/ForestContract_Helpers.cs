@@ -93,7 +93,8 @@ public partial class ForestContract
             {
                 StartTime = Context.CurrentBlockTime,
                 PublicTime = Context.CurrentBlockTime,
-                DurationHours = SIX_MONTH_HOURS
+                DurationHours = SIX_MONTH_HOURS,
+                DurationMinutes = 0
             };
         }
         else
@@ -108,10 +109,21 @@ public partial class ForestContract
                 duration.PublicTime = duration.StartTime;
             }
 
-            if (duration.DurationHours == 0)
+            if (duration.DurationMinutes < 0 || duration.DurationMinutes >= 60)
+            {
+                duration.DurationMinutes = 0;
+            }
+
+            if (duration.DurationHours < 0)
+            {
+                duration.DurationMinutes = 0;
+            }
+            
+            if (duration.DurationHours == 0 && duration.DurationMinutes == 0)
             {
                 duration.DurationHours = SIX_MONTH_HOURS;
             }
+            
         }
 
         return duration;
@@ -264,7 +276,7 @@ public partial class ForestContract
         {
             foreach (var listedNftInfo in listedNftInfoList.Value)
             {
-                var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours);
+                var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours).AddMinutes(listedNftInfo.Duration.DurationMinutes);
                 if(expireTime >= Context.CurrentBlockTime)
                 {
                     totalAmount = totalAmount.Add(listedNftInfo.Quantity);

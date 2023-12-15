@@ -71,7 +71,7 @@ public partial class ForestContract
             if (price != null && price.Amount <= input.Price.Amount && price.Symbol == input.Price.Symbol)
             {
                 var minStartList = listedNftInfoList.Value
-                    .Where(info => blockTime <= info.Duration.StartTime.AddHours(info.Duration.DurationHours))
+                    .Where(info => blockTime <= info.Duration.StartTime.AddHours(info.Duration.DurationHours).AddMinutes(info.Duration.DurationMinutes))
                     .OrderBy(i => i.Duration.StartTime)
                     .ToList();
                 if (minStartList.Count == 0)

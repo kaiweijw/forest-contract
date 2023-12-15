@@ -153,6 +153,7 @@ message ListDuration {
   google.protobuf.Timestamp start_time = 1;
   google.protobuf.Timestamp public_time = 2;
   int64 duration_hours = 3;
+  int32 duration_minutes =4;
 }
 
 message DealInfo {
