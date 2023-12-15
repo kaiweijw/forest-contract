@@ -675,6 +675,16 @@ public partial class ForestContractTests_MakeOffer
         }
 
         #endregion
+        
+        await QueryLastByStartAscListInfo(Seller1ForestContractStub, user1InputListQuantity2, user1InputSellPrice2,
+            User1Address);
+        await QueryFirstByStartAscListInfo(Seller1ForestContractStub, user1InputListQuantity2, user1InputSellPrice2,
+            User1Address);
+        
+        await QueryLastByStartAscListInfo(Seller3ForestContractStub, user3InputListQuantity2, user3InputSellPrice2,
+            User3Address);
+        await QueryFirstByStartAscListInfo(Seller3ForestContractStub, user3InputListQuantity2, user3InputSellPrice2,
+            User3Address);
 
         // user1 nft number from 10 to 9
         var user1NftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
