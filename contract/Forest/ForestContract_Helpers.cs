@@ -116,7 +116,7 @@ public partial class ForestContract
 
             if (duration.DurationHours < 0)
             {
-                duration.DurationMinutes = 0;
+                duration.DurationHours = 0;
             }
             
             if (duration.DurationHours == 0 && duration.DurationMinutes == 0)
