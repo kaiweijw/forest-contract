@@ -213,6 +213,7 @@ message DelistInput {
   string symbol = 1;
   Price price = 2;
   int64 quantity = 4;
+  google.protobuf.Timestamp start_time = 5;
 }
 
 message BatchDeListInput{
