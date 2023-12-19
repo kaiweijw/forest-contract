@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
@@ -86,15 +87,15 @@ public partial class ForestContract
 
     private ListDuration AdjustListDuration(ListDuration duration)
     {
-        const int SIX_MONTH_HOURS = 4392;
+        const int SIX_MONTH_MINUTES = 263520;
         if (duration == null)
         {
             duration = new ListDuration
             {
                 StartTime = Context.CurrentBlockTime,
                 PublicTime = Context.CurrentBlockTime,
-                DurationHours = SIX_MONTH_HOURS,
-                DurationMinutes = 0
+                DurationHours = 0,
+                DurationMinutes = SIX_MONTH_MINUTES
             };
         }
         else
@@ -109,7 +110,7 @@ public partial class ForestContract
                 duration.PublicTime = duration.StartTime;
             }
 
-            if (duration.DurationMinutes < 0 || duration.DurationMinutes >= 60)
+            if (duration.DurationMinutes < 0)
             {
                 duration.DurationMinutes = 0;
             }
@@ -121,7 +122,7 @@ public partial class ForestContract
             
             if (duration.DurationHours == 0 && duration.DurationMinutes == 0)
             {
-                duration.DurationHours = SIX_MONTH_HOURS;
+                duration.DurationMinutes = SIX_MONTH_MINUTES;
             }
             
         }
