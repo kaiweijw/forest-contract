@@ -199,6 +199,90 @@ public partial class ForestContract
     }
 
     /// <summary>
+    /// Batch delete 
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    /// <exception cref="AssertionException"></exception>
+    public override Empty BatchDeList(BatchDeListInput input)
+    {
+        AssertContractInitialized();
+        Assert(input.Price != null, "Need to specific list price.");
+        Assert(input.Price.Amount > 0, "Incorrect listing price.");
+        Assert(input.BatchDelistType != null, "Incorrect listing batchDelistType.");
+        var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        {
+            Symbol = input.Symbol
+        });
+        Assert(!string.IsNullOrWhiteSpace(tokenInfo.Symbol), "this NFT Info not exists.");
+
+        var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
+        if (listedNftInfoList == null)
+        {
+            return new Empty();
+        }
+
+        var fixedPriceListedNftInfoList =
+            listedNftInfoList.Value.Where(i => i.ListType == ListType.FixedPrice).ToList();
+
+        if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
+        {
+            return new Empty();
+        }
+        
+        fixedPriceListedNftInfoList =
+            fixedPriceListedNftInfoList.Where(i => i.Price.Symbol == input.Price.Symbol).ToList();
+
+        if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
+        {
+            return new Empty();
+        }
+        
+        switch (input.BatchDelistType)
+        {
+            case BatchDeListTypeGreaterThan:
+                fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
+                    .Where(i => (i.Price.Amount > input.Price.Amount)).ToList();
+                break;
+            case BatchDeListTypeGreaterThanOrEquals:
+                fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
+                    .Where(i => (i.Price.Amount >= input.Price.Amount)).ToList();
+                break;
+            case BatchDeListTypeLessThan:
+                fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
+                    .Where(i => (i.Price.Amount < input.Price.Amount)).ToList();
+                break;
+            case BatchDeListTypeLessThanOrEquals:
+                fixedPriceListedNftInfoList = fixedPriceListedNftInfoList
+                    .Where(i => (i.Price.Amount <= input.Price.Amount)).ToList();
+                break;
+            default:
+                throw new AssertionException("BatchDeListType not exists.");
+        }
+
+        if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
+        {
+            return new Empty();
+        }
+
+        foreach (var listedNftInfo in fixedPriceListedNftInfoList)
+        {
+            var projectId = CalculateProjectId(input.Symbol, Context.Sender);
+            var whitelistId = State.WhitelistIdMap[projectId];
+            State.ListedNFTInfoListMap[input.Symbol][Context.Sender].Value.Remove(listedNftInfo);
+            Context.Fire(new ListedNFTRemoved
+            {
+                Symbol = listedNftInfo.Symbol,
+                Duration = listedNftInfo.Duration,
+                Owner = listedNftInfo.Owner,
+                Price = listedNftInfo.Price
+            });
+        }
+
+        return new Empty();
+    }
+
+    /// <summary>
     /// Sender is the seller.
     /// </summary>
     /// <param name="input"></param>
@@ -227,7 +311,7 @@ public partial class ForestContract
         {
             Symbol = input.Symbol,
         });
-        Assert(nftInfo != null, "Invalid symbol data");
+        Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
 
         var offer = State.OfferListMap[input.Symbol][input.OfferFrom]?.Value
             .FirstOrDefault(o => o.From == input.OfferFrom
@@ -271,21 +355,6 @@ public partial class ForestContract
 
         var price = offer.Price;
         var totalAmount = price.Amount.Mul(input.Quantity);
-
-        var listedNftInfoList = State.ListedNFTInfoListMap[input.Symbol][Context.Sender];
-        if (listedNftInfoList != null && listedNftInfoList.Value.Any())
-        {
-            var firstListedNftInfo = listedNftInfoList.Value.First();
-            // Listed with fixed price.
-            var nftBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput
-            {
-                Symbol = input.Symbol,
-                Owner = Context.Sender,
-            }).Balance;
-            var listedQuantity = listedNftInfoList.Value.Where(i => i.Owner == Context.Sender).Sum(i => i.Quantity);
-            Assert(nftBalance >= listedQuantity.Add(input.Quantity),
-                $"Need to delist at least {listedQuantity.Add(input.Quantity).Sub(nftBalance)} NFT(s) before deal.");
-        }
 
         PerformDeal(new PerformDealInput
         {
