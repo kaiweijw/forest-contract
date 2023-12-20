@@ -30,7 +30,7 @@ public partial class ForestContract
         {
             Symbol = input.Symbol,
         });
-        Assert(nftInfo != null, "Invalid symbol data");
+        Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
         Assert(input.Quantity <= nftInfo?.TotalSupply, "Offer quantity beyond totalSupply");
 
         var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
@@ -39,7 +39,8 @@ public partial class ForestContract
             Owner = Context.Sender
         });
         Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Insufficient funds");
-        
+        var originBalance = balance.Clone();
+
         var amount = GetOfferTotalAmount(Context.Sender, input.Price.Symbol);
         var allowance = GetAllowance(Context.Sender, input.Price.Symbol);
         var totalAmount = amount.Add(input.Price.Amount.Mul(input.Quantity));
@@ -75,13 +76,13 @@ public partial class ForestContract
                     .ToList();
                 if (minStartList.Count == 0)
                 {
-                    PerformMakeOffer(input);
+                    PerformMakeOffer(input, originBalance);
                     return new Empty();
                 }
 
                 if (blockTime < minStartList[0].Duration.StartTime)
                 {
-                    PerformMakeOffer(input);
+                    PerformMakeOffer(input, originBalance);
                     return new Empty();
                 }
 
@@ -126,7 +127,7 @@ public partial class ForestContract
         switch (dealStatus)
         {
             case DealStatus.NotDeal:
-                PerformMakeOffer(input);
+                PerformMakeOffer(input, originBalance);
                 return new Empty();
         }
 
@@ -134,7 +135,7 @@ public partial class ForestContract
 
         if (listedNftInfoList.Value.All(i => i.ListType != ListType.FixedPrice))
         {
-            PerformMakeOffer(input);
+            PerformMakeOffer(input, originBalance);
             State.ListedNFTInfoListMap[input.Symbol][input.OfferTo] = listedNftInfoList;
             return new Empty();
         }
@@ -151,7 +152,7 @@ public partial class ForestContract
         var normalPriceDealResultList = dealService.GetDealResultList(getDealResultListInput).ToList();
         if (normalPriceDealResultList.Count == 0)
         {
-            PerformMakeOffer(input);
+            PerformMakeOffer(input, originBalance);
             return new Empty();
         }
 
@@ -199,12 +200,126 @@ public partial class ForestContract
 
         if (input.Quantity > 0)
         {
-            PerformMakeOffer(input);
+            PerformMakeOffer(input, originBalance);
         }
 
         State.ListedNFTInfoListMap[input.Symbol][input.OfferTo] = listedNftInfoList;
 
         return new Empty();
+    }
+
+    /// <summary>
+    /// Batch buy
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    public override Empty BatchBuyNow(BatchBuyNowInput input)
+    {
+        AssertContractInitialized();
+        Assert(input != null && input.FixPriceList.Any(), "Invalid input data");
+        var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        {
+            Symbol = input.Symbol,
+        });
+        Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
+        var userBalanceDic = new Dictionary<string,long>();
+        foreach (var fixPrice in input.FixPriceList)
+        {
+           SingleMakeOfferForBatchBuyNow(input.Symbol, new FixPriceList()
+            {
+                OfferTo = fixPrice.OfferTo,
+                Quantity = fixPrice.Quantity,
+                Price = fixPrice.Price,
+                StartTime = fixPrice.StartTime
+            }, userBalanceDic);
+        }
+
+        return new Empty();
+    }
+
+    private FixPriceList SingleMakeOfferForBatchBuyNow(string symbol, FixPriceList input
+        , Dictionary<string,long> userBalanceDic)
+    {
+        Assert(input.Quantity > 0, "Invalid param Quantity.");
+        Assert(input.Price.Amount > 0, "Invalid price amount.");
+        Assert(input.OfferTo != null, "Invalid param OfferTo.");
+        var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        {
+            Symbol = symbol,
+        });
+        Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
+        Assert(input.Quantity <= nftInfo?.TotalSupply, "Offer quantity beyond totalSupply");
+
+        var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+        {
+            Symbol = input.Price.Symbol,
+            Owner = Context.Sender
+        });
+        Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Insufficient funds");
+
+        var makeOfferService = GetMakeOfferService();
+        makeOfferService.ValidateFixPriceList(input);
+        
+        var sender = Context.Sender;
+        var listedNftInfoList = State.ListedNFTInfoListMap[symbol][input.OfferTo];
+
+        makeOfferService.GetAffordableNftInfoList(symbol, input, out var affordableNftInfoList);
+        Assert(affordableNftInfoList != null, "affordableNftInfoList does not exist");
+        Assert(nftInfo.Supply > 0, "NFT does not exist.");
+
+        var dealService = GetDealService();
+        var normalPriceDealResultList = dealService.GetDealResultListForBatchBuy(symbol, input,
+            new ListedNFTInfoList
+            {
+                Value = { affordableNftInfoList }
+            }).ToList();
+        Assert(normalPriceDealResultList.Count > 0, "NormalPrice does not exist.");
+
+        var toRemove = new ListedNFTInfoList();
+        foreach (var dealResult in normalPriceDealResultList)
+        {
+            var listedNftInfo = affordableNftInfoList[dealResult.Index];
+
+            if (!TryDealWithFixedPriceForBatch(sender, symbol, input, dealResult
+                    , listedNftInfo, userBalanceDic,out var dealQuantity))
+                continue;
+            listedNftInfo.Quantity = listedNftInfo.Quantity.Sub(dealQuantity);
+            input.Quantity = input.Quantity.Sub(dealQuantity);
+            if (listedNftInfo.Quantity == 0)
+            {
+                toRemove.Value.Add(listedNftInfo);
+            }
+            else
+            {
+                Context.Fire(new ListedNFTChanged
+                {
+                    Symbol = listedNftInfo.Symbol,
+                    Duration = listedNftInfo.Duration,
+                    Owner = listedNftInfo.Owner,
+                    PreviousDuration = listedNftInfo.Duration,
+                    Quantity = listedNftInfo.Quantity,
+                    Price = listedNftInfo.Price,
+                });
+            }
+        }
+
+        if (toRemove.Value.Count != 0)
+        {
+            foreach (var info in toRemove.Value)
+            {
+                listedNftInfoList.Value.Remove(info);
+                Context.Fire(new ListedNFTRemoved
+                {
+                    Symbol = info.Symbol,
+                    Duration = info.Duration,
+                    Owner = info.Owner,
+                    Price = info.Price
+                });
+            }
+        }
+
+        State.ListedNFTInfoListMap[symbol][input.OfferTo] = listedNftInfoList;
+        return input;
     }
 
     private bool TryDealWithFixedPriceWhitelist(MakeOfferInput input, Price price, Hash whitelistId)
@@ -378,12 +493,66 @@ public partial class ForestContract
         });
         return true;
     }
+    
+    /// <summary>
+    /// Sender is buyer.
+    /// </summary>
+    private bool TryDealWithFixedPriceForBatch(Address sender, string symbol, FixPriceList input, DealResult dealResult,
+        ListedNFTInfo listedNftInfo, Dictionary<string,long> userBalanceDic ,out long actualQuantity)
+    {
+        var userBalanceKey = symbol + input.OfferTo;
+        long senderBalanceCount;
+        if (userBalanceDic.TryGetValue(userBalanceKey,out senderBalanceCount))
+        {
+            senderBalanceCount = userBalanceDic[userBalanceKey];
+        }
+        else
+        {
+            var senderBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+            {
+                Symbol = symbol,
+                Owner = input.OfferTo
+            });
+            senderBalanceCount = senderBalance.Balance;
+            userBalanceDic.Add(userBalanceKey,senderBalanceCount);
+        }
+        
+        if (senderBalanceCount== 0)
+        {
+            actualQuantity = 0;
+            return false;
+        } 
+        var usePrice = input.Price.Clone();
+        usePrice.Amount = Math.Min(input.Price.Amount, dealResult.PurchaseAmount);
+        actualQuantity = Math.Min(input.Quantity, listedNftInfo.Quantity);
+        actualQuantity = Math.Min(actualQuantity, senderBalanceCount);
+        
+        if (actualQuantity == 0)
+        {
+            return false;
+        }
+
+        senderBalanceCount -= actualQuantity;
+        userBalanceDic[userBalanceKey]=senderBalanceCount;
+
+        var totalAmount = usePrice.Amount.Mul(actualQuantity);
+        PerformDeal(new PerformDealInput
+        {
+            NFTFrom = input.OfferTo,
+            NFTTo = sender,
+            NFTSymbol = symbol,
+            NFTQuantity = actualQuantity,
+            PurchaseSymbol = usePrice.Symbol,
+            PurchaseAmount = totalAmount,
+        });
+        return true;
+    }
 
     /// <summary>
     /// Will go to Offer List.
     /// </summary>
     /// <param name="input"></param>
-    private void PerformMakeOffer(MakeOfferInput input)
+    private void PerformMakeOffer(MakeOfferInput input, GetBalanceOutput originGetBalanceOutput)
     {
         var offerList = State.OfferListMap[input.Symbol][Context.Sender] ?? new OfferList();
         Assert(offerList.Value.Count < State.BizConfig.Value.MaxOfferCount,
@@ -409,7 +578,9 @@ public partial class ForestContract
                 OfferTo = input.OfferTo,
                 ExpireTime = expireTime,
                 Price = input.Price,
-                Quantity = input.Quantity
+                Quantity = input.Quantity,
+                OriginBalance = originGetBalanceOutput?.Balance ?? 0,
+                OriginBalanceSymbol = originGetBalanceOutput?.Symbol ?? ""
             });
         }
         else
