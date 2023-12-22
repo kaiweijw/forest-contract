@@ -8,15 +8,20 @@ package Inscription;
 import "aelf/core.proto";
 import "aelf/options.proto";
 import "acs12.proto";
+import "acs2.proto";
 import "authority_info.proto";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/empty.proto";
+import "token_contract.proto";
 
-option csharp_namespace = "Inscription";
+option csharp_namespace = "Forest.Inscription";
 
 service InscriptionContract {
-  option (aelf.csharp_state) = "Inscription.InscriptionContractState";
+  option (aelf.csharp_state) = "Forest.Inscription.InscriptionContractState";
   option (aelf.base) = "acs12.proto";
+  option (aelf.base) = "acs2.proto";
+  
+  rpc Initialize (InitializeInput) returns (google.protobuf.Empty) {}
   
   // deploy inscription
   rpc DeployInscription (DeployInscriptionInput) returns (google.protobuf.Empty) {}
@@ -38,10 +43,14 @@ service InscriptionContract {
   
 }
 
+message InitializeInput{
+
+}
+
 message DeployInscriptionInput{
   string seed_symbol = 1;
-  string p = 2;
-  string tick = 3;
+  string tick = 2;
+  int32 issue_chain_id = 3;
   int64 max = 4;
   int64 limit = 5;
   string image = 6;
@@ -64,6 +73,12 @@ message AddressList {
   repeated aelf.Address values = 1;
 }
 
+enum SymbolType {
+  UNSPECIFIED = 0;
+  NFT_COLLECTION = 1;
+  NFT = 2;
+}
+
 // Event
 message InscriptionCreated{
   option (aelf.is_event) = true;
@@ -84,11 +99,17 @@ message InscriptionCreated{
   // The chain id of the inscription.
   int32 issue_chain_id = 8;
   // The external information of the inscription collection.
-  ExternalInfo collection_external_info = 9;
+  ExternalInfos collection_external_info = 9;
   // The external information of the inscription item.
-  ExternalInfo item_external_info = 10;
+  ExternalInfos item_external_info = 10;
   // The address that owns the inscription.
   aelf.Address owner = 11;
+  int64 limit = 12;
+  aelf.Address deployer = 13;
+}
+
+message ExternalInfos {
+  map<string, string> value = 1;
 }
 
 message InscriptionIssued{
@@ -115,6 +136,8 @@ message InscriptionTransferred {
   string tick = 4 [(aelf.is_indexed) = true];
   // The amount of the transferred inscription.
   int64 amt = 5;
+  // p:"aelf",op:"mint";tick:"ELFS";amt:amt
+  string inscription_info = 6;
 }
   
 
