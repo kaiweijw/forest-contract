@@ -28,8 +28,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
     public override Empty DeployInscription(DeployInscriptionInput input)
     {
         Assert(!string.IsNullOrWhiteSpace(input.SeedSymbol) && !string.IsNullOrWhiteSpace(input.Tick) &&
-               input.Max > 0 &&
-               input.Limit > 0, "Invalid input.");
+               input.Max > 0 && input.Limit > 0, "Invalid input.");
         Assert(!string.IsNullOrWhiteSpace(input.Image) && Encoding.UTF8.GetByteCount(input.Image) <=
             InscriptionContractConstants.ImageMaxLength, "Invalid image data.");
         // Approve Seed.
@@ -123,7 +122,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty Inscribe(InscribedInput input)
     {
-        Assert(input.Tick != null && input.Amt > 0 && input.Amt <= State.InscribedLimit[input.Tick], "Invalid input.");
+        Assert(!string.IsNullOrWhiteSpace(input.Tick) && input.Amt > 0 && input.Amt <= State.InscribedLimit[input.Tick], "Invalid input.");
         var tick = input.Tick;
         var symbol = $"{tick?.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
         var distributors = State.DistributorHashList[input.Tick];

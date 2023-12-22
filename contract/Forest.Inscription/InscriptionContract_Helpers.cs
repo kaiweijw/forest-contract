@@ -20,7 +20,6 @@ public partial class InscriptionContract
             var info =
                 $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""deploy"",""tick"":""{tick}"",""max"":""{max}"",""lim"":""{limit}""}}";
             dic[InscriptionContractConstants.InscriptionDeployKey] = info;
-            externalInfo.Value.Add(dic);
         }
         else
         {
@@ -28,8 +27,8 @@ public partial class InscriptionContract
                 $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""mint"",""tick"":""{tick}"",""amt"":""{InscriptionContractConstants.InscriptionAmt}""}}";
             dic[InscriptionContractConstants.InscriptionMintKey] = info;
             dic[InscriptionContractConstants.InscriptionLimitKey] = $"{limit}";
-            externalInfo.Value.Add(dic);
         }
+        externalInfo.Value.Add(dic);
 
         return externalInfo;
     }
