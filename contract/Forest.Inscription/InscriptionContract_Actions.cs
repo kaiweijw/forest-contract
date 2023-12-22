@@ -27,10 +27,11 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty DeployInscription(DeployInscriptionInput input)
     {
-        Assert(!string.IsNullOrWhiteSpace(input.SeedSymbol) && !string.IsNullOrWhiteSpace(input.Tick) && input.Max > 0 &&
+        Assert(!string.IsNullOrWhiteSpace(input.SeedSymbol) && !string.IsNullOrWhiteSpace(input.Tick) &&
+               input.Max > 0 &&
                input.Limit > 0, "Invalid input.");
         Assert(!string.IsNullOrWhiteSpace(input.Image) && Encoding.UTF8.GetByteCount(input.Image) <=
-            InscriptionContractConstants.ImageMaxLength , "Invalid image data.");
+            InscriptionContractConstants.ImageMaxLength, "Invalid image data.");
         // Approve Seed.
         State.TokenContract.TransferFrom.Send(new TransferFromInput
         {
@@ -100,9 +101,10 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         }
         else
         {
-            Issue(symbol, amount, distributors.Values.ToList().GetRange(0, distributors.Values.Count - 1));
+            Issue(symbol, amount, distributors.Values.ToList().GetRange(0, distributors.Values.Count - 2));
             Issue(symbol, remain, new List<Hash> { distributors.Values.Last() });
         }
+
         var inscriptionInfo =
             $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""deploy"",""tick"":""{tick}"",""max"":""{tokenInfo.TotalSupply}"",""lim"":""{lim}""}}";
 
@@ -125,7 +127,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         var tick = input.Tick;
         var symbol = $"{tick?.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
         var distributors = State.DistributorHashList[input.Tick];
-        Assert(distributors != null,"Empty distributors.");
+        Assert(distributors != null, "Empty distributors.");
         var selectIndex = (int)(Context.OriginTransactionId.ToInt64() % distributors.Values.Count);
         Context.SendVirtualInline(distributors.Values[selectIndex], State.TokenContract.Value,
             nameof(State.TokenContract.Transfer), new TransferInput

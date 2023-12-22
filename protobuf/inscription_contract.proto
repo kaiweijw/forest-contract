@@ -20,15 +20,15 @@ service InscriptionContract {
   option (aelf.csharp_state) = "Forest.Inscription.InscriptionContractState";
   option (aelf.base) = "acs12.proto";
   option (aelf.base) = "acs2.proto";
-  
+
   rpc Initialize (InitializeInput) returns (google.protobuf.Empty) {}
-  
+
   // deploy inscription
   rpc DeployInscription (DeployInscriptionInput) returns (google.protobuf.Empty) {}
-  
+
   // Side chain - issue inscription
   rpc IssueInscription (IssueInscriptionInput) returns (google.protobuf.Empty) {}
-  
+
   // Side chain - Inscribe (transfer inscription to user)
   rpc Inscribe (InscribedInput) returns (google.protobuf.Empty) {}
 
@@ -40,7 +40,7 @@ service InscriptionContract {
   rpc GetDistributorList(google.protobuf.StringValue) returns (AddressList){
     option (aelf.is_view) = true;
   }
-  
+
 }
 
 message InitializeInput{
