@@ -40,7 +40,7 @@ public partial class InscriptionContract
         var symbol = symbolType == SymbolType.NftCollection
             ? $"{tick.ToUpper()}-{InscriptionContractConstants.CollectionSymbolSuffix}"
             : $"{tick.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
-        
+
         var creatTokenInput = new CreateInput
         {
             Symbol = symbol,
@@ -56,7 +56,7 @@ public partial class InscriptionContract
         State.TokenContract.Create.Send(creatTokenInput);
         return symbol;
     }
-    
+
     private void Issue(string symbol, long amount, List<Hash> distributors)
     {
         foreach (var distributor in distributors)
@@ -83,5 +83,4 @@ public partial class InscriptionContract
         State.DistributorHashList[tick.ToUpper()] = distributors;
         return distributors;
     }
-    
 }
