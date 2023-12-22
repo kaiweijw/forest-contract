@@ -27,9 +27,10 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty DeployInscription(DeployInscriptionInput input)
     {
-        Assert(!string.IsNullOrEmpty(input.SeedSymbol) && !string.IsNullOrEmpty(input.Tick) && input.Max > 0 &&
-               input.Limit > 0 && input.Image != null && Encoding.UTF8.GetByteCount(input.Image) <=
-               InscriptionContractConstants.ImageMaxLength, "Invalid input.");
+        Assert(!string.IsNullOrWhiteSpace(input.SeedSymbol) && !string.IsNullOrWhiteSpace(input.Tick) && input.Max > 0 &&
+               input.Limit > 0, "Invalid input.");
+        Assert(!string.IsNullOrWhiteSpace(input.Image) && Encoding.UTF8.GetByteCount(input.Image) <=
+            InscriptionContractConstants.ImageMaxLength , "Invalid image data.");
         // Approve Seed.
         State.TokenContract.TransferFrom.Send(new TransferFromInput
         {
@@ -125,8 +126,8 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         var symbol = $"{tick?.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
         var distributors = State.DistributorHashList[input.Tick];
         Assert(distributors != null,"Empty distributors.");
-        var selectIndex = (int)Context.OriginTransactionId.ToInt64() % distributors.Values.Count;
-        Context.SendVirtualInline(distributors?.Values[selectIndex], State.TokenContract.Value,
+        var selectIndex = (int)(Context.OriginTransactionId.ToInt64() % distributors.Values.Count);
+        Context.SendVirtualInline(distributors.Values[selectIndex], State.TokenContract.Value,
             nameof(State.TokenContract.Transfer), new TransferInput
             {
                 Symbol = symbol,
