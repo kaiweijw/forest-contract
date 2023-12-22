@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using AElf.Boilerplate.TestBase;
+using AElf.Boilerplate.TestBase.SmartContractNameProviders;
 using AElf.Contracts.MultiToken;
 using AElf.Cryptography.ECDSA;
 using AElf.Kernel;
@@ -12,12 +13,13 @@ namespace Forest.Inscription
 {
     public class InscriptionContractTestBase : DAppContractTestBase<InscriptionContractTestModule>
     {
-        internal Address InscriptionContractAddress { get; set; }
+        internal Address InscriptionContractAddress => GetAddress(InscriptionSmartContractAddressNameProvider.StringName);
+
 
         internal TokenContractContainer.TokenContractStub TokenContractStub { get; set; }
         internal TokenContractContainer.TokenContractStub TokenContractUserStub { get; set; }
         internal TokenContractContainer.TokenContractStub TokenContractUser2Stub { get; set; }
-        internal TokenContractContainer.TokenContractStub TokenContractReceivingStub { get; set; }
+
         internal ACS0Container.ACS0Stub ZeroContractStub { get; set; }
         internal InscriptionContractContainer.InscriptionContractStub InscriptionContractStub { get; set; }
 
@@ -34,18 +36,6 @@ namespace Forest.Inscription
 
         protected InscriptionContractTestBase()
         {
-
-            ZeroContractStub = GetContractZeroTester(DefaultKeyPair);
-            var result = AsyncHelper.RunSync(async () => await ZeroContractStub.DeploySmartContract.SendAsync(
-                new ContractDeploymentInput
-                {
-                    Category = KernelConstants.CodeCoverageRunnerCategory,
-                    Code = ByteString.CopyFrom(
-                        File.ReadAllBytes(typeof(InscriptionContract).Assembly.Location))
-                }));
-
-            InscriptionContractAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
-
             InscriptionContractStub = GetInscriptionContractStub(DefaultKeyPair);
             TokenContractStub = GetTokenContractStub(DefaultKeyPair);
             TokenContractUserStub = GetTokenContractStub(UserKeyPair);

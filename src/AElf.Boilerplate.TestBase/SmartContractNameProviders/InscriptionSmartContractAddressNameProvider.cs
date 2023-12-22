@@ -3,7 +3,7 @@ using AElf.Types;
 
 namespace AElf.Boilerplate.TestBase.SmartContractNameProviders;
 
-public class InscriptionContractAddressNameProvider
+public class InscriptionSmartContractAddressNameProvider
 {
     public static readonly Hash Name = HashHelper.ComputeFrom("AElf.ContractNames.Inscription");
 

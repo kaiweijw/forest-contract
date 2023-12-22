@@ -122,6 +122,8 @@ message InscriptionIssued{
   int64 amt = 3;
   // The issued target address.
   aelf.Address to = 4;
+  // p:"aelf",op:"deploy","tick:"ELFS","max":"210000","lim":"100"
+  string inscription_info = 5;
 }
 
 message InscriptionTransferred {
@@ -136,7 +138,7 @@ message InscriptionTransferred {
   string tick = 4 [(aelf.is_indexed) = true];
   // The amount of the transferred inscription.
   int64 amt = 5;
-  // p:"aelf",op:"mint";tick:"ELFS";amt:amt
+  // p:"aelf",op:"mint",tick:"ELFS",amt:amt
   string inscription_info = 6;
 }
   

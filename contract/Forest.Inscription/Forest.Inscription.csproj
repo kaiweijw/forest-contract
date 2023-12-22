@@ -4,7 +4,7 @@
         <IsContract>true</IsContract>
         <RootNamespace>Forest.Inscription</RootNamespace>
         <Description>Forest Inscription Contract is for the aelf official inscription NFT.</Description>
-        <AssemblyName>Forest</AssemblyName>
+        <AssemblyName>Forest.Inscription</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -36,6 +36,9 @@
         </ContractReference>
         <ContractReference Include="..\..\protobuf\configuration_contract.proto">
             <Link>Protobuf\Proto\reference\configuration_contract.proto</Link>
+        </ContractReference>
+        <ContractReference Include="..\..\protobuf\transaction_fee.proto">
+            <Link>Protobuf\Proto\reference\transaction_fee.proto</Link>
         </ContractReference>
     </ItemGroup>
 

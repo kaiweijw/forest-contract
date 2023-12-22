@@ -73,7 +73,7 @@ public partial class InscriptionContract
     private HashList GenerateDistributors(string tick)
     {
         var distributors = new HashList();
-        var salt = (int)Context.TransactionId.ToInt64();
+        var salt = Context.TransactionId.ToInt64();
         for (var i = 0; i < InscriptionContractConstants.DistributorsCount; i++)
         {
             var distributor = HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(salt.Add(i)), Context.TransactionId);

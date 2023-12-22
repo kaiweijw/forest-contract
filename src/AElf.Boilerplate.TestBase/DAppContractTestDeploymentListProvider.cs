@@ -15,7 +15,7 @@ namespace AElf.Boilerplate.TestBase
             list.Add(ForestSmartContractAddressNameProvider.Name);
             list.Add(WhitelistSmartContractAddressNameProvider.Name);
             list.Add(NFTSmartContractAddressNameProvider.Name);           
-            list.Add(InscriptionContractAddressNameProvider.Name);
+            list.Add(InscriptionSmartContractAddressNameProvider.Name);
             return list;
         }
     }
@@ -29,7 +29,7 @@ namespace AElf.Boilerplate.TestBase
             list.Add(ForestSmartContractAddressNameProvider.Name);
             list.Add(WhitelistSmartContractAddressNameProvider.Name);
             list.Add(NFTSmartContractAddressNameProvider.Name);
-            list.Add(InscriptionContractAddressNameProvider.Name);
+            list.Add(InscriptionSmartContractAddressNameProvider.Name);
             return list;
         }
     }

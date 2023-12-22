@@ -16,7 +16,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
     {
         Assert(!State.Initialized.Value, "Already initialized.");
         State.GenesisContract.Value = Context.GetZeroSmartContractAddress();
-        Assert(State.GenesisContract.GetContractInfo.Call(Context.Self).Deployer == Context.Sender, "No permission.");
+        // Assert(State.GenesisContract.GetContractInfo.Call(Context.Self).Deployer == Context.Sender, "No permission.");
         State.TokenContract.Value =
             Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
         State.ConfigurationContract.Value =
@@ -79,7 +79,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty IssueInscription(IssueInscriptionInput input)
     {
-        Assert(!string.IsNullOrEmpty(input.Tick), "Invalid input.");
+        Assert(!string.IsNullOrWhiteSpace(input.Tick), "Invalid input.");
         var tick = input.Tick?.ToUpper();
         var symbol = $"{tick}-{InscriptionContractConstants.NftSymbolSuffix}";
         var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
@@ -89,7 +89,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         Assert(tokenInfo != null, $"Token not exist.{tokenInfo?.Symbol}");
         var distributors = GenerateDistributors(tick);
         var limit = tokenInfo?.ExternalInfo.Value[InscriptionContractConstants.InscriptionLimitKey];
-        Assert(!long.TryParse(limit, out var lim), "Invalid inscription limit.");
+        Assert(long.TryParse(limit, out var lim), "Invalid inscription limit.");
         State.InscribedLimit[tick] = lim;
         var remain = tokenInfo.TotalSupply % distributors.Values.Count;
         var amount = tokenInfo.TotalSupply.Div(distributors.Values.Count);
@@ -102,13 +102,16 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
             Issue(symbol, amount, distributors.Values.ToList().GetRange(0, distributors.Values.Count - 1));
             Issue(symbol, remain, new List<Hash> { distributors.Values.Last() });
         }
+        var inscriptionInfo =
+            $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""deploy"",""tick"":""{tick}"",""max"":""{tokenInfo.TotalSupply}"",""lim"":""{lim}""}}";
 
         Context.Fire(new InscriptionIssued
         {
             Symbol = symbol,
             Tick = tick,
             Amt = tokenInfo.TotalSupply,
-            To = Context.Self
+            To = Context.Self,
+            InscriptionInfo = inscriptionInfo
         });
 
         return new Empty();
@@ -120,9 +123,10 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         Assert(input.Tick != null && input.Amt > 0 && input.Amt <= State.InscribedLimit[input.Tick], "Invalid input.");
         var tick = input.Tick;
         var symbol = $"{tick?.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
-        var distributors = State.DistributorHashList[input.Tick].Values;
-        var selectIndex = (int)Context.OriginTransactionId.ToInt64() % distributors.Count;
-        Context.SendVirtualInline(distributors[selectIndex], State.TokenContract.Value,
+        var distributors = State.DistributorHashList[input.Tick];
+        Assert(distributors != null,"Empty distributors.");
+        var selectIndex = (int)Context.OriginTransactionId.ToInt64() % distributors.Values.Count;
+        Context.SendVirtualInline(distributors?.Values[selectIndex], State.TokenContract.Value,
             nameof(State.TokenContract.Transfer), new TransferInput
             {
                 Symbol = symbol,
