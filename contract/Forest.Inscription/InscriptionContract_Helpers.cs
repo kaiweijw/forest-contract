@@ -11,22 +11,22 @@ public partial class InscriptionContract
     private ExternalInfo GenerateExternalInfo(string tick, long max, long limit, string image, SymbolType symbolType)
     {
         var externalInfo = new ExternalInfo();
+        var dic = new Dictionary<string, string>
+        {
+            [InscriptionContractConstants.InscriptionImageKey] = image
+        };
         if (symbolType == SymbolType.NftCollection)
         {
-            var dic = new Dictionary<string, string>();
             var info =
                 $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""deploy"",""tick"":""{tick}"",""max"":""{max}"",""lim"":""{limit}""}}";
             dic[InscriptionContractConstants.InscriptionDeployKey] = info;
-            dic[InscriptionContractConstants.InscriptionImageKey] = image;
             externalInfo.Value.Add(dic);
         }
         else
         {
-            var dic = new Dictionary<string, string>();
             var info =
                 $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""mint"",""tick"":""{tick}"",""amt"":""{InscriptionContractConstants.InscriptionAmt}""}}";
             dic[InscriptionContractConstants.InscriptionMintKey] = info;
-            dic[InscriptionContractConstants.InscriptionImageKey] = image;
             dic[InscriptionContractConstants.InscriptionLimitKey] = $"{limit}";
             externalInfo.Value.Add(dic);
         }
