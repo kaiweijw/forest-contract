@@ -1,4 +1,7 @@
+using System;
 using System.Linq;
+using AElf;
+using AElf.Contracts.MultiToken;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
@@ -37,11 +40,34 @@ public partial class InscriptionContract
                 Balance = balance
             });
         }
+
         return result;
     }
 
     public override Address GetAdmin(Empty input)
     {
         return State.Admin.Value;
+    }
+
+    public override BoolValue CheckDistributorBalance(CheckDistributorBalanceInput input)
+    {
+        Assert(input.Sender != null && input.Amt > 0 && !string.IsNullOrWhiteSpace(input.Tick), "Invalid input.");
+        var tick = input.Tick?.ToUpper();
+        var result = new BoolValue
+        {
+            Value = false
+        };
+        var count = State.DistributorHashList[tick].Values.Count;
+        var selectIndex = (int)((Math.Abs(input.Sender.ToByteArray().ToInt64(true)) % count));
+        var distributor = State.DistributorHashList[tick];
+        if (distributor == null || distributor.Values.Count <= 0) return result;
+        var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+        {
+            Symbol = GetNftSymbol(tick),
+            Owner = Context.ConvertVirtualAddressToContractAddress(distributor.Values[selectIndex])
+        });
+        if (balance.Balance < input.Amt) return result;
+        result.Value = true;
+        return result;
     }
 }

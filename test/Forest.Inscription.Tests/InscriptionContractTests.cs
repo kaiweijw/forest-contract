@@ -120,6 +120,13 @@ public class InscriptionContractTests : InscriptionContractTestBase
     public async Task InscribeTest()
     {
         await IssueTest();
+        var result = await InscriptionContractStub.CheckDistributorBalance.CallAsync(new CheckDistributorBalanceInput
+        {
+            Sender = DefaultAddress,
+            Amt = 1000,
+            Tick = "ELFS"
+        });
+        result.Value.ShouldBe(true);
         await InscriptionContractStub.Inscribe.SendAsync(new InscribedInput
         {
             Tick = "ELFS",

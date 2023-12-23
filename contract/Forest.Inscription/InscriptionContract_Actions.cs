@@ -138,8 +138,8 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         });
         return new Empty();
     }
-
-    public override Empty InscribeWithoutParallel(InscribedInput input)
+    
+    public override Empty MintInscription(InscribedInput input)
     {
         var tick = input.Tick?.ToUpper();
         var tokenInfo = CheckInputAndGetSymbol(tick, input.Amt);

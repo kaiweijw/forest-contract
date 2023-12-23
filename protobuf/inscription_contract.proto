@@ -35,7 +35,7 @@ service InscriptionContract {
   rpc Inscribe (InscribedInput) returns (google.protobuf.Empty) {}
 
   // Side chain - Inscribe (transfer inscription to user) without parallel
-  rpc InscribeWithoutParallel (InscribedInput) returns (google.protobuf.Empty) {}
+  rpc MintInscription (InscribedInput) returns (google.protobuf.Empty) {}
 
   rpc SetDistributorCount (google.protobuf.Int32Value) returns (google.protobuf.Empty) {}
 
@@ -60,6 +60,9 @@ service InscriptionContract {
     option (aelf.is_view) = true;
   }
   rpc GetIssueChainId (google.protobuf.Empty) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
+  rpc CheckDistributorBalance(CheckDistributorBalanceInput) returns (google.protobuf.BoolValue){
     option (aelf.is_view) = true;
   }
 }
@@ -127,6 +130,12 @@ message MintInscriptionInfo {
   string op = 2;
   string tick = 3;
   string amt = 4;
+}
+
+message CheckDistributorBalanceInput{
+  aelf.Address sender = 1;
+  string tick = 2;
+  int64 amt = 3;
 }
 
 // Event
