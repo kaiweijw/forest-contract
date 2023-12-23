@@ -13,7 +13,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
     {
         Assert(!State.Initialized.Value, "Already initialized.");
         State.GenesisContract.Value = Context.GetZeroSmartContractAddress();
-        // Assert(State.GenesisContract.GetContractInfo.Call(Context.Self).Deployer == Context.Sender, "No permission.");
+        Assert(State.GenesisContract.GetContractInfo.Call(Context.Self).Deployer == Context.Sender, "No permission.");
         State.TokenContract.Value =
             Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
         State.ConfigurationContract.Value =

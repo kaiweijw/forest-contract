@@ -37,7 +37,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Contracts.Auction.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Contracts.Inscription", "contract\Forest.Contracts.Inscription\Forest.Contracts.Inscription.csproj", "{E2BA6B81-EAE5-4129-AFCE-BD55F8EABB4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Inscription.Tests", "test\Forest.Inscription.Tests\Forest.Inscription.Tests.csproj", "{C2B8577E-1F0F-4787-853B-CBEDBC4989D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forest.Contracts.Inscription.Tests", "test\Forest.Contracts.Inscription.Tests\Forest.Contracts.Inscription.Tests.csproj", "{C2B8577E-1F0F-4787-853B-CBEDBC4989D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
