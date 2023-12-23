@@ -1,5 +1,7 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AElf;
 using AElf.Contracts.MultiToken;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
@@ -135,6 +137,26 @@ public class InscriptionContractTests : InscriptionContractTestBase
                 Symbol = "ELFS-1"
             });
             balanceOutput.Balance.ShouldBeLessThanOrEqualTo(2100000);
+        }
+
+        var index = (int)(Math.Abs(DefaultAddress.ToByteArray().ToInt64(true)) % list.Values.Count);
+
+        var balanceList = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
+        {
+            Value = "ELFS"
+        });
+        for (var i = 0; i < balanceList.Values.Count; i++)
+        {
+            balanceList.Values[i].Distributor.ShouldBe(list.Values[i]);
+            if (i == index)
+            {
+                balanceList.Values[i].Balance.ShouldBe(2100000 - 1000);
+
+            }
+            else
+            {
+                balanceList.Values[i].Balance.ShouldBe(2100000);
+            }
         }
     }
 

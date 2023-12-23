@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
@@ -19,7 +20,7 @@ public partial class InscriptionContract
         };
         if (symbolType == SymbolType.NftCollection)
         {
-            var info = new DeployInscriptionOperation
+            var info = new DeployInscriptionInfo
             {
                 P = InscriptionContractConstants.InscriptionType,
                 Op = "deploy",
@@ -31,7 +32,7 @@ public partial class InscriptionContract
         }
         else
         {
-            var info = new MintInscriptionOperation
+            var info = new MintInscriptionInfo
             {
                 P = InscriptionContractConstants.InscriptionType,
                 Op = "mint",
@@ -56,7 +57,7 @@ public partial class InscriptionContract
         var creatTokenInput = new CreateInput
         {
             Symbol = symbol,
-            TokenName = tick.ToUpper(),
+            TokenName = tick,
             TotalSupply = max,
             Decimals = InscriptionContractConstants.InscriptionDecimals,
             Issuer = Context.Self,
@@ -69,17 +70,24 @@ public partial class InscriptionContract
         return symbol;
     }
 
-    private void IssueAndModifyBalance(string tick, string symbol, long amount, List<Hash> distributors)
+    private void IssueAndModifyBalance(string tick, string symbol, long totalSupply, List<Hash> distributors)
     {
-        foreach (var distributor in distributors)
+        var remain = totalSupply % distributors.Count;
+        var amount = totalSupply.Div(distributors.Count);
+        var distributorsAddress = distributors.Select(d => Context.ConvertVirtualAddressToContractAddress(d)).ToList();
+        for (var i = 0; i < distributorsAddress.Count; i++)
         {
+            if (i == 0)
+            {
+                amount = amount.Add(remain);
+            }
             State.TokenContract.Issue.Send(new IssueInput
             {
                 Symbol = symbol,
                 Amount = amount,
-                To = Context.ConvertVirtualAddressToContractAddress(distributor)
+                To = distributorsAddress[i]
             });
-            ModifyDistributorBalance(tick, distributor, amount);
+            ModifyDistributorBalance(tick, distributors[i], amount);
         }
     }
 
@@ -95,7 +103,7 @@ public partial class InscriptionContract
             distributors.Values.Add(distributor);
         }
 
-        State.DistributorHashList[tick.ToUpper()] = distributors;
+        State.DistributorHashList[tick] = distributors;
         return distributors;
     }
 
@@ -137,7 +145,7 @@ public partial class InscriptionContract
 
     private void DistributeInscription(string tick, string symbol, long balance, long amt, Hash distributor)
     {
-        State.DistributorBalance[tick][distributor] = balance.Sub(amt);
+        ModifyDistributorBalance(tick, distributor, -amt);
         Context.SendVirtualInline(distributor, State.TokenContract.Value,
             nameof(State.TokenContract.Transfer), new TransferInput
             {

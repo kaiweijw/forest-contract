@@ -27,7 +27,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty ChangeAdmin(Address input)
     {
-        // Assert(Context.Sender == State.Admin.Value,"No permission.");
+        Assert(Context.Sender == State.Admin.Value,"No permission.");
         State.Admin.Value = input;
         return new Empty();
     }
@@ -39,6 +39,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
                input.Max > 0 && input.Limit > 0, "Invalid input.");
         Assert(!string.IsNullOrWhiteSpace(input.Image) && Encoding.UTF8.GetByteCount(input.Image) <=
             InscriptionContractConstants.ImageMaxLength, "Invalid image data.");
+        var tick = input.Tick?.ToUpper();
         // Approve Seed.
         State.TokenContract.TransferFrom.Send(new TransferFromInput
         {
@@ -51,23 +52,24 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         var issueChainId = State.IssueChainId.Value == 0
             ? InscriptionContractConstants.IssueChainId
             : State.IssueChainId.Value;
+        
         // Create collection
         var collectionExternalInfo =
-            GenerateExternalInfo(input.Tick, input.Max, input.Limit, input.Image, SymbolType.NftCollection);
-        var collectionSymbol = CreateInscription(input.Tick, input.Max, issueChainId, collectionExternalInfo,
+            GenerateExternalInfo(tick, input.Max, input.Limit, input.Image, SymbolType.NftCollection);
+        var collectionSymbol = CreateInscription(tick, input.Max, issueChainId, collectionExternalInfo,
             SymbolType.NftCollection);
 
         // Create nft item
         var nftExternalInfo =
-            GenerateExternalInfo(input.Tick, input.Max, input.Limit, input.Image, SymbolType.Nft);
-        var nftSymbol = CreateInscription(input.Tick, input.Max, issueChainId, nftExternalInfo, SymbolType.Nft);
-        State.InscribedLimit[input.Tick?.ToUpper()] = input.Limit;
+            GenerateExternalInfo(tick, input.Max, input.Limit, input.Image, SymbolType.Nft);
+        var nftSymbol = CreateInscription(tick, input.Max, issueChainId, nftExternalInfo, SymbolType.Nft);
+        State.InscribedLimit[tick] = input.Limit;
 
         Context.Fire(new InscriptionCreated
         {
             CollectionSymbol = collectionSymbol,
             ItemSymbol = nftSymbol,
-            Tick = input.Tick,
+            Tick = tick,
             TotalSupply = input.Max,
             Decimals = InscriptionContractConstants.InscriptionDecimals,
             Issuer = Context.Self,
@@ -101,18 +103,11 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         });
         Assert(tokenInfo != null, $"Token not exist.{tokenInfo?.Symbol}");
         var distributors = GenerateDistributors(tick);
-        var info = DeployInscriptionOperation.Parser.ParseJson(
+        var info = DeployInscriptionInfo.Parser.ParseJson(
             tokenInfo?.ExternalInfo.Value[InscriptionContractConstants.InscriptionDeployKey]);
         Assert(long.TryParse(info.Lim, out var lim), "Invalid inscription limit.");
         State.InscribedLimit[tick] = lim;
-        var remain = tokenInfo.TotalSupply % distributors.Values.Count;
-        var amount = tokenInfo.TotalSupply.Div(distributors.Values.Count);
-        IssueAndModifyBalance(tick, symbol, amount, distributors.Values.ToList());
-        if (remain > 0)
-        {
-            // remain amount will issue to first distributor.
-            IssueAndModifyBalance(tick, symbol, remain, new List<Hash> { distributors.Values.First() });
-        }
+        IssueAndModifyBalance(tick,symbol,tokenInfo.TotalSupply, distributors.Values.ToList());
 
         Context.Fire(new InscriptionIssued
         {
@@ -129,13 +124,14 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty Inscribe(InscribedInput input)
     {
-        var tokenInfo = CheckInputAndGetSymbol(input.Tick, input.Amt);
-        SelectDistributorAndTransfer(input.Tick, tokenInfo.Symbol, input.Amt,InscribeType.Parallel);
+        var tick = input.Tick?.ToUpper();
+        var tokenInfo = CheckInputAndGetSymbol(tick, input.Amt);
+        SelectDistributorAndTransfer(tick, tokenInfo.Symbol, input.Amt,InscribeType.Parallel);
         Context.Fire(new InscriptionTransferred
         {
             From = Context.Self,
             Symbol = tokenInfo.Symbol,
-            Tick = input.Tick?.ToUpper(),
+            Tick = tick,
             Amt = input.Amt,
             To = Context.Sender,
             InscriptionInfo = tokenInfo.ExternalInfo.Value[InscriptionContractConstants.InscriptionMintKey]
@@ -145,13 +141,14 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty InscribeWithoutParallel(InscribedInput input)
     {
-        var tokenInfo = CheckInputAndGetSymbol(input.Tick, input.Amt);
-        SelectDistributorAndTransfer(input.Tick, tokenInfo.Symbol, input.Amt,InscribeType.NotParallel);
+        var tick = input.Tick?.ToUpper();
+        var tokenInfo = CheckInputAndGetSymbol(tick, input.Amt);
+        SelectDistributorAndTransfer(tick, tokenInfo.Symbol, input.Amt,InscribeType.NotParallel);
         Context.Fire(new InscriptionTransferred
         {
             From = Context.Self,
             Symbol = tokenInfo.Symbol,
-            Tick = input.Tick?.ToUpper(),
+            Tick = tick,
             Amt = input.Amt,
             To = Context.Sender,
             InscriptionInfo = tokenInfo.ExternalInfo.Value[InscriptionContractConstants.InscriptionMintKey]

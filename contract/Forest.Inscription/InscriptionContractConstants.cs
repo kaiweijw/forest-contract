@@ -12,7 +12,5 @@ public static class InscriptionContractConstants
     public const int ImageMaxLength = 10000;
     public const int InscriptionAmt = 1;
     public const int DistributorsCount = 10;
-    public const int RetrySelectDistributorCount = 3;
     public const int IssueChainId = 1866392;
-
 }
