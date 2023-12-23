@@ -5,7 +5,7 @@ using AElf.Contracts.MultiToken;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
-namespace Forest.Inscription;
+namespace Forest.Contracts.Inscription;
 
 public partial class InscriptionContract
 {

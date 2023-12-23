@@ -7,7 +7,7 @@ using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 
-namespace Forest.Inscription;
+namespace Forest.Contracts.Inscription;
 
 public partial class InscriptionContract
 {

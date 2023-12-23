@@ -5,7 +5,7 @@ using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
-namespace Forest.Inscription;
+namespace Forest.Contracts.Inscription;
 
 public partial class InscriptionContract : InscriptionContractContainer.InscriptionContractBase
 {

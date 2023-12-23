@@ -14,10 +14,10 @@ import "google/protobuf/wrappers.proto";
 import "google/protobuf/empty.proto";
 import "token_contract.proto";
 
-option csharp_namespace = "Forest.Inscription";
+option csharp_namespace = "Forest.Contracts.Inscription";
 
 service InscriptionContract {
-  option (aelf.csharp_state) = "Forest.Inscription.InscriptionContractState";
+  option (aelf.csharp_state) = "Forest.Contracts.Inscription.InscriptionContractState";
   option (aelf.base) = "acs12.proto";
   option (aelf.base) = "acs2.proto";
 

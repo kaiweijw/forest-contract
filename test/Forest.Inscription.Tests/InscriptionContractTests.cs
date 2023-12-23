@@ -8,7 +8,7 @@ using Shouldly;
 using Xunit;
 
 
-namespace Forest.Inscription;
+namespace Forest.Contracts.Inscription;
 
 public class InscriptionContractTests : InscriptionContractTestBase
 {

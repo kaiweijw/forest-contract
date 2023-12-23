@@ -4,7 +4,7 @@ using AElf.Kernel.SmartContract.Application;
 using AElf.Types;
 using Volo.Abp.DependencyInjection;
 
-namespace Forest.Inscription.ContractInitializationProvider
+namespace Forest.Contracts.Inscription
 {
     public class InscriptionContractInitializationProvider : IContractInitializationProvider, ISingletonDependency
     {
@@ -14,6 +14,6 @@ namespace Forest.Inscription.ContractInitializationProvider
         }
 
         public Hash SystemSmartContractName => InscriptionSmartContractAddressNameProvider.Name;
-        public string ContractCodeName => "Forest.Inscription";
+        public string ContractCodeName => "Forest.Contracts.Inscription";
     }
 }

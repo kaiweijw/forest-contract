@@ -3,12 +3,11 @@ using System.IO;
 using AElf.Boilerplate.TestBase;
 using AElf.ContractTestBase;
 using AElf.Kernel.SmartContract.Application;
-using Forest.Inscription.ContractInitializationProvider;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;
 using Volo.Abp.Modularity;
 
-namespace Forest.Inscription;
+namespace Forest.Contracts.Inscription;
 
 [DependsOn(typeof(MainChainDAppContractTestModule))]
 public class InscriptionContractTestModule : MainChainDAppContractTestModule

@@ -1,4 +1,4 @@
-namespace Forest.Inscription;
+namespace Forest.Contracts.Inscription;
 
 public static class InscriptionContractConstants
 {

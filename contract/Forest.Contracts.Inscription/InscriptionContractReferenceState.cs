@@ -2,7 +2,7 @@ using AElf.Contracts.Configuration;
 using AElf.Contracts.MultiToken;
 using AElf.Standards.ACS0;
 
-namespace Forest.Inscription;
+namespace Forest.Contracts.Inscription;
 
 public partial class InscriptionContractState
 {

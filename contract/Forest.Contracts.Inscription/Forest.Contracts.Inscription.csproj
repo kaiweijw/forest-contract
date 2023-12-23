@@ -2,10 +2,10 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <IsContract>true</IsContract>
-        <RootNamespace>Forest.Inscription</RootNamespace>
+        <RootNamespace>Forest.Contracts.Inscription</RootNamespace>
         <Version>1.0.4</Version>
         <Description>Forest Inscription Contract is for the aelf official inscription NFT.</Description>
-        <AssemblyName>Forest.Inscription</AssemblyName>
+        <AssemblyName>Forest.Contracts.Inscription</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
