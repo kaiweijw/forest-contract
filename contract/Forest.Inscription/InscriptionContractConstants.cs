@@ -13,4 +13,5 @@ public static class InscriptionContractConstants
     public const int ImageMaxLength = 100000;
     public const int InscriptionAmt = 1;
     public const int DistributorsCount = 10;
+    public const int RetrySelectDistributorCount = 3;
 }

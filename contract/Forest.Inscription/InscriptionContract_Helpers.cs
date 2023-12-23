@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using AElf;
 using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
+using AElf.Sdk.CSharp;
 using AElf.Types;
 
 namespace Forest.Inscription;
@@ -56,7 +57,7 @@ public partial class InscriptionContract
         return symbol;
     }
 
-    private void Issue(string symbol, long amount, List<Hash> distributors)
+    private void IssueAndModifyBalance(string tick, string symbol, long amount, List<Hash> distributors)
     {
         foreach (var distributor in distributors)
         {
@@ -66,6 +67,7 @@ public partial class InscriptionContract
                 Amount = amount,
                 To = Context.ConvertVirtualAddressToContractAddress(distributor)
             });
+            ModifyDistributorBalance(tick,distributors,amount);
         }
     }
 
@@ -81,5 +83,50 @@ public partial class InscriptionContract
 
         State.DistributorHashList[tick.ToUpper()] = distributors;
         return distributors;
+    }
+    
+    private void SelectDistributorsAndTransfer(string tick, string symbol, HashList distributors, long amt)
+    {
+        var selectIndex = (int)(Context.OriginTransactionId.ToInt64() % distributors.Values.Count);
+        var count = 0;
+        do
+        {
+            var distributor = distributors.Values[selectIndex];
+            var selectDistributorBalance = State.DistributorBalance[tick][distributor];
+            if (selectDistributorBalance < amt)
+            {
+                DistributeInscription(tick, symbol, selectDistributorBalance, amt, distributor);
+                State.DistributorHashList[tick].Values.Remove(distributor);
+                amt = amt.Sub(selectDistributorBalance);
+                count++;
+                selectIndex = selectIndex == distributors.Values.Count.Sub(1) ? 0 : selectIndex.Add(1);
+            }
+            else
+            {
+                DistributeInscription(tick, symbol, selectDistributorBalance, amt, distributor);
+                break;
+            }
+        } while (count < InscriptionContractConstants.RetrySelectDistributorCount);
+    }
+
+    private void DistributeInscription(string tick, string symbol, long balance, long amt, Hash distributor)
+    {
+        State.DistributorBalance[tick][distributor] = balance.Sub(amt);
+        Context.SendVirtualInline(distributor, State.TokenContract.Value,
+            nameof(State.TokenContract.Transfer), new TransferInput
+            {
+                Symbol = symbol,
+                Amount = balance,
+                To = Context.Sender
+            });
+    }
+
+    private void ModifyDistributorBalance(string tick, List<Hash> distributors, long amount)
+    {
+        foreach (var distributor in distributors)
+        {
+            State.DistributorBalance[tick][distributor] =
+                State.DistributorBalance[tick.ToUpper()][distributor].Add(amount);
+        }
     }
 }

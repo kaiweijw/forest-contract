@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
+using AElf.CSharp.Core;
 using AElf.Standards.ACS12;
 using AElf.Standards.ACS2;
 using AElf.Types;
@@ -25,10 +26,10 @@ public partial class InscriptionContract
                     ReadPaths =
                     {
                         GetPath(nameof(InscriptionContractState.InscribedLimit), args.Tick.ToUpper()),
-                        GetPath(nameof(InscriptionContractState.DistributorHashList),args.Tick.ToUpper())
+                        GetPath(nameof(InscriptionContractState.DistributorHashList), args.Tick.ToUpper())
                     }
                 };
-
+                AddDistributorPath(resourceInfo, args);
                 // add fee path
                 AddPathForTransactionFee(resourceInfo, txn.From.ToBase58(), txn.MethodName);
                 AddPathForTransactionFeeFreeAllowance(resourceInfo, txn.From);
@@ -40,7 +41,45 @@ public partial class InscriptionContract
                 return new ResourceInfo { NonParallelizable = true };
         }
     }
-    
+
+    private void AddDistributorPath(ResourceInfo resourceInfo, InscribedInput input)
+    {
+        var symbol = $"{input.Tick?.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
+        var distributors =
+            SelectDistributors(input.Tick,State.DistributorHashList[input.Tick], input.Amt);
+        var paths = distributors.Select(d => GetPath(nameof(State.DistributorBalance), input.Tick, d.ToHex()));
+        foreach (var path in paths)
+        {
+            if (resourceInfo.WritePaths.Contains(path)) continue;
+            resourceInfo.WritePaths.Add(path);
+        }
+    }
+
+    private List<Hash> SelectDistributors(string tick, HashList distributorList, long amt)
+    {
+        var selectIndex = (int)(Context.OriginTransactionId.ToInt64() % distributorList.Values.Count);
+        var count = 0;
+        var result = new List<Hash>();
+        do
+        {
+            var distributor = distributorList.Values[selectIndex];
+            var selectDistributorBalance = State.DistributorBalance[tick][distributor];
+            result.Add(distributor);
+            if (selectDistributorBalance < amt)
+            {
+                amt = amt.Sub(selectDistributorBalance);
+                count++;
+                selectIndex = selectIndex == distributorList.Values.Count.Sub(1) ? 0 : selectIndex.Add(1);
+            }
+            else
+            {
+                break;
+            }
+        } while (count < InscriptionContractConstants.RetrySelectDistributorCount);
+
+        return result;
+    }
+
     private void AddPathForDelegatees(ResourceInfo resourceInfo, Address from, Address to, string methodName)
     {
         var delegateeList = new List<string>();
@@ -118,6 +157,7 @@ public partial class InscriptionContract
     {
         return GetPath(Context.Self, parts);
     }
+
     private List<string> GetTransactionFeeSymbols(string methodName)
     {
         var actualFee = GetActualFee(methodName);
@@ -137,6 +177,7 @@ public partial class InscriptionContract
                     symbols.Add(sizeFee.TokenSymbol);
             }
         }
+
         return symbols;
     }
 
@@ -196,6 +237,7 @@ public partial class InscriptionContract
                 DelegatorAddress = delegator
             }).DelegateeAddresses;
         }
+
         if (allDelegatees != null)
         {
             delegateeList.AddRange(allDelegatees.Select(address => address.ToBase58()));

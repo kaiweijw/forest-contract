@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AElf;
 using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
@@ -94,14 +93,11 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         State.InscribedLimit[tick] = lim;
         var remain = tokenInfo.TotalSupply % distributors.Values.Count;
         var amount = tokenInfo.TotalSupply.Div(distributors.Values.Count);
-        if (remain == 0)
+        IssueAndModifyBalance(tick, symbol, amount, distributors.Values.ToList());
+        if (remain > 0)
         {
-            Issue(symbol, amount, distributors.Values.ToList());
-        }
-        else
-        {
-            Issue(symbol, amount, distributors.Values.ToList().GetRange(0, distributors.Values.Count - 2));
-            Issue(symbol, remain, new List<Hash> { distributors.Values.Last() });
+            // remain amount will issue to first distributor.
+            IssueAndModifyBalance(tick, symbol, remain, new List<Hash> { distributors.Values.First() });
         }
 
         var inscriptionInfo =
@@ -122,19 +118,13 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty Inscribe(InscribedInput input)
     {
-        Assert(!string.IsNullOrWhiteSpace(input.Tick) && input.Amt > 0 && input.Amt <= State.InscribedLimit[input.Tick], "Invalid input.");
+        Assert(!string.IsNullOrWhiteSpace(input.Tick) && input.Amt > 0 && input.Amt <= State.InscribedLimit[input.Tick],
+            "Invalid input.");
         var tick = input.Tick;
         var symbol = $"{tick?.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
         var distributors = State.DistributorHashList[input.Tick];
         Assert(distributors != null, "Empty distributors.");
-        var selectIndex = (int)(Context.OriginTransactionId.ToInt64() % distributors.Values.Count);
-        Context.SendVirtualInline(distributors.Values[selectIndex], State.TokenContract.Value,
-            nameof(State.TokenContract.Transfer), new TransferInput
-            {
-                Symbol = symbol,
-                Amount = input.Amt,
-                To = Context.Sender
-            });
+        SelectDistributorsAndTransfer(tick, symbol, distributors, input.Amt);
         var inscriptionInfo =
             $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""mint"",""tick"":""{tick}"",""amt"":""{input.Amt}""}}";
         Context.Fire(new InscriptionTransferred
