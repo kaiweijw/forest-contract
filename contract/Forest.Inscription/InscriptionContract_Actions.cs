@@ -20,9 +20,18 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
             Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
         State.ConfigurationContract.Value =
             Context.GetContractAddressByName(SmartContractConstants.ConfigurationContractSystemName);
+        State.Admin.Value = input.Admin;
         State.Initialized.Value = true;
         return new Empty();
     }
+
+    public override Empty ChangeAdmin(Address input)
+    {
+        // Assert(Context.Sender == State.Admin.Value,"No permission.");
+        State.Admin.Value = input;
+        return new Empty();
+    }
+
 
     public override Empty DeployInscription(DeployInscriptionInput input)
     {
@@ -39,16 +48,19 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
             Amount = 1,
         });
 
+        var issueChainId = State.IssueChainId.Value == 0
+            ? InscriptionContractConstants.IssueChainId
+            : State.IssueChainId.Value;
         // Create collection
         var collectionExternalInfo =
             GenerateExternalInfo(input.Tick, input.Max, input.Limit, input.Image, SymbolType.NftCollection);
-        var collectionSymbol = CreateInscription(input.Tick, input.Max, input.IssueChainId, collectionExternalInfo,
+        var collectionSymbol = CreateInscription(input.Tick, input.Max, issueChainId, collectionExternalInfo,
             SymbolType.NftCollection);
 
         // Create nft item
         var nftExternalInfo =
             GenerateExternalInfo(input.Tick, input.Max, input.Limit, input.Image, SymbolType.Nft);
-        var nftSymbol = CreateInscription(input.Tick, input.Max, input.IssueChainId, nftExternalInfo, SymbolType.Nft);
+        var nftSymbol = CreateInscription(input.Tick, input.Max, issueChainId, nftExternalInfo, SymbolType.Nft);
         State.InscribedLimit[input.Tick?.ToUpper()] = input.Limit;
 
         Context.Fire(new InscriptionCreated
@@ -60,7 +72,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
             Decimals = InscriptionContractConstants.InscriptionDecimals,
             Issuer = Context.Self,
             IsBurnable = true,
-            IssueChainId = input.IssueChainId,
+            IssueChainId = issueChainId,
             CollectionExternalInfo = new ExternalInfos
             {
                 Value = { collectionExternalInfo.Value }
@@ -81,15 +93,17 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
     {
         Assert(!string.IsNullOrWhiteSpace(input.Tick), "Invalid input.");
         var tick = input.Tick?.ToUpper();
-        var symbol = $"{tick}-{InscriptionContractConstants.NftSymbolSuffix}";
+        var symbol = GetNftSymbol(tick);
+        var collectionSymbol = GetCollectionSymbol(tick);
         var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
-            Symbol = symbol
+            Symbol = collectionSymbol
         });
         Assert(tokenInfo != null, $"Token not exist.{tokenInfo?.Symbol}");
         var distributors = GenerateDistributors(tick);
-        var limit = tokenInfo?.ExternalInfo.Value[InscriptionContractConstants.InscriptionLimitKey];
-        Assert(long.TryParse(limit, out var lim), "Invalid inscription limit.");
+        var info = DeployInscriptionOperation.Parser.ParseJson(
+            tokenInfo?.ExternalInfo.Value[InscriptionContractConstants.InscriptionDeployKey]);
+        Assert(long.TryParse(info.Lim, out var lim), "Invalid inscription limit.");
         State.InscribedLimit[tick] = lim;
         var remain = tokenInfo.TotalSupply % distributors.Values.Count;
         var amount = tokenInfo.TotalSupply.Div(distributors.Values.Count);
@@ -100,16 +114,13 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
             IssueAndModifyBalance(tick, symbol, remain, new List<Hash> { distributors.Values.First() });
         }
 
-        var inscriptionInfo =
-            $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""deploy"",""tick"":""{tick}"",""max"":""{tokenInfo.TotalSupply}"",""lim"":""{lim}""}}";
-
         Context.Fire(new InscriptionIssued
         {
             Symbol = symbol,
             Tick = tick,
             Amt = tokenInfo.TotalSupply,
             To = Context.Self,
-            InscriptionInfo = inscriptionInfo
+            InscriptionInfo = info.ToString()
         });
 
         return new Empty();
@@ -118,24 +129,65 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty Inscribe(InscribedInput input)
     {
-        Assert(!string.IsNullOrWhiteSpace(input.Tick) && input.Amt > 0 && input.Amt <= State.InscribedLimit[input.Tick],
-            "Invalid input.");
-        var tick = input.Tick;
-        var symbol = $"{tick?.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
-        var distributors = State.DistributorHashList[input.Tick];
-        Assert(distributors != null, "Empty distributors.");
-        SelectDistributorsAndTransfer(tick, symbol, distributors, input.Amt);
-        var inscriptionInfo =
-            $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""mint"",""tick"":""{tick}"",""amt"":""{input.Amt}""}}";
+        var tokenInfo = CheckInputAndGetSymbol(input.Tick, input.Amt);
+        SelectDistributorAndTransfer(input.Tick, tokenInfo.Symbol, input.Amt,InscribeType.Parallel);
         Context.Fire(new InscriptionTransferred
         {
             From = Context.Self,
-            Symbol = symbol,
-            Tick = tick?.ToUpper(),
+            Symbol = tokenInfo.Symbol,
+            Tick = input.Tick?.ToUpper(),
             Amt = input.Amt,
             To = Context.Sender,
-            InscriptionInfo = inscriptionInfo
+            InscriptionInfo = tokenInfo.ExternalInfo.Value[InscriptionContractConstants.InscriptionMintKey]
         });
         return new Empty();
+    }
+
+    public override Empty InscribeWithoutParallel(InscribedInput input)
+    {
+        var tokenInfo = CheckInputAndGetSymbol(input.Tick, input.Amt);
+        SelectDistributorAndTransfer(input.Tick, tokenInfo.Symbol, input.Amt,InscribeType.NotParallel);
+        Context.Fire(new InscriptionTransferred
+        {
+            From = Context.Self,
+            Symbol = tokenInfo.Symbol,
+            Tick = input.Tick?.ToUpper(),
+            Amt = input.Amt,
+            To = Context.Sender,
+            InscriptionInfo = tokenInfo.ExternalInfo.Value[InscriptionContractConstants.InscriptionMintKey]
+        });
+        return new Empty();
+    }
+
+    public override Empty SetIssueChainId(Int32Value input)
+    {
+        Assert(Context.Sender == State.Admin.Value, "No permission.");
+        Assert(input != null && input.Value > 0, "Invalid input.");
+        State.IssueChainId.Value = input.Value;
+        return new Empty();
+    }
+
+    public override Int32Value GetIssueChainId(Empty input)
+    {
+        return new Int32Value
+        {
+            Value = State.IssueChainId.Value
+        };
+    }
+
+    public override Empty SetDistributorCount(Int32Value input)
+    {
+        Assert(Context.Sender == State.Admin.Value, "No permission.");
+        Assert(input != null && input.Value > 0, "Invalid input.");
+        State.DistributorCount.Value = input.Value;
+        return new Empty();
+    }
+
+    public override Int32Value GetDistributorCount(Empty input)
+    {
+        return new Int32Value
+        {
+            Value = State.DistributorCount.Value
+        };
     }
 }

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using AElf.Boilerplate.TestBase;
 using AElf.ContractTestBase;
-using AElf.Kernel.SmartContract;
 using AElf.Kernel.SmartContract.Application;
 using Forest.Inscription.ContractInitializationProvider;
 using Microsoft.Extensions.DependencyInjection;

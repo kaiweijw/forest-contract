@@ -23,6 +23,7 @@ service InscriptionContract {
 
   rpc Initialize (InitializeInput) returns (google.protobuf.Empty) {}
 
+  rpc ChangeAdmin (aelf.Address) returns (google.protobuf.Empty) {}
   // deploy inscription
   rpc DeployInscription (DeployInscriptionInput) returns (google.protobuf.Empty) {}
 
@@ -32,6 +33,16 @@ service InscriptionContract {
   // Side chain - Inscribe (transfer inscription to user)
   rpc Inscribe (InscribedInput) returns (google.protobuf.Empty) {}
 
+  // Side chain - Inscribe (transfer inscription to user) without parallel
+  rpc InscribeWithoutParallel (InscribedInput) returns (google.protobuf.Empty) {}
+
+  rpc SetDistributorCount (google.protobuf.Int32Value) returns (google.protobuf.Empty) {}
+
+  rpc SetIssueChainId (google.protobuf.Int32Value) returns (google.protobuf.Empty) {}
+
+  rpc GetAdmin (google.protobuf.Empty) returns (aelf.Address){
+    option (aelf.is_view) = true;
+  }
   // get inscribed limit
   rpc GetInscribedLimit(google.protobuf.StringValue) returns (google.protobuf.Int64Value){
     option (aelf.is_view) = true;
@@ -40,20 +51,28 @@ service InscriptionContract {
   rpc GetDistributorList(google.protobuf.StringValue) returns (AddressList){
     option (aelf.is_view) = true;
   }
-
+  // get distributor address list
+  rpc GetDistributorBalance(google.protobuf.StringValue) returns (DistributorsBalanceList){
+    option (aelf.is_view) = true;
+  }
+  rpc GetDistributorCount (google.protobuf.Empty) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
+  rpc GetIssueChainId (google.protobuf.Empty) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
 }
 
 message InitializeInput{
-
+  aelf.Address admin = 1;
 }
 
 message DeployInscriptionInput{
   string seed_symbol = 1;
   string tick = 2;
-  int32 issue_chain_id = 3;
-  int64 max = 4;
-  int64 limit = 5;
-  string image = 6;
+  int64 max = 3;
+  int64 limit = 4;
+  string image = 5;
 }
 
 message IssueInscriptionInput{
@@ -73,10 +92,40 @@ message AddressList {
   repeated aelf.Address values = 1;
 }
 
+message DistributorsBalanceList{
+  repeated DistributorsBalance values = 1;
+}
+
+message DistributorsBalance{
+  aelf.Address distributor = 1;
+  int64 balance = 2;
+}
+
 enum SymbolType {
   UNSPECIFIED = 0;
   NFT_COLLECTION = 1;
   NFT = 2;
+}
+
+enum InscribeType {
+  INSCRIBE_TYPE_UNSPECIFIED = 0;
+  PARALLEL = 1;
+  NOT_PARALLEL = 2;
+}
+
+message DeployInscriptionOperation {
+  string p = 1;
+  string op = 2;
+  string tick = 3;
+  string max = 4;
+  string lim = 5;
+}
+
+message MintInscriptionOperation {
+  string p = 1;
+  string op = 2;
+  string tick = 3;
+  string amt = 4;
 }
 
 // Event

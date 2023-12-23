@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AElf;
@@ -20,7 +21,6 @@ public partial class InscriptionContract
             case nameof(Inscribe):
             {
                 var args = InscribedInput.Parser.ParseFrom(txn.Params);
-
                 var resourceInfo = new ResourceInfo
                 {
                     ReadPaths =
@@ -29,7 +29,7 @@ public partial class InscriptionContract
                         GetPath(nameof(InscriptionContractState.DistributorHashList), args.Tick.ToUpper())
                     }
                 };
-                AddDistributorPath(resourceInfo, args);
+                AddDistributorAndBalancePath(resourceInfo, txn.From, args);
                 // add fee path
                 AddPathForTransactionFee(resourceInfo, txn.From.ToBase58(), txn.MethodName);
                 AddPathForTransactionFeeFreeAllowance(resourceInfo, txn.From);
@@ -42,42 +42,24 @@ public partial class InscriptionContract
         }
     }
 
-    private void AddDistributorPath(ResourceInfo resourceInfo, InscribedInput input)
+    private void AddDistributorAndBalancePath(ResourceInfo resourceInfo, Address from, InscribedInput input)
     {
-        var symbol = $"{input.Tick?.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
-        var distributors =
-            SelectDistributors(input.Tick,State.DistributorHashList[input.Tick], input.Amt);
-        var paths = distributors.Select(d => GetPath(nameof(State.DistributorBalance), input.Tick, d.ToHex()));
-        foreach (var path in paths)
-        {
-            if (resourceInfo.WritePaths.Contains(path)) continue;
-            resourceInfo.WritePaths.Add(path);
-        }
+        var symbol = GetNftSymbol(input.Tick.ToUpper());
+        var distributors = State.DistributorHashList[input.Tick.ToUpper()];
+        var selectIndex = (int)((Math.Abs(from.ToByteArray().ToInt64(true)) % distributors.Values.Count));
+        var distributor = distributors.Values[selectIndex];
+        var path = GetPath(nameof(State.DistributorBalance), input.Tick, distributor.ToHex());
+        if (resourceInfo.WritePaths.Contains(path)) return;
+        resourceInfo.WritePaths.Add(path);
+        AddBalancePath(resourceInfo, distributor, symbol);
     }
 
-    private List<Hash> SelectDistributors(string tick, HashList distributorList, long amt)
+    private void AddBalancePath(ResourceInfo resourceInfo, Hash distributor, string symbol)
     {
-        var selectIndex = (int)(Context.OriginTransactionId.ToInt64() % distributorList.Values.Count);
-        var count = 0;
-        var result = new List<Hash>();
-        do
-        {
-            var distributor = distributorList.Values[selectIndex];
-            var selectDistributorBalance = State.DistributorBalance[tick][distributor];
-            result.Add(distributor);
-            if (selectDistributorBalance < amt)
-            {
-                amt = amt.Sub(selectDistributorBalance);
-                count++;
-                selectIndex = selectIndex == distributorList.Values.Count.Sub(1) ? 0 : selectIndex.Add(1);
-            }
-            else
-            {
-                break;
-            }
-        } while (count < InscriptionContractConstants.RetrySelectDistributorCount);
-
-        return result;
+        var distributorAddress = Context.ConvertVirtualAddressToContractAddress(distributor);
+        var path = GetPath(State.TokenContract.Value, "Balances", distributorAddress.ToBase58(), symbol);
+        if (resourceInfo.WritePaths.Contains(path)) return;
+        resourceInfo.WritePaths.Add(path);
     }
 
     private void AddPathForDelegatees(ResourceInfo resourceInfo, Address from, Address to, string methodName)

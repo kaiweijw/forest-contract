@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using AElf;
 using AElf.Contracts.MultiToken;
@@ -18,17 +19,28 @@ public partial class InscriptionContract
         };
         if (symbolType == SymbolType.NftCollection)
         {
-            var info =
-                $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""deploy"",""tick"":""{tick}"",""max"":""{max}"",""lim"":""{limit}""}}";
-            dic[InscriptionContractConstants.InscriptionDeployKey] = info;
+            var info = new DeployInscriptionOperation
+            {
+                P = InscriptionContractConstants.InscriptionType,
+                Op = "deploy",
+                Tick = tick,
+                Max = max.ToString(),
+                Lim = limit.ToString()
+            };
+            dic[InscriptionContractConstants.InscriptionDeployKey] = info.ToString();
         }
         else
         {
-            var info =
-                $@"{{""p"":""{InscriptionContractConstants.InscriptionType}"",""op"":""mint"",""tick"":""{tick}"",""amt"":""{InscriptionContractConstants.InscriptionAmt}""}}";
-            dic[InscriptionContractConstants.InscriptionMintKey] = info;
-            dic[InscriptionContractConstants.InscriptionLimitKey] = $"{limit}";
+            var info = new MintInscriptionOperation
+            {
+                P = InscriptionContractConstants.InscriptionType,
+                Op = "mint",
+                Tick = tick,
+                Amt = InscriptionContractConstants.InscriptionAmt.ToString()
+            };
+            dic[InscriptionContractConstants.InscriptionMintKey] = info.ToString();
         }
+
         externalInfo.Value.Add(dic);
 
         return externalInfo;
@@ -38,8 +50,8 @@ public partial class InscriptionContract
         SymbolType symbolType)
     {
         var symbol = symbolType == SymbolType.NftCollection
-            ? $"{tick.ToUpper()}-{InscriptionContractConstants.CollectionSymbolSuffix}"
-            : $"{tick.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
+            ? GetCollectionSymbol(tick)
+            : GetNftSymbol(tick);
 
         var creatTokenInput = new CreateInput
         {
@@ -67,46 +79,60 @@ public partial class InscriptionContract
                 Amount = amount,
                 To = Context.ConvertVirtualAddressToContractAddress(distributor)
             });
-            ModifyDistributorBalance(tick,distributors,amount);
+            ModifyDistributorBalance(tick, distributor, amount);
         }
     }
 
     private HashList GenerateDistributors(string tick)
     {
         var distributors = new HashList();
-        var salt = Context.TransactionId.ToInt64();
-        for (var i = 0; i < InscriptionContractConstants.DistributorsCount; i++)
+        var distributorCount = State.DistributorCount.Value == 0
+            ? InscriptionContractConstants.DistributorsCount
+            : State.DistributorCount.Value;
+        for (var i = 0; i < distributorCount; i++)
         {
-            var distributor = HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(salt.Add(i)), Context.TransactionId);
+            var distributor = HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(i), Context.OriginTransactionId);
             distributors.Values.Add(distributor);
         }
 
         State.DistributorHashList[tick.ToUpper()] = distributors;
         return distributors;
     }
-    
-    private void SelectDistributorsAndTransfer(string tick, string symbol, HashList distributors, long amt)
+
+    private void SelectDistributorAndTransfer(string tick, string symbol, long amt, InscribeType inscribeType)
     {
-        var selectIndex = (int)(Context.OriginTransactionId.ToInt64() % distributors.Values.Count);
-        var count = 0;
-        do
+        var distributors = State.DistributorHashList[tick];
+        Assert(distributors != null, "Empty distributors.");
+        var selectIndex = (int)((Math.Abs(Context.Sender.ToByteArray().ToInt64(true)) % distributors.Values.Count));
+        if (inscribeType == InscribeType.Parallel)
         {
             var distributor = distributors.Values[selectIndex];
             var selectDistributorBalance = State.DistributorBalance[tick][distributor];
-            if (selectDistributorBalance < amt)
+            Assert(selectDistributorBalance >= amt,
+                $"Distributor balance not enough.{Context.ConvertVirtualAddressToContractAddress(distributor)}");
+            DistributeInscription(tick, symbol, selectDistributorBalance, amt, distributor);
+        }
+        else
+        {
+            var count = 0;
+            do
             {
-                DistributeInscription(tick, symbol, selectDistributorBalance, amt, distributor);
-                State.DistributorHashList[tick].Values.Remove(distributor);
-                amt = amt.Sub(selectDistributorBalance);
-                count++;
-                selectIndex = selectIndex == distributors.Values.Count.Sub(1) ? 0 : selectIndex.Add(1);
-            }
-            else
-            {
-                DistributeInscription(tick, symbol, selectDistributorBalance, amt, distributor);
-                break;
-            }
-        } while (count < InscriptionContractConstants.RetrySelectDistributorCount);
+                var distributor = distributors.Values[selectIndex];
+                var selectDistributorBalance = State.DistributorBalance[tick][distributor];
+                if (selectDistributorBalance < amt)
+                {
+                    DistributeInscription(tick, symbol, selectDistributorBalance, amt, distributor);
+                    amt = amt.Sub(selectDistributorBalance);
+                    count++;
+                    selectIndex = selectIndex == distributors.Values.Count.Sub(1) ? 0 : selectIndex.Add(1);
+                }
+                else
+                {
+                    DistributeInscription(tick, symbol, selectDistributorBalance, amt, distributor);
+                    break;
+                }
+            } while (count < distributors.Values.Count);
+        }
     }
 
     private void DistributeInscription(string tick, string symbol, long balance, long amt, Hash distributor)
@@ -121,12 +147,32 @@ public partial class InscriptionContract
             });
     }
 
-    private void ModifyDistributorBalance(string tick, List<Hash> distributors, long amount)
+    private TokenInfo CheckInputAndGetSymbol(string tick, long amt)
     {
-        foreach (var distributor in distributors)
+        Assert(!string.IsNullOrWhiteSpace(tick) && amt > 0 && amt <= State.InscribedLimit[tick],
+            "Invalid input.");
+        var symbol = GetNftSymbol(tick);
+        var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
-            State.DistributorBalance[tick][distributor] =
-                State.DistributorBalance[tick.ToUpper()][distributor].Add(amount);
-        }
+            Symbol = symbol
+        });
+        Assert(tokenInfo != null, "Token not exists.");
+        return tokenInfo;
+    }
+
+    private void ModifyDistributorBalance(string tick, Hash distributor, long amount)
+    {
+        State.DistributorBalance[tick][distributor] =
+            State.DistributorBalance[tick.ToUpper()][distributor].Add(amount);
+    }
+
+    private string GetNftSymbol(string tick)
+    {
+        return $"{tick.ToUpper()}-{InscriptionContractConstants.NftSymbolSuffix}";
+    }
+
+    private string GetCollectionSymbol(string tick)
+    {
+        return $"{tick.ToUpper()}-{InscriptionContractConstants.CollectionSymbolSuffix}";
     }
 }

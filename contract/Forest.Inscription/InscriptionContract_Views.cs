@@ -1,4 +1,5 @@
 using System.Linq;
+using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Forest.Inscription;
@@ -20,5 +21,27 @@ public partial class InscriptionContract
         {
             Values = { distributors?.Select(d => Context.ConvertVirtualAddressToContractAddress(d)) }
         };
+    }
+
+    public override DistributorsBalanceList GetDistributorBalance(StringValue input)
+    {
+        var result = new DistributorsBalanceList();
+        var distributors = State.DistributorHashList[input.Value.ToUpper()]?.Values;
+        if (distributors == null || distributors.Count <= 0) return result;
+        foreach (var distributor in distributors)
+        {
+            var balance = State.DistributorBalance[input.Value.ToUpper()][distributor];
+            result.Values.Add(new DistributorsBalance
+            {
+                Distributor = Context.ConvertVirtualAddressToContractAddress(distributor),
+                Balance = balance
+            });
+        }
+        return result;
+    }
+
+    public override Address GetAdmin(Empty input)
+    {
+        return State.Admin.Value;
     }
 }
