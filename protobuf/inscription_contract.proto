@@ -111,12 +111,6 @@ enum SymbolType {
   NFT = 2;
 }
 
-enum InscribeType {
-  INSCRIBE_TYPE_UNSPECIFIED = 0;
-  PARALLEL = 1;
-  NOT_PARALLEL = 2;
-}
-
 message DeployInscriptionInfo {
   string p = 1;
   string op = 2;

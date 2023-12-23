@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using AElf.Contracts.MultiToken;
-using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
@@ -27,7 +25,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty ChangeAdmin(Address input)
     {
-        Assert(Context.Sender == State.Admin.Value,"No permission.");
+        Assert(Context.Sender == State.Admin.Value, "No permission.");
         State.Admin.Value = input;
         return new Empty();
     }
@@ -52,7 +50,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         var issueChainId = State.IssueChainId.Value == 0
             ? InscriptionContractConstants.IssueChainId
             : State.IssueChainId.Value;
-        
+
         // Create collection
         var collectionExternalInfo =
             GenerateExternalInfo(tick, input.Max, input.Limit, input.Image, SymbolType.NftCollection);
@@ -107,7 +105,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
             tokenInfo?.ExternalInfo.Value[InscriptionContractConstants.InscriptionDeployKey]);
         Assert(long.TryParse(info.Lim, out var lim), "Invalid inscription limit.");
         State.InscribedLimit[tick] = lim;
-        IssueAndModifyBalance(tick,symbol,tokenInfo.TotalSupply, distributors.Values.ToList());
+        IssueAndModifyBalance(tick, symbol, tokenInfo.TotalSupply, distributors.Values.ToList());
 
         Context.Fire(new InscriptionIssued
         {
@@ -126,7 +124,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
     {
         var tick = input.Tick?.ToUpper();
         var tokenInfo = CheckInputAndGetSymbol(tick, input.Amt);
-        SelectDistributorAndTransfer(tick, tokenInfo.Symbol, input.Amt,InscribeType.Parallel);
+        TransferWithDistributor(tick, tokenInfo.Symbol, input.Amt);
         Context.Fire(new InscriptionTransferred
         {
             From = Context.Self,
@@ -138,12 +136,12 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         });
         return new Empty();
     }
-    
+
     public override Empty MintInscription(InscribedInput input)
     {
         var tick = input.Tick?.ToUpper();
         var tokenInfo = CheckInputAndGetSymbol(tick, input.Amt);
-        SelectDistributorAndTransfer(tick, tokenInfo.Symbol, input.Amt,InscribeType.NotParallel);
+        TransferWithDistributors(tick, tokenInfo.Symbol, input.Amt);
         Context.Fire(new InscriptionTransferred
         {
             From = Context.Self,

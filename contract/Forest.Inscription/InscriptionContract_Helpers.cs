@@ -81,6 +81,7 @@ public partial class InscriptionContract
             {
                 amount = amount.Add(remain);
             }
+
             State.TokenContract.Issue.Send(new IssueInput
             {
                 Symbol = symbol,
@@ -106,51 +107,52 @@ public partial class InscriptionContract
         State.DistributorHashList[tick] = distributors;
         return distributors;
     }
-
-    private void SelectDistributorAndTransfer(string tick, string symbol, long amt, InscribeType inscribeType)
+    
+    private void TransferWithDistributor(string tick, string symbol, long amt)
     {
         var distributors = State.DistributorHashList[tick];
         Assert(distributors != null, "Empty distributors.");
         var selectIndex = (int)((Math.Abs(Context.Sender.ToByteArray().ToInt64(true)) % distributors.Values.Count));
-        if (inscribeType == InscribeType.Parallel)
+        var distributor = distributors.Values[selectIndex];
+        var selectDistributorBalance = State.DistributorBalance[tick][distributor];
+        Assert(selectDistributorBalance >= amt,
+            $"Distributor balance not enough.{Context.ConvertVirtualAddressToContractAddress(distributor)}");
+        DistributeInscription(tick, symbol, amt, distributor);
+    }
+    
+    private void TransferWithDistributors(string tick, string symbol, long amt)
+    {
+        var distributors = State.DistributorHashList[tick];
+        Assert(distributors != null, "Empty distributors.");
+        var selectIndex = (int)((Math.Abs(Context.Sender.ToByteArray().ToInt64(true)) % distributors.Values.Count));
+        var count = 0;
+        do
         {
             var distributor = distributors.Values[selectIndex];
             var selectDistributorBalance = State.DistributorBalance[tick][distributor];
-            Assert(selectDistributorBalance >= amt,
-                $"Distributor balance not enough.{Context.ConvertVirtualAddressToContractAddress(distributor)}");
-            DistributeInscription(tick, symbol, selectDistributorBalance, amt, distributor);
-        }
-        else
-        {
-            var count = 0;
-            do
+            if (selectDistributorBalance < amt)
             {
-                var distributor = distributors.Values[selectIndex];
-                var selectDistributorBalance = State.DistributorBalance[tick][distributor];
-                if (selectDistributorBalance < amt)
-                {
-                    DistributeInscription(tick, symbol, selectDistributorBalance, amt, distributor);
-                    amt = amt.Sub(selectDistributorBalance);
-                    count++;
-                    selectIndex = selectIndex == distributors.Values.Count.Sub(1) ? 0 : selectIndex.Add(1);
-                }
-                else
-                {
-                    DistributeInscription(tick, symbol, selectDistributorBalance, amt, distributor);
-                    break;
-                }
-            } while (count < distributors.Values.Count);
-        }
+                DistributeInscription(tick, symbol, selectDistributorBalance, distributor);
+                amt = amt.Sub(selectDistributorBalance);
+                count++;
+                selectIndex = selectIndex == distributors.Values.Count.Sub(1) ? 0 : selectIndex.Add(1);
+            }
+            else
+            {
+                DistributeInscription(tick, symbol, amt, distributor);
+                break;
+            }
+        } while (count < distributors.Values.Count);
     }
 
-    private void DistributeInscription(string tick, string symbol, long balance, long amt, Hash distributor)
+    private void DistributeInscription(string tick, string symbol, long amt, Hash distributor)
     {
         ModifyDistributorBalance(tick, distributor, -amt);
         Context.SendVirtualInline(distributor, State.TokenContract.Value,
             nameof(State.TokenContract.Transfer), new TransferInput
             {
                 Symbol = symbol,
-                Amount = balance,
+                Amount = amt,
                 To = Context.Sender
             });
     }
