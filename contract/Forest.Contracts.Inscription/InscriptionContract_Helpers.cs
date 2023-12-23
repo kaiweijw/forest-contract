@@ -77,15 +77,11 @@ public partial class InscriptionContract
         var distributorsAddress = distributors.Select(d => Context.ConvertVirtualAddressToContractAddress(d)).ToList();
         for (var i = 0; i < distributorsAddress.Count; i++)
         {
-            if (i == 0)
-            {
-                amount = amount.Add(remain);
-            }
-
+            var actualAmount = i == 0 ? amount.Add(remain) : amount;
             State.TokenContract.Issue.Send(new IssueInput
             {
                 Symbol = symbol,
-                Amount = amount,
+                Amount = actualAmount,
                 To = distributorsAddress[i]
             });
             ModifyDistributorBalance(tick, distributors[i], amount);
