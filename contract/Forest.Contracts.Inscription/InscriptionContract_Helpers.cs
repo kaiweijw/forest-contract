@@ -103,7 +103,7 @@ public partial class InscriptionContract
         State.DistributorHashList[tick] = distributors;
         return distributors;
     }
-    
+
     private void TransferWithDistributor(string tick, string symbol, long amt)
     {
         var distributors = State.DistributorHashList[tick];
@@ -115,11 +115,14 @@ public partial class InscriptionContract
             $"Distributor balance not enough.{Context.ConvertVirtualAddressToContractAddress(distributor)}");
         DistributeInscription(tick, symbol, amt, distributor);
     }
-    
+
     private void TransferWithDistributors(string tick, string symbol, long amt)
     {
         var distributors = State.DistributorHashList[tick];
         Assert(distributors != null, "Empty distributors.");
+        var remainAmount = distributors?.Values.Select(distributor => State.DistributorBalance[tick][distributor])
+            .Aggregate(0L, (current, balance) => current + balance);
+        Assert(amt > remainAmount, "Not enough inscription amount to mint.");
         var selectIndex = (int)((Math.Abs(Context.Sender.ToByteArray().ToInt64(true)) % distributors.Values.Count));
         var count = 0;
         do
