@@ -122,7 +122,7 @@ public partial class InscriptionContract
         Assert(distributors != null, "Empty distributors.");
         var remainAmount = distributors?.Values.Select(distributor => State.DistributorBalance[tick][distributor])
             .Aggregate(0L, (current, balance) => current + balance);
-        Assert(amt > remainAmount, "Not enough inscription amount to mint.");
+        Assert(amt <= remainAmount, "Not enough inscription amount to mint.");
         var selectIndex = (int)((Math.Abs(Context.Sender.ToByteArray().ToInt64(true)) % distributors.Values.Count));
         var count = 0;
         do

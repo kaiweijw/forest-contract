@@ -14,11 +14,13 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         Assert(!State.Initialized.Value, "Already initialized.");
         State.GenesisContract.Value = Context.GetZeroSmartContractAddress();
         Assert(State.GenesisContract.GetContractInfo.Call(Context.Self).Deployer == Context.Sender, "No permission.");
+        Assert(input.Admin != null && input.IssueChainId > 0, "Invalid input.");
         State.TokenContract.Value =
             Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
         State.ConfigurationContract.Value =
             Context.GetContractAddressByName(SmartContractConstants.ConfigurationContractSystemName);
         State.Admin.Value = input.Admin;
+        State.IssueChainId.Value = input.IssueChainId;
         State.Initialized.Value = true;
         return new Empty();
     }
@@ -26,6 +28,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
     public override Empty ChangeAdmin(Address input)
     {
         Assert(Context.Sender == State.Admin.Value, "No permission.");
+        Assert(input != null, "Invalid input.");
         State.Admin.Value = input;
         return new Empty();
     }
@@ -33,8 +36,9 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty DeployInscription(DeployInscriptionInput input)
     {
+        Assert(State.Initialized.Value, "Not initialized yet.");
         Assert(!string.IsNullOrWhiteSpace(input.SeedSymbol) && !string.IsNullOrWhiteSpace(input.Tick) &&
-               input.Max > 0 && input.Limit > 0, "Invalid input.");
+               input.Max > 0 && input.Limit > 0 && input.Limit <= input.Max, "Invalid input.");
         Assert(!string.IsNullOrWhiteSpace(input.Image) && Encoding.UTF8.GetByteCount(input.Image) <=
             InscriptionContractConstants.ImageMaxLength, "Invalid image data.");
         var tick = input.Tick?.ToUpper();
@@ -47,9 +51,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
             Amount = 1,
         });
 
-        var issueChainId = State.IssueChainId.Value == 0
-            ? InscriptionContractConstants.IssueChainId
-            : State.IssueChainId.Value;
+        var issueChainId = State.IssueChainId.Value;
 
         // Create collection
         var collectionExternalInfo =
@@ -87,6 +89,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty IssueInscription(IssueInscriptionInput input)
     {
+        Assert(State.Initialized.Value, "Not initialized yet.");
         Assert(!string.IsNullOrWhiteSpace(input.Tick), "Invalid input.");
         var tick = input.Tick?.ToUpper();
         var symbol = GetNftSymbol(tick);
@@ -117,6 +120,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty Inscribe(InscribedInput input)
     {
+        Assert(State.Initialized.Value, "Not initialized yet.");
         var tick = input.Tick?.ToUpper();
         var tokenInfo = CheckInputAndGetSymbol(tick, input.Amt);
         TransferWithDistributor(tick, tokenInfo.Symbol, input.Amt);
@@ -133,6 +137,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     public override Empty MintInscription(InscribedInput input)
     {
+        Assert(State.Initialized.Value, "Not initialized yet.");
         var tick = input.Tick?.ToUpper();
         var tokenInfo = CheckInputAndGetSymbol(tick, input.Amt);
         TransferWithDistributors(tick, tokenInfo.Symbol, input.Amt);
@@ -155,27 +160,11 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         return new Empty();
     }
 
-    public override Int32Value GetIssueChainId(Empty input)
-    {
-        return new Int32Value
-        {
-            Value = State.IssueChainId.Value
-        };
-    }
-
     public override Empty SetDistributorCount(Int32Value input)
     {
         Assert(Context.Sender == State.Admin.Value, "No permission.");
         Assert(input != null && input.Value > 0, "Invalid input.");
         State.DistributorCount.Value = input.Value;
         return new Empty();
-    }
-
-    public override Int32Value GetDistributorCount(Empty input)
-    {
-        return new Int32Value
-        {
-            Value = State.DistributorCount.Value
-        };
     }
 }

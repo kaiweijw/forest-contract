@@ -29,11 +29,12 @@ public partial class InscriptionContract
     public override DistributorsBalanceList GetDistributorBalance(StringValue input)
     {
         var result = new DistributorsBalanceList();
-        var distributors = State.DistributorHashList[input.Value.ToUpper()]?.Values;
+        var tick = input.Value.ToUpper();
+        var distributors = State.DistributorHashList[tick]?.Values;
         if (distributors == null || distributors.Count <= 0) return result;
         foreach (var distributor in distributors)
         {
-            var balance = State.DistributorBalance[input.Value.ToUpper()][distributor];
+            var balance = State.DistributorBalance[tick][distributor];
             result.Values.Add(new DistributorsBalance
             {
                 Distributor = Context.ConvertVirtualAddressToContractAddress(distributor),
@@ -47,6 +48,25 @@ public partial class InscriptionContract
     public override Address GetAdmin(Empty input)
     {
         return State.Admin.Value;
+    }
+    
+    public override Int32Value GetIssueChainId(Empty input)
+    {
+        return new Int32Value
+        {
+            Value = State.IssueChainId.Value
+        };
+    }
+    
+    public override Int32Value GetDistributorCount(Empty input)
+    {
+        var result = State.DistributorCount.Value == 0
+            ? InscriptionContractConstants.DistributorsCount
+            : State.DistributorCount.Value;
+        return new Int32Value
+        {
+            Value = result
+        };
     }
 
     public override BoolValue CheckDistributorBalance(CheckDistributorBalanceInput input)

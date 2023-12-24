@@ -69,6 +69,7 @@ service InscriptionContract {
 
 message InitializeInput{
   aelf.Address admin = 1;
+  int32 issue_chain_id = 2;
 }
 
 message DeployInscriptionInput{
