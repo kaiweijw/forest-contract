@@ -71,7 +71,6 @@ public class InscriptionContractTests : InscriptionContractTestBase
             var l = InscriptionCreated.Parser.ParseFrom(result.TransactionResult.Logs
                 .FirstOrDefault(l => l.Name == nameof(InscriptionCreated))?.NonIndexed);
             l.TotalSupply.ShouldBe(21000000);
-            l.Decimals.ShouldBe(0);
             l.Deployer.ShouldBe(DefaultAddress);
             l.Tick.ShouldBe("ELFS");
             l.Limit.ShouldBe(1000);

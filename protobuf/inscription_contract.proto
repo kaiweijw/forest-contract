@@ -135,20 +135,12 @@ message CheckDistributorBalanceInput{
 // Event
 message InscriptionCreated{
   option (aelf.is_event) = true;
-  // The symbol of the inscription collection.
-  string collection_symbol = 1;
-  // The symbol of the inscription item.
-  string item_symbol = 2;
   // The tick of the inscription.
   string tick = 3;
   // The total supply of the inscription.
   int64 total_supply = 4;
-  // The precision of the inscription.
-  int32 decimals = 5;
   // The address that has permission to issue the inscription.
   aelf.Address issuer = 6;
-  // A flag indicating if this inscription is burnable.
-  bool is_burnable = 7;
   // The chain id of the inscription.
   int32 issue_chain_id = 8;
   // The external information of the inscription collection.
@@ -167,8 +159,6 @@ message ExternalInfos {
 
 message InscriptionIssued{
   option (aelf.is_event) = true;
-  // The symbol of issued inscription.
-  string symbol = 1;
   // The tick of issued inscription.
   string tick = 2;
   // The amount of issued inscription.
@@ -185,8 +175,6 @@ message InscriptionTransferred {
   aelf.Address from = 1 [(aelf.is_indexed) = true];
   // The destination address of the transferred inscription.
   aelf.Address to = 2 [(aelf.is_indexed) = true];
-  // The symbol of the transferred inscription.
-  string symbol = 3 [(aelf.is_indexed) = true];
   // The tick of the transferred inscription.
   string tick = 4 [(aelf.is_indexed) = true];
   // The amount of the transferred inscription.

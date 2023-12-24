@@ -54,25 +54,21 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         // Create collection
         var collectionExternalInfo =
             GenerateExternalInfo(tick, input.Max, input.Limit, input.Image, SymbolType.NftCollection);
-        var collectionSymbol = CreateInscription(tick, input.Max, issueChainId, collectionExternalInfo,
+        CreateInscription(tick, input.Max, issueChainId, collectionExternalInfo,
             SymbolType.NftCollection);
 
         // Create nft item
         var nftExternalInfo =
             GenerateExternalInfo(tick, input.Max, input.Limit, input.Image, SymbolType.Nft);
-        var nftSymbol = CreateInscription(tick, input.Max, issueChainId, nftExternalInfo, SymbolType.Nft);
+        CreateInscription(tick, input.Max, issueChainId, nftExternalInfo, SymbolType.Nft);
         State.InscribedLimit[tick] = input.Limit;
 
         Context.Fire(new InscriptionCreated
         {
-            CollectionSymbol = collectionSymbol,
-            ItemSymbol = nftSymbol,
             Tick = tick,
             TotalSupply = input.Max,
-            Decimals = InscriptionContractConstants.InscriptionDecimals,
-            Issuer = Context.Self,
-            IsBurnable = true,
             IssueChainId = issueChainId,
+            Issuer = Context.Self,
             CollectionExternalInfo = new ExternalInfos
             {
                 Value = { collectionExternalInfo.Value }
@@ -109,7 +105,6 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
         Context.Fire(new InscriptionIssued
         {
-            Symbol = symbol,
             Tick = tick,
             Amt = tokenInfo.TotalSupply,
             To = Context.Self,
@@ -128,7 +123,6 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         Context.Fire(new InscriptionTransferred
         {
             From = Context.Self,
-            Symbol = tokenInfo.Symbol,
             Tick = tick,
             Amt = input.Amt,
             To = Context.Sender,
@@ -145,7 +139,6 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         Context.Fire(new InscriptionTransferred
         {
             From = Context.Self,
-            Symbol = tokenInfo.Symbol,
             Tick = tick,
             Amt = input.Amt,
             To = Context.Sender,
