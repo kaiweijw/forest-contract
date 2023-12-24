@@ -169,7 +169,7 @@ public partial class InscriptionContract
     private void ModifyDistributorBalance(string tick, Hash distributor, long amount)
     {
         State.DistributorBalance[tick][distributor] =
-            State.DistributorBalance[tick.ToUpper()][distributor].Add(amount);
+            State.DistributorBalance[tick][distributor].Add(amount);
     }
 
     private string GetNftSymbol(string tick)

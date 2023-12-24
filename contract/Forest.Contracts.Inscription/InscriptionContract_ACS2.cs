@@ -44,11 +44,12 @@ public partial class InscriptionContract
 
     private void AddDistributorAndBalancePath(ResourceInfo resourceInfo, Address from, InscribedInput input)
     {
-        var symbol = GetNftSymbol(input.Tick.ToUpper());
-        var distributors = State.DistributorHashList[input.Tick.ToUpper()];
+        var tick = input.Tick.ToUpper();
+        var symbol = GetNftSymbol(tick);
+        var distributors = State.DistributorHashList[tick];
         var selectIndex = (int)((Math.Abs(from.ToByteArray().ToInt64(true)) % distributors.Values.Count));
         var distributor = distributors.Values[selectIndex];
-        var path = GetPath(nameof(State.DistributorBalance), input.Tick, distributor.ToHex());
+        var path = GetPath(nameof(State.DistributorBalance), tick, distributor.ToHex());
         if (resourceInfo.WritePaths.Contains(path)) return;
         resourceInfo.WritePaths.Add(path);
         AddBalancePath(resourceInfo, distributor, symbol);
