@@ -137,21 +137,21 @@ message CheckDistributorBalanceInput{
 message InscriptionCreated{
   option (aelf.is_event) = true;
   // The tick of the inscription.
-  string tick = 3;
+  string tick = 1;
   // The total supply of the inscription.
-  int64 total_supply = 4;
+  int64 total_supply = 2;
   // The address that has permission to issue the inscription.
-  aelf.Address issuer = 6;
+  aelf.Address issuer = 3;
   // The chain id of the inscription.
-  int32 issue_chain_id = 8;
+  int32 issue_chain_id = 4;
   // The external information of the inscription collection.
-  ExternalInfos collection_external_info = 9;
+  ExternalInfos collection_external_info = 5;
   // The external information of the inscription item.
-  ExternalInfos item_external_info = 10;
+  ExternalInfos item_external_info = 6;
   // The address that owns the inscription.
-  aelf.Address owner = 11;
-  int64 limit = 12;
-  aelf.Address deployer = 13;
+  aelf.Address owner = 7;
+  int64 limit = 8;
+  aelf.Address deployer = 9;
 }
 
 message ExternalInfos {
@@ -161,13 +161,13 @@ message ExternalInfos {
 message InscriptionIssued{
   option (aelf.is_event) = true;
   // The tick of issued inscription.
-  string tick = 2;
+  string tick = 1;
   // The amount of issued inscription.
-  int64 amt = 3;
+  int64 amt = 2;
   // The issued target address.
-  aelf.Address to = 4;
+  aelf.Address to = 3;
   // p:"aelf",op:"deploy","tick:"ELFS","max":"210000","lim":"100"
-  string inscription_info = 5;
+  string inscription_info = 4;
 }
 
 message InscriptionTransferred {
@@ -177,11 +177,11 @@ message InscriptionTransferred {
   // The destination address of the transferred inscription.
   aelf.Address to = 2 [(aelf.is_indexed) = true];
   // The tick of the transferred inscription.
-  string tick = 4 [(aelf.is_indexed) = true];
+  string tick = 3 [(aelf.is_indexed) = true];
   // The amount of the transferred inscription.
-  int64 amt = 5;
+  int64 amt = 4;
   // p:"aelf",op:"mint",tick:"ELFS",amt:amt
-  string inscription_info = 6;
+  string inscription_info = 5;
 }
   
 
