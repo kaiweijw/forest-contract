@@ -1030,6 +1030,77 @@ public class InscriptionContractTests : InscriptionContractTestBase
         });
         result.TransactionResult.Error.ShouldContain("No permission");
     }
+    
+    [Fact]
+    public async Task SetDistributorCount_Failed_InvalidInput()
+    {
+        await InitializeTest_Success();
+        var result = await InscriptionContractStub.SetDistributorCount.SendWithExceptionAsync(new Int32Value
+        {
+        });
+        result.TransactionResult.Error.ShouldContain("Invalid input");
+        
+        var result1 = await InscriptionContractStub.SetDistributorCount.SendWithExceptionAsync(new Int32Value
+        {
+            Value = 0
+        });
+        result1.TransactionResult.Error.ShouldContain("Invalid input");
+        
+        var result2 = await InscriptionContractStub.SetDistributorCount.SendWithExceptionAsync(new Int32Value
+        {
+            Value = -1
+        });
+        result2.TransactionResult.Error.ShouldContain("Invalid input");
+    }
+    
+    [Fact]
+    public async Task SetIssueChainId_Success()
+    {
+        await InitializeTest_Success();
+        await InscriptionContractStub.SetIssueChainId.SendAsync(new Int32Value
+        {
+            Value = _sideChainId
+        });
+        var chainId = await InscriptionContractStub.GetIssueChainId.CallAsync(new Empty());
+        chainId.Value.ShouldBe(_sideChainId);
+    }
+    
+        
+    [Fact]
+    public async Task SetIssueChainId_Failed_NoPermission()
+    {
+        await InitializeTest_Success();
+        var result = await InscriptionContractAccount1Stub.SetIssueChainId.SendWithExceptionAsync(new Int32Value
+        {
+            Value = _sideChainId
+        });
+        result.TransactionResult.Error.ShouldContain("No permission.");
+    }
+    
+    [Fact]
+    public async Task SetIssueChainId_Failed_InvalidInput()
+    {
+        await InitializeTest_Success();
+        var result = await InscriptionContractStub.SetIssueChainId.SendWithExceptionAsync(new Int32Value
+        {
+            
+        });
+        result.TransactionResult.Error.ShouldContain("Invalid input");
+        
+        var result1 = await InscriptionContractStub.SetIssueChainId.SendWithExceptionAsync(new Int32Value
+        {
+            Value = 0
+        });
+        result1.TransactionResult.Error.ShouldContain("Invalid input");
+        
+        var result2 = await InscriptionContractStub.SetIssueChainId.SendWithExceptionAsync(new Int32Value
+        {
+            Value = -1
+        });
+        result2.TransactionResult.Error.ShouldContain("Invalid input");
+    }
+    
+    
 
     private async Task CreateInscriptionHelper()
     {
