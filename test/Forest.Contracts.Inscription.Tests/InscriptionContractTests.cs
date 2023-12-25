@@ -964,6 +964,82 @@ public class InscriptionContractTests : InscriptionContractTestBase
             }
         }
     }
+    
+    [Fact]
+    public async Task MintInscriptionTest_Success_OtherAccount()
+    {
+        await CreateInscriptionHelper();
+        var list = await InscriptionContractStub.GetDistributorList.CallAsync(new StringValue()
+        {
+            Value = "ELFS"
+        });
+        var index = (int)(Math.Abs(DefaultAddress.ToByteArray().ToInt64(true)) % list.Values.Count);
+        var executionResult = await InscriptionContractStub.MintInscription.SendAsync(new InscribedInput
+        {
+            Tick = "ELFS",
+            Amt = 100
+        });
+        var index1 = (int)(Math.Abs(User2Address.ToByteArray().ToInt64(true)) % list.Values.Count);
+        var executionResult1 = await InscriptionContractAccount1Stub.MintInscription.SendAsync(new InscribedInput
+        {
+            Tick = "ELFS",
+            Amt = 80
+        });
+
+        var userBalance = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+        {
+            Owner = DefaultAddress,
+            Symbol = "ELFS-1"
+        });
+        userBalance.Balance.ShouldBe(100);
+        var userBalance1 = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+        {
+            Owner = User2Address,
+            Symbol = "ELFS-1"
+        });
+        userBalance1.Balance.ShouldBe(80);
+        foreach (var distributor in list.Values)
+        {
+            var balanceOutput = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+            {
+                Owner = distributor,
+                Symbol = "ELFS-1"
+            });
+            if (list.Values.IndexOf(distributor) == index)
+            {
+                balanceOutput.Balance.ShouldBe(420 - 100);
+            }
+            else if (list.Values.IndexOf(distributor) == index1)
+            {
+                balanceOutput.Balance.ShouldBe(420 - 80);
+            }
+            else
+            {
+                balanceOutput.Balance.ShouldBe(420);
+            }
+        }
+        
+        var balanceList = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
+        {
+            Value = "ELFS"
+        });
+        foreach (var balance in balanceList.Values)
+        {
+            balance.Distributor.ShouldBe(list.Values[balanceList.Values.IndexOf(balance)]);
+            if (balanceList.Values.IndexOf(balance) == index)
+            {
+                balance.Balance.ShouldBe(420 - 100);
+            }
+            else if (balanceList.Values.IndexOf(balance) == index1)
+            {
+                balance.Balance.ShouldBe(420 - 80);
+            }
+            else
+            {
+                balance.Balance.ShouldBe(420);
+            }
+        }
+    }
 
     [Fact]
     public async Task MintInscriptionTest_Failed_NotInitialized()
