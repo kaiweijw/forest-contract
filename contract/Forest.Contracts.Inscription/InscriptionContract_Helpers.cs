@@ -14,7 +14,7 @@ public partial class InscriptionContract
     private int GetImageSizeLimit()
     {
         return State.ImageSizeLimit.Value == 0
-            ? InscriptionContractConstants.ImageMaxLength
+            ? InscriptionContractConstants.DefaultImageMaxLength
             : State.ImageSizeLimit.Value;
     }
     private ExternalInfo GenerateExternalInfo(string tick, long max, long limit, string image, SymbolType symbolType)
