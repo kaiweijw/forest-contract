@@ -52,7 +52,7 @@ service InscriptionContract {
   rpc GetDistributorList(google.protobuf.StringValue) returns (AddressList){
     option (aelf.is_view) = true;
   }
-  // get distributor address list
+  // get distributor balance list
   rpc GetDistributorBalance(google.protobuf.StringValue) returns (DistributorsBalanceList){
     option (aelf.is_view) = true;
   }
