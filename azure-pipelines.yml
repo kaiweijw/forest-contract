@@ -5,7 +5,8 @@ trigger:
 pr:
   branches:
     include:
-      - release/1.5.0
+      - master
+      - release/*
 jobs:
   # All tasks on macOS
   - job: build_all_darwin
