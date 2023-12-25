@@ -429,6 +429,8 @@ public class InscriptionContractTests : InscriptionContractTestBase
         {
             Value = 5
         });
+        var count = await InscriptionContractStub.GetDistributorCount.CallAsync(new Empty());
+        count.Value.ShouldBe(5);
         await InscriptionContractStub.DeployInscription.SendAsync(new DeployInscriptionInput
         {
             Tick = _tick,
@@ -441,6 +443,13 @@ public class InscriptionContractTests : InscriptionContractTestBase
         {
             Tick = "ELFS"
         });
+        {
+            var limit = await InscriptionContractStub.GetInscribedLimit.CallAsync(new StringValue
+            {
+                Value = "ELFS"
+            });
+            limit.Value.ShouldBe(1000);
+        }
         {
             var log = InscriptionIssued.Parser.ParseFrom(result.TransactionResult.Logs
                 .FirstOrDefault(l => l.Name == nameof(InscriptionIssued))?.NonIndexed);
@@ -1177,8 +1186,64 @@ public class InscriptionContractTests : InscriptionContractTestBase
         });
         result2.TransactionResult.Error.ShouldContain("Invalid input");
     }
+
+    [Fact]
+    public async Task SetImageSizeLimit_Success()
+    {
+        await InitializeTest_Success();
+        var result = await InscriptionContractStub.SetImageSizeLimit.SendAsync(new Int32Value
+        {
+            Value = 5 * 1024
+        });
+        {
+            var size = await InscriptionContractStub.GetImageSizeLimit.CallAsync(new Empty());
+            size.Value.ShouldBe(5 * 1024);
+        }
+    }
     
-    
+    [Fact]
+    public async Task SetImageSizeLimit_Failed()
+    {
+        await InitializeTest_Success();
+        var result = await InscriptionContractAccount1Stub.SetImageSizeLimit.SendWithExceptionAsync(new Int32Value
+        {
+            Value = 5 * 1024
+        });
+        result.TransactionResult.Error.ShouldContain("No permission");
+        {
+            var size = await InscriptionContractStub.GetImageSizeLimit.CallAsync(new Empty());
+            size.Value.ShouldBe(10 * 1024);
+        }
+    }
+
+    [Fact]
+    public async Task SetImageSizeLimit_Failed_InvalidInput()
+    {
+        await InitializeTest_Success();
+        {
+            var result = await InscriptionContractStub.SetImageSizeLimit.SendWithExceptionAsync(new Int32Value
+            {
+
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid input");
+        }
+        {
+            var result = await InscriptionContractStub.SetImageSizeLimit.SendWithExceptionAsync(new Int32Value
+            {
+                Value = 0
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid input");
+        }
+        {
+            var result = await InscriptionContractStub.SetImageSizeLimit.SendWithExceptionAsync(new Int32Value
+            {
+                Value = -1
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid input");
+        }
+    }
+
+
 
     private async Task CreateInscriptionHelper()
     {

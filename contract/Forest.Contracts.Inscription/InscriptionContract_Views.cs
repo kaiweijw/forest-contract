@@ -68,6 +68,15 @@ public partial class InscriptionContract
             Value = result
         };
     }
+    
+    public override Int32Value GetImageSizeLimit(Empty input)
+    {
+        var result = GetImageSizeLimit();
+        return new Int32Value
+        {
+            Value = result
+        };
+    }
 
     public override BoolValue CheckDistributorBalance(CheckDistributorBalanceInput input)
     {

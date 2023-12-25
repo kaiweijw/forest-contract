@@ -39,8 +39,9 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         Assert(State.Initialized.Value, "Not initialized yet.");
         Assert(!string.IsNullOrWhiteSpace(input.SeedSymbol) && !string.IsNullOrWhiteSpace(input.Tick) &&
                input.Max > 0 && input.Limit > 0 && input.Limit <= input.Max, "Invalid input.");
-        Assert(!string.IsNullOrWhiteSpace(input.Image) && Encoding.UTF8.GetByteCount(input.Image) <=
-            InscriptionContractConstants.ImageMaxLength, "Invalid image data.");
+        var imageSize = GetImageSizeLimit();
+        Assert(!string.IsNullOrWhiteSpace(input.Image) && Encoding.UTF8.GetByteCount(input.Image) <= imageSize,
+            "Invalid image data.");
         var tick = input.Tick?.ToUpper();
         // Approve Seed.
         State.TokenContract.TransferFrom.Send(new TransferFromInput
@@ -165,6 +166,14 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         Assert(Context.Sender == State.Admin.Value, "No permission.");
         Assert(input != null && input.Value > 0, "Invalid input.");
         State.DistributorCount.Value = input.Value;
+        return new Empty();
+    }
+
+    public override Empty SetImageSizeLimit(Int32Value input)
+    {
+        Assert(Context.Sender == State.Admin.Value, "No permission.");
+        Assert(input != null && input.Value > 0, "Invalid input.");
+        State.ImageSizeLimit.Value = input.Value;
         return new Empty();
     }
 }

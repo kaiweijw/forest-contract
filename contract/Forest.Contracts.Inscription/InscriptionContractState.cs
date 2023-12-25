@@ -27,4 +27,6 @@ public partial class InscriptionContractState : ContractState
     public SingletonState<int> DistributorCount { get; set; }
 
     public SingletonState<int> IssueChainId { get; set; }
+
+    public SingletonState<int> ImageSizeLimit { get; set; }
 }

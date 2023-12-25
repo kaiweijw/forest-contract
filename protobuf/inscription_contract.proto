@@ -41,6 +41,8 @@ service InscriptionContract {
 
   rpc SetIssueChainId (google.protobuf.Int32Value) returns (google.protobuf.Empty) {}
 
+  rpc SetImageSizeLimit (google.protobuf.Int32Value) returns (google.protobuf.Empty) {}
+
   rpc GetAdmin (google.protobuf.Empty) returns (aelf.Address){
     option (aelf.is_view) = true;
   }
@@ -63,6 +65,9 @@ service InscriptionContract {
     option (aelf.is_view) = true;
   }
   rpc CheckDistributorBalance(CheckDistributorBalanceInput) returns (google.protobuf.BoolValue){
+    option (aelf.is_view) = true;
+  }
+  rpc GetImageSizeLimit(google.protobuf.Empty) returns (google.protobuf.Int32Value){
     option (aelf.is_view) = true;
   }
 }
