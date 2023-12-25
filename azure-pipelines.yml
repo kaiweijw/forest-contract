@@ -6,6 +6,7 @@ pr:
   branches:
     include:
       - master
+      - release/*
 jobs:
   # All tasks on macOS
   - job: build_all_darwin
