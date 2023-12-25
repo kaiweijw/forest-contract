@@ -353,15 +353,17 @@ public class InscriptionContractTests : InscriptionContractTestBase
     [Fact]
     public async Task DeployInscriptionTest_Failed_TokenExist()
     {
+        await InitializeTest_Success();
+        await BuySeed();
         var result1 = await InscriptionContractStub.DeployInscription.SendWithExceptionAsync(new DeployInscriptionInput
         {
-            Tick = "USDT",
+            Tick = "ELFSS",
             SeedSymbol = "SEED-1",
             Max = 21000000,
             Limit = 1000,
             Image = _image
         });
-        result1.TransactionResult.Error.ShouldContain("");
+        result1.TransactionResult.Error.ShouldContain("Seed NFT does not exist.");
     }
 
     [Fact]
