@@ -463,19 +463,19 @@ public class InscriptionContractTests : InscriptionContractTestBase
             });
             balanceOutput.Balance.ShouldBe(list.Values.IndexOf(distributor) == 0 ? 4200001 : 4200000);
         }
-        // {
-        //     var balanceList = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
-        //     {
-        //         Value = "ELFS"
-        //     });
-        //     balanceList.Values[0].Distributor.ShouldBe(list.Values[0]);
-        //     balanceList.Values[0].Balance.ShouldBe(4200001);
-        //     for (var i = 1; i < balanceList.Values.Count; i++)
-        //     {
-        //         balanceList.Values[i].Distributor.ShouldBe(list.Values[i]);
-        //         balanceList.Values[i].Balance.ShouldBe(4200000);
-        //     }
-        // }
+        {
+            var balanceList = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
+            {
+                Value = "ELFS"
+            });
+            balanceList.Values[0].Distributor.ShouldBe(list.Values[0]);
+            balanceList.Values[0].Balance.ShouldBe(4200001);
+            for (var i = 1; i < balanceList.Values.Count; i++)
+            {
+                balanceList.Values[i].Distributor.ShouldBe(list.Values[i]);
+                balanceList.Values[i].Balance.ShouldBe(4200000);
+            }
+        }
     }
 
     [Fact]
@@ -731,203 +731,239 @@ public class InscriptionContractTests : InscriptionContractTestBase
     }
     
        
-    // [Fact]
-    // public async Task MintInscriptionTest_Success()
-    // {
-    //     await CreateInscriptionHelper();
-    //     var list = await InscriptionContractStub.GetDistributorList.CallAsync(new StringValue()
-    //     {
-    //         Value = "ELFS"
-    //     });
-    //     var index = (int)(Math.Abs(DefaultAddress.ToByteArray().ToInt64(true)) % list.Values.Count);
-    //     for (var i = 0; i < 4; i++)
-    //     {
-    //         await InscriptionContractStub.Inscribe.SendAsync(new InscribedInput
-    //         {
-    //             Tick = "ELFS",
-    //             Amt = 100
-    //         });
-    //     }
-    //     var result = await InscriptionContractStub.CheckDistributorBalance.CallAsync(new CheckDistributorBalanceInput
-    //     {
-    //         Sender = DefaultAddress,
-    //         Amt = 100,
-    //         Tick = "ELFS"
-    //     });
-    //     result.Value.ShouldBe(false);
-    //     var executionResult = await InscriptionContractStub.MintInscription.SendAsync(new InscribedInput
-    //     {
-    //         Tick = "ELFS",
-    //         Amt = 100
-    //     });
-    //     {
-    //         var log = InscriptionTransferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
-    //             .FirstOrDefault(l => l.Name == nameof(InscriptionTransferred))?.NonIndexed);
-    //         log.Amt.ShouldBe(100);
-    //         var info = @"{ ""p"": ""aelf"", ""op"": ""mint"", ""tick"": ""ELFS"", ""amt"": ""1"" }";
-    //         log.InscriptionInfo.ShouldBe(info);
-    //     }
-    //     {
-    //         var log = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
-    //             .FirstOrDefault(l => l.Name == nameof(Transferred))?.NonIndexed);
-    //         var from = Address.FromBase58(executionResult.TransactionResult.Logs.FirstOrDefault(l => l.Name == nameof(Transferred))?.Indexed[0].ToBase64());
-    //         var to = Address.Parser.ParseFrom(executionResult.TransactionResult.Logs.FirstOrDefault(l => l.Name == nameof(Transferred))?.Indexed[1]);
-    //         var symbol = executionResult.TransactionResult.Logs.FirstOrDefault(l => l.Name == nameof(Transferred))?.Indexed[2].ToString();
-    //         from.ShouldBe(list.Values[index]);
-    //         to.ShouldBe(DefaultAddress);
-    //         log.Amount.ShouldBe(20);
-    //         symbol.ShouldBe("ELFS-1");
-    //     }
-    //     {
-    //         var log = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
-    //             .FirstOrDefault(l => l.Name == nameof(Transferred))?.NonIndexed);
-    //         log.From.ShouldBe(list.Values[index+1]);
-    //         log.To.ShouldBe(DefaultAddress);
-    //         log.Amount.ShouldBe(80);
-    //         log.Symbol.ShouldBe("ELFS-1");
-    //     }
-    //
-    //     var userBalance = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
-    //     {
-    //         Owner = DefaultAddress,
-    //         Symbol = "ELFS-1"
-    //     });
-    //     userBalance.Balance.ShouldBe(500);
-    //     foreach (var distributor in list.Values)
-    //     {
-    //         var balanceOutput = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
-    //         {
-    //             Owner = distributor,
-    //             Symbol = "ELFS-1"
-    //         });
-    //         if (list.Values.IndexOf(distributor) == index)
-    //         {
-    //             balanceOutput.Balance.ShouldBe(0);
-    //         }
-    //         else if (list.Values.IndexOf(distributor) == index + 1)
-    //         {
-    //             balanceOutput.Balance.ShouldBe(420 - 80);
-    //         }
-    //         else
-    //         {
-    //             balanceOutput.Balance.ShouldBe(420);
-    //         }
-    //     }
-    //     
-    //     var balanceList = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
-    //     {
-    //         Value = "ELFS"
-    //     });
-    //     foreach (var balance in balanceList.Values)
-    //     {
-    //         balance.Distributor.ShouldBe(list.Values[balanceList.Values.IndexOf(balance)]);
-    //         if (balanceList.Values.IndexOf(balance) == index)
-    //         {
-    //             balance.Balance.ShouldBe(0);
-    //         }
-    //         else if (balanceList.Values.IndexOf(balance) == index + 1)
-    //         {
-    //             balance.Balance.ShouldBe(420 - 80);
-    //         }
-    //         else
-    //         {
-    //             balance.Balance.ShouldBe(420);
-    //         }
-    //     }
-    //     for (var i = 0; i < 3; i++)
-    //     {
-    //         await InscriptionContractStub.Inscribe.SendAsync(new InscribedInput
-    //         {
-    //             Tick = "ELFS",
-    //             Amt = 100
-    //         });
-    //     }
-    //     var transactionResult = await InscriptionContractStub.Inscribe.SendAsync(new InscribedInput
-    //     {
-    //         Tick = "ELFS",
-    //         Amt = 100
-    //     });
-    //     {
-    //         var log = InscriptionTransferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs
-    //             .FirstOrDefault(l => l.Name == nameof(InscriptionTransferred))?.NonIndexed);
-    //         log.Tick.ShouldBe("ELFS");
-    //         log.Amt.ShouldBe(100);
-    //         log.To.ShouldBe(DefaultAddress);
-    //         var info = @"{ ""p"": ""aelf"", ""op"": ""mint"", ""tick"": ""ELFS"", ""amt"": ""1"" }";
-    //         log.InscriptionInfo.ShouldBe(info);
-    //     }
-    //     {
-    //         var log = Transferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs
-    //             .FirstOrDefault(l => l.Name == nameof(Transferred))?.NonIndexed);
-    //         log.From.ShouldBe(list.Values[index+1]);
-    //         log.To.ShouldBe(DefaultAddress);
-    //         log.Amount.ShouldBe(40);
-    //         log.Symbol.ShouldBe("ELFS-1");
-    //     }
-    //     {
-    //         var log = Transferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs
-    //             .FirstOrDefault(l => l.Name == nameof(Transferred))?.NonIndexed);
-    //         log.From.ShouldBe(list.Values[index+2]);
-    //         log.To.ShouldBe(DefaultAddress);
-    //         log.Amount.ShouldBe(60);
-    //         log.Symbol.ShouldBe("ELFS-1");
-    //     }
-    //     var userBalance1 = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
-    //     {
-    //         Owner = DefaultAddress,
-    //         Symbol = "ELFS-1"
-    //     });
-    //     userBalance1.Balance.ShouldBe(500);
-    //     foreach (var distributor in list.Values)
-    //     {
-    //         var balanceOutput = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
-    //         {
-    //             Owner = distributor,
-    //             Symbol = "ELFS-1"
-    //         });
-    //         if (list.Values.IndexOf(distributor) == index)
-    //         {
-    //             balanceOutput.Balance.ShouldBe(0);
-    //         }
-    //         else if (list.Values.IndexOf(distributor) == index + 1)
-    //         {
-    //             balanceOutput.Balance.ShouldBe(0);
-    //         }
-    //         else if (list.Values.IndexOf(distributor) == index + 2)
-    //         {
-    //             balanceOutput.Balance.ShouldBe(360);
-    //         }
-    //         else
-    //         {
-    //             balanceOutput.Balance.ShouldBe(420);
-    //         }
-    //     }
-    //     
-    //     var balanceList1 = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
-    //     {
-    //         Value = "ELFS"
-    //     });
-    //     foreach (var balance in balanceList1.Values)
-    //     {
-    //         balance.Distributor.ShouldBe(list.Values[balanceList1.Values.IndexOf(balance)]);
-    //         if (balanceList1.Values.IndexOf(balance) == index)
-    //         {
-    //             balance.Balance.ShouldBe(0);
-    //         }
-    //         else if (balanceList1.Values.IndexOf(balance) == index + 1)
-    //         {
-    //             balance.Balance.ShouldBe(0);
-    //         }
-    //         else if (balanceList1.Values.IndexOf(balance) == index + 2)
-    //         {
-    //             balance.Balance.ShouldBe(360);
-    //         }
-    //         else
-    //         {
-    //             balance.Balance.ShouldBe(420);
-    //         }
-    //     }
-    // }
+    [Fact]
+    public async Task MintInscriptionTest_Success()
+    {
+        await CreateInscriptionHelper();
+        var list = await InscriptionContractStub.GetDistributorList.CallAsync(new StringValue()
+        {
+            Value = "ELFS"
+        });
+        var index = (int)(Math.Abs(DefaultAddress.ToByteArray().ToInt64(true)) % list.Values.Count);
+        for (var i = 0; i < 4; i++)
+        {
+            await InscriptionContractStub.Inscribe.SendAsync(new InscribedInput
+            {
+                Tick = "ELFS",
+                Amt = 100
+            });
+        }
+        var result = await InscriptionContractStub.CheckDistributorBalance.CallAsync(new CheckDistributorBalanceInput
+        {
+            Sender = DefaultAddress,
+            Amt = 100,
+            Tick = "ELFS"
+        });
+        result.Value.ShouldBe(false);
+        var executionResult = await InscriptionContractStub.MintInscription.SendAsync(new InscribedInput
+        {
+            Tick = "ELFS",
+            Amt = 100
+        });
+        {
+            var log = InscriptionTransferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(InscriptionTransferred))?.NonIndexed);
+            log.Amt.ShouldBe(100);
+            var info = @"{ ""p"": ""aelf"", ""op"": ""mint"", ""tick"": ""ELFS"", ""amt"": ""1"" }";
+            log.InscriptionInfo.ShouldBe(info);
+        }
+        {
+            var log = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(Transferred))?.NonIndexed);
+            var from = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(Transferred))?.Indexed[0]).From;
+            var to = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(Transferred))?.Indexed[1]).To;
+            var symbol = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(Transferred))?.Indexed[2]).Symbol;
+            from.ShouldBe(list.Values[index]);
+            to.ShouldBe(DefaultAddress);
+            log.Amount.ShouldBe(20);
+            symbol.ShouldBe("ELFS-1");
+        }
+        {
+            var log = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs[2].NonIndexed);
+            var from = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs[2]?.Indexed[0]).From;
+            var to = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                [2]?.Indexed[1]).To;
+            var symbol = Transferred.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                [2]?.Indexed[2]).Symbol;
+            from.ShouldBe(list.Values[index+1]);
+            to.ShouldBe(DefaultAddress);
+            log.Amount.ShouldBe(80);
+            symbol.ShouldBe("ELFS-1");
+        }
+    
+        var userBalance = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+        {
+            Owner = DefaultAddress,
+            Symbol = "ELFS-1"
+        });
+        userBalance.Balance.ShouldBe(500);
+        foreach (var distributor in list.Values)
+        {
+            var balanceOutput = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+            {
+                Owner = distributor,
+                Symbol = "ELFS-1"
+            });
+            if (list.Values.IndexOf(distributor) == index)
+            {
+                balanceOutput.Balance.ShouldBe(0);
+            }
+            else if (list.Values.IndexOf(distributor) == index + 1)
+            {
+                balanceOutput.Balance.ShouldBe(420 - 80);
+            }
+            else
+            {
+                balanceOutput.Balance.ShouldBe(420);
+            }
+        }
+        
+        var balanceList = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
+        {
+            Value = "ELFS"
+        });
+        foreach (var balance in balanceList.Values)
+        {
+            balance.Distributor.ShouldBe(list.Values[balanceList.Values.IndexOf(balance)]);
+            if (balanceList.Values.IndexOf(balance) == index)
+            {
+                balance.Balance.ShouldBe(0);
+            }
+            else if (balanceList.Values.IndexOf(balance) == index + 1)
+            {
+                balance.Balance.ShouldBe(420 - 80);
+            }
+            else
+            {
+                balance.Balance.ShouldBe(420);
+            }
+        }
+        for (var i = 0; i < 3; i++)
+        {
+            await InscriptionContractStub.MintInscription.SendAsync(new InscribedInput
+            {
+                Tick = "ELFS",
+                Amt = 100
+            });
+        }
+        var balanceList2 = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
+        {
+            Value = "ELFS"
+        });
+        foreach (var balance in balanceList2.Values)
+        {
+            balance.Distributor.ShouldBe(list.Values[balanceList2.Values.IndexOf(balance)]);
+            if (balanceList2.Values.IndexOf(balance) == index)
+            {
+                balance.Balance.ShouldBe(0);
+            }
+            else if (balanceList2.Values.IndexOf(balance) == index + 1)
+            {
+                balance.Balance.ShouldBe(420 - 80 - 300);
+            }
+            else
+            {
+                balance.Balance.ShouldBe(420);
+            }
+        }
+        var transactionResult = await InscriptionContractStub.MintInscription.SendAsync(new InscribedInput
+        {
+            Tick = "ELFS",
+            Amt = 100
+        });
+        {
+            var log = InscriptionTransferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(InscriptionTransferred))?.NonIndexed);
+            var tick = InscriptionTransferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(InscriptionTransferred))?.Indexed[2]).Tick;
+            tick.ShouldBe("ELFS");
+            log.Amt.ShouldBe(100);
+            var info = @"{ ""p"": ""aelf"", ""op"": ""mint"", ""tick"": ""ELFS"", ""amt"": ""1"" }";
+            log.InscriptionInfo.ShouldBe(info);
+        }
+        {
+            var log = Transferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(Transferred))?.NonIndexed);
+            var from = Transferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(Transferred))?.Indexed[0]).From;
+            var to = Transferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(Transferred))?.Indexed[1]).To;
+            var symbol = Transferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(Transferred))?.Indexed[2]).Symbol;
+            from.ShouldBe(list.Values[index+1]);
+            to.ShouldBe(DefaultAddress);
+            log.Amount.ShouldBe(40);
+            symbol.ShouldBe("ELFS-1");
+        }
+        {
+            var log = Transferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs[2]?.NonIndexed);
+            var from = Transferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs[2]?.Indexed[0]).From;
+            var to = Transferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs[2]?.Indexed[1]).To;
+            var symbol = Transferred.Parser.ParseFrom(transactionResult.TransactionResult.Logs[2]?.Indexed[2]).Symbol;
+            from.ShouldBe(list.Values[index+2]);
+            to.ShouldBe(DefaultAddress);
+            log.Amount.ShouldBe(60);
+            symbol.ShouldBe("ELFS-1");
+        }
+        var userBalance1 = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+        {
+            Owner = DefaultAddress,
+            Symbol = "ELFS-1"
+        });
+        userBalance1.Balance.ShouldBe(900);
+        foreach (var distributor in list.Values)
+        {
+            var balanceOutput = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+            {
+                Owner = distributor,
+                Symbol = "ELFS-1"
+            });
+            if (list.Values.IndexOf(distributor) == index)
+            {
+                balanceOutput.Balance.ShouldBe(0);
+            }
+            else if (list.Values.IndexOf(distributor) == index + 1)
+            {
+                balanceOutput.Balance.ShouldBe(0);
+            }
+            else if (list.Values.IndexOf(distributor) == index + 2)
+            {
+                balanceOutput.Balance.ShouldBe(360);
+            }
+            else
+            {
+                balanceOutput.Balance.ShouldBe(420);
+            }
+        }
+        
+        var balanceList1 = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
+        {
+            Value = "ELFS"
+        });
+        foreach (var balance in balanceList1.Values)
+        {
+            balance.Distributor.ShouldBe(list.Values[balanceList1.Values.IndexOf(balance)]);
+            if (balanceList1.Values.IndexOf(balance) == index)
+            {
+                balance.Balance.ShouldBe(0);
+            }
+            else if (balanceList1.Values.IndexOf(balance) == index + 1)
+            {
+                balance.Balance.ShouldBe(0);
+            }
+            else if (balanceList1.Values.IndexOf(balance) == index + 2)
+            {
+                balance.Balance.ShouldBe(360);
+            }
+            else
+            {
+                balance.Balance.ShouldBe(420);
+            }
+        }
+    }
 
     [Fact]
     public async Task MintInscriptionTest_Failed_NotInitialized()

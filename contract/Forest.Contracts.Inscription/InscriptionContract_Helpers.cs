@@ -84,7 +84,7 @@ public partial class InscriptionContract
                 Amount = actualAmount,
                 To = distributorsAddress[i]
             });
-            ModifyDistributorBalance(tick, distributors[i], amount);
+            ModifyDistributorBalance(tick, distributors[i], actualAmount);
         }
     }
 
@@ -129,7 +129,12 @@ public partial class InscriptionContract
         {
             var distributor = distributors.Values[selectIndex];
             var selectDistributorBalance = State.DistributorBalance[tick][distributor];
-            if (selectDistributorBalance < amt && selectDistributorBalance > 0)
+            if (selectDistributorBalance <= 0)
+            {
+                selectIndex = selectIndex == distributors.Values.Count.Sub(1) ? 0 : selectIndex.Add(1);
+                continue;
+            } 
+            if (selectDistributorBalance < amt)
             {
                 DistributeInscription(tick, symbol, selectDistributorBalance, distributor);
                 amt = amt.Sub(selectDistributorBalance);
