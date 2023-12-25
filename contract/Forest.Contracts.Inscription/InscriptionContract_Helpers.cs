@@ -129,7 +129,7 @@ public partial class InscriptionContract
         {
             var distributor = distributors.Values[selectIndex];
             var selectDistributorBalance = State.DistributorBalance[tick][distributor];
-            if (selectDistributorBalance < amt)
+            if (selectDistributorBalance < amt && selectDistributorBalance > 0)
             {
                 DistributeInscription(tick, symbol, selectDistributorBalance, distributor);
                 amt = amt.Sub(selectDistributorBalance);
@@ -158,14 +158,14 @@ public partial class InscriptionContract
 
     private TokenInfo CheckInputAndGetSymbol(string tick, long amt)
     {
-        Assert(!string.IsNullOrWhiteSpace(tick) && amt > 0 && amt <= State.InscribedLimit[tick],
-            "Invalid input.");
+        Assert(!string.IsNullOrWhiteSpace(tick) && amt > 0, "Invalid input.");
+        Assert(amt <= State.InscribedLimit[tick], "Exceed limit.");
         var symbol = GetNftSymbol(tick);
         var tokenInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = symbol
         });
-        Assert(tokenInfo != null, "Token not exists.");
+        Assert(tokenInfo != null && !string.IsNullOrWhiteSpace(tokenInfo.Symbol), "Token not exists.");
         return tokenInfo;
     }
 

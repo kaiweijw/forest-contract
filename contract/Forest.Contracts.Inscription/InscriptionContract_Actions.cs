@@ -14,7 +14,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         Assert(!State.Initialized.Value, "Already initialized.");
         State.GenesisContract.Value = Context.GetZeroSmartContractAddress();
         Assert(State.GenesisContract.GetContractInfo.Call(Context.Self).Deployer == Context.Sender, "No permission.");
-        Assert(input.Admin != null && input.IssueChainId > 0, "Invalid input.");
+        Assert(input.Admin != null && input.Admin.Value.Any() && input.IssueChainId > 0, "Invalid input.");
         State.TokenContract.Value =
             Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
         State.ConfigurationContract.Value =
@@ -28,7 +28,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
     public override Empty ChangeAdmin(Address input)
     {
         Assert(Context.Sender == State.Admin.Value, "No permission.");
-        Assert(input != null, "Invalid input.");
+        Assert(input.Value.Any(), "Invalid input.");
         State.Admin.Value = input;
         return new Empty();
     }
@@ -98,7 +98,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         {
             Symbol = collectionSymbol
         });
-        Assert(tokenInfo != null, $"Token not exist.{tokenInfo?.Symbol}");
+        Assert(tokenInfo != null && !string.IsNullOrEmpty(tokenInfo.Symbol), $"Token not exist.{tokenInfo?.Symbol}");
         var distributors = GenerateDistributors(tick);
         var info = DeployInscriptionInfo.Parser.ParseJson(
             tokenInfo?.ExternalInfo.Value[InscriptionContractConstants.InscriptionDeployKey]);
