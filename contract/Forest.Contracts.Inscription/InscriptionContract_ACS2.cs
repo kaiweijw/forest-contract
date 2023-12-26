@@ -31,7 +31,7 @@ public partial class InscriptionContract
                 };
                 AddDistributorAndBalancePath(resourceInfo, txn.From, args);
                 // add fee path
-                AddPathForTransactionFee(resourceInfo, txn.From.ToBase58(), txn.MethodName);
+                AddPathForTransactionFee(resourceInfo, txn.From.ToString(), txn.MethodName);
                 AddPathForTransactionFeeFreeAllowance(resourceInfo, txn.From);
                 AddPathForDelegatees(resourceInfo, txn.From, txn.To, txn.MethodName);
 
@@ -49,7 +49,7 @@ public partial class InscriptionContract
         var distributors = State.DistributorHashList[tick];
         var selectIndex = (int)((Math.Abs(from.ToByteArray().ToInt64(true)) % distributors.Values.Count));
         var distributor = distributors.Values[selectIndex];
-        var path = GetPath(nameof(State.DistributorBalance), tick, distributor.ToHex());
+        var path = GetPath(nameof(State.DistributorBalance), tick, distributor.ToString());
         if (resourceInfo.WritePaths.Contains(path)) return;
         resourceInfo.WritePaths.Add(path);
         AddBalancePath(resourceInfo, distributor, symbol);
@@ -58,7 +58,7 @@ public partial class InscriptionContract
     private void AddBalancePath(ResourceInfo resourceInfo, Hash distributor, string symbol)
     {
         var distributorAddress = Context.ConvertVirtualAddressToContractAddress(distributor);
-        var path = GetPath(State.TokenContract.Value, "Balances", distributorAddress.ToBase58(), symbol);
+        var path = GetPath(State.TokenContract.Value, "Balances", distributorAddress.ToString(), symbol);
         if (resourceInfo.WritePaths.Contains(path)) return;
         resourceInfo.WritePaths.Add(path);
     }
@@ -108,9 +108,9 @@ public partial class InscriptionContract
             foreach (var symbol in getTransactionFeeFreeAllowancesConfigOutput.Value.Select(config => config.Symbol))
             {
                 resourceInfo.WritePaths.Add(GetPath(State.TokenContract.Value, "TransactionFeeFreeAllowances",
-                    from.ToBase58(), symbol));
+                    from.ToString(), symbol));
                 resourceInfo.WritePaths.Add(GetPath(State.TokenContract.Value,
-                    "TransactionFeeFreeAllowancesLastRefreshTimes", from.ToBase58(), symbol));
+                    "TransactionFeeFreeAllowancesLastRefreshTimes", from.ToString(), symbol));
 
                 var path = GetPath(State.TokenContract.Value, "TransactionFeeFreeAllowancesConfigMap", symbol);
                 if (!resourceInfo.ReadPaths.Contains(path))
