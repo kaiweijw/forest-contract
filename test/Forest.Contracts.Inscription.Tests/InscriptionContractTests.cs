@@ -984,6 +984,11 @@ public class InscriptionContractTests : InscriptionContractTestBase
         {
             Value = "ELFS"
         });
+        var list1 = await InscriptionContractStub.GetDistributorList.CallAsync(new StringValue()
+        {
+            Value = "TTT"
+        });
+        list1.Values.Count.ShouldBe(0);
         var index = (int)(Math.Abs(DefaultAddress.ToByteArray().ToInt64(true)) % list.Values.Count);
         var executionResult = await InscriptionContractStub.MintInscription.SendAsync(new InscribedInput
         {
@@ -1106,6 +1111,31 @@ public class InscriptionContractTests : InscriptionContractTestBase
             });
             executionResult.TransactionResult.Error.ShouldContain("Exceed limit.");
         }
+    }
+
+    [Fact]
+    public async Task MintInscriptionTest_Failed_NotEnough()
+    {
+        await CreateInscriptionHelper();
+        for (var i = 0; i < 20; i++)
+        {
+            await InscriptionContractStub.MintInscription.SendAsync(new InscribedInput
+            {
+                Tick = "ELFS",
+                Amt = 100
+            });
+        }
+        await InscriptionContractStub.MintInscription.SendAsync(new InscribedInput
+        {
+            Tick = "ELFS",
+            Amt = 80
+        });
+        var result = await InscriptionContractAccount1Stub.MintInscription.SendWithExceptionAsync(new InscribedInput
+        {
+            Tick = "ELFS",
+            Amt = 40
+        });
+        result.TransactionResult.Error.ShouldContain("Not enough inscription amount to mint.");
     }
 
     [Fact]
