@@ -12,7 +12,6 @@ import "acs2.proto";
 import "authority_info.proto";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/empty.proto";
-import "token_contract.proto";
 
 option csharp_namespace = "Forest.Contracts.Inscription";
 
