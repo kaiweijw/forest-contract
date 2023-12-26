@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
@@ -19,10 +20,16 @@ public partial class InscriptionContract
 
     public override AddressList GetDistributorList(StringValue input)
     {
+        var result = new List<Address>();
         var distributors = State.DistributorHashList[input.Value.ToUpper()]?.Values;
+        if (distributors != null)
+        {
+            result = distributors.Select(d => Context.ConvertVirtualAddressToContractAddress(d)).ToList();
+        }
+
         return new AddressList
         {
-            Values = { distributors?.Select(d => Context.ConvertVirtualAddressToContractAddress(d)) }
+            Values = { result }
         };
     }
 
@@ -49,7 +56,7 @@ public partial class InscriptionContract
     {
         return State.Admin.Value;
     }
-    
+
     public override Int32Value GetIssueChainId(Empty input)
     {
         return new Int32Value
@@ -57,7 +64,7 @@ public partial class InscriptionContract
             Value = State.IssueChainId.Value
         };
     }
-    
+
     public override Int32Value GetDistributorCount(Empty input)
     {
         var result = State.DistributorCount.Value == 0
@@ -68,7 +75,7 @@ public partial class InscriptionContract
             Value = result
         };
     }
-    
+
     public override Int32Value GetImageSizeLimit(Empty input)
     {
         var result = GetImageSizeLimit();
@@ -80,16 +87,18 @@ public partial class InscriptionContract
 
     public override BoolValue CheckDistributorBalance(CheckDistributorBalanceInput input)
     {
-        Assert(input.Sender != null && input.Amt > 0 && !string.IsNullOrWhiteSpace(input.Tick), "Invalid input.");
+        Assert(
+            input.Sender != null && input.Sender.Value.Any() && input.Amt > 0 && !string.IsNullOrWhiteSpace(input.Tick),
+            "Invalid input.");
         var tick = input.Tick?.ToUpper();
         var result = new BoolValue
         {
             Value = false
         };
-        var count = State.DistributorHashList[tick].Values.Count;
-        var selectIndex = (int)((Math.Abs(input.Sender.ToByteArray().ToInt64(true)) % count));
         var distributor = State.DistributorHashList[tick];
         if (distributor == null || distributor.Values.Count <= 0) return result;
+        var count = State.DistributorHashList[tick].Values.Count;
+        var selectIndex = (int)((Math.Abs(input.Sender.ToByteArray().ToInt64(true)) % count));
         var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
         {
             Symbol = GetNftSymbol(tick),
