@@ -140,8 +140,7 @@ public partial class InscriptionContract
             {
                 selectIndex = SelectDistributorIndex(selectIndex, distributors);
                 continue;
-            }
-
+            } 
             if (selectDistributorBalance < amt)
             {
                 DistributeInscription(tick, symbol, selectDistributorBalance, distributor);
