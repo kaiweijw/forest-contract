@@ -17,6 +17,7 @@ public partial class InscriptionContract
             ? InscriptionContractConstants.DefaultImageMaxLength
             : State.ImageSizeLimit.Value;
     }
+
     private ExternalInfo GenerateExternalInfo(string tick, long max, long limit, string image, SymbolType symbolType)
     {
         var externalInfo = new ExternalInfo();
@@ -137,15 +138,16 @@ public partial class InscriptionContract
             var selectDistributorBalance = State.DistributorBalance[tick][distributor];
             if (selectDistributorBalance <= 0)
             {
-                selectIndex = selectIndex == distributors.Values.Count.Sub(1) ? 0 : selectIndex.Add(1);
+                selectIndex = SelectDistributorIndex(selectIndex, distributors);
                 continue;
-            } 
+            }
+
             if (selectDistributorBalance < amt)
             {
                 DistributeInscription(tick, symbol, selectDistributorBalance, distributor);
                 amt = amt.Sub(selectDistributorBalance);
                 count++;
-                selectIndex = selectIndex == distributors.Values.Count.Sub(1) ? 0 : selectIndex.Add(1);
+                selectIndex = SelectDistributorIndex(selectIndex, distributors);
             }
             else
             {
@@ -153,6 +155,11 @@ public partial class InscriptionContract
                 break;
             }
         } while (count < distributors.Values.Count);
+    }
+
+    private int SelectDistributorIndex(int index, HashList distributors)
+    {
+        return index == distributors.Values.Count.Sub(1) ? 0 : index.Add(1);
     }
 
     private void DistributeInscription(string tick, string symbol, long amt, Hash distributor)

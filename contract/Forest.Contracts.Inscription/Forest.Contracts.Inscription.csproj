@@ -3,6 +3,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <IsContract>true</IsContract>
         <RootNamespace>Forest.Contracts.Inscription</RootNamespace>
+        <Version>1.0.5</Version>
         <Description>Forest Inscription Contract is for the aelf official inscription NFT.</Description>
         <AssemblyName>Forest.Contracts.Inscription</AssemblyName>
     </PropertyGroup>
