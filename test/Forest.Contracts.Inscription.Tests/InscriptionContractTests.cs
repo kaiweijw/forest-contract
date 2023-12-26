@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Forest.Contracts.Inscription;
 
-public class InscriptionContractTests : InscriptionContractTestBase
+public partial class InscriptionContractTests : InscriptionContractTestBase
 {
     private readonly string _tick = "ELFS";
 

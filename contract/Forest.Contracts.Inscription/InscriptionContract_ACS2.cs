@@ -65,13 +65,13 @@ public partial class InscriptionContract
 
     private void AddPathForDelegatees(ResourceInfo resourceInfo, Address from, Address to, string methodName)
     {
-        var delegateeList = new List<string>();
+        var delegateeList = new List<Address>();
         //get and add first-level delegatee list
         delegateeList.AddRange(GetDelegateeList(from, to, methodName));
         if (delegateeList.Count <= 0) return;
-        var secondDelegateeList = new List<string>();
+        var secondDelegateeList = new List<Address>();
         //get and add second-level delegatee list
-        foreach (var delegateeAddress in delegateeList.Select(Address.FromBase58))
+        foreach (var delegateeAddress in delegateeList)
         {
             //delegatee of the first-level delegate is delegator of the second-level delegate
             secondDelegateeList.AddRange(GetDelegateeList(delegateeAddress, to, methodName));
@@ -80,8 +80,8 @@ public partial class InscriptionContract
         delegateeList.AddRange(secondDelegateeList);
         foreach (var delegatee in delegateeList.Distinct())
         {
-            AddPathForTransactionFee(resourceInfo, delegatee, methodName);
-            AddPathForTransactionFeeFreeAllowance(resourceInfo, Address.FromBase58(delegatee));
+            AddPathForTransactionFee(resourceInfo, delegatee.ToString(), methodName);
+            AddPathForTransactionFeeFreeAllowance(resourceInfo, delegatee);
         }
     }
 
@@ -202,9 +202,8 @@ public partial class InscriptionContract
     }
 
 
-    private List<string> GetDelegateeList(Address delegator, Address to, string methodName)
+    private List<Address> GetDelegateeList(Address delegator, Address to, string methodName)
     {
-        var delegateeList = new List<string>();
         var allDelegatees = State.TokenContract.GetTransactionFeeDelegateeList.Call(
             new GetTransactionFeeDelegateeListInput
             {
@@ -221,11 +220,6 @@ public partial class InscriptionContract
             }).DelegateeAddresses;
         }
 
-        if (allDelegatees != null)
-        {
-            delegateeList.AddRange(allDelegatees.Select(address => address.ToBase58()));
-        }
-
-        return delegateeList;
+        return allDelegatees.ToList();
     }
 }
