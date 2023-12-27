@@ -31,7 +31,7 @@ public partial class InscriptionContract
                 };
                 AddDistributorAndBalancePath(resourceInfo, txn.From, args);
                 // add fee path
-                AddPathForTransactionFee(resourceInfo, txn.From.ToBase58(), txn.MethodName);
+                AddPathForTransactionFee(resourceInfo, txn.From.ToString(), txn.MethodName);
                 AddPathForTransactionFeeFreeAllowance(resourceInfo, txn.From);
                 AddPathForDelegatees(resourceInfo, txn.From, txn.To, txn.MethodName);
 
@@ -49,7 +49,7 @@ public partial class InscriptionContract
         var distributors = State.DistributorHashList[tick];
         var selectIndex = (int)((Math.Abs(from.ToByteArray().ToInt64(true)) % distributors.Values.Count));
         var distributor = distributors.Values[selectIndex];
-        var path = GetPath(nameof(State.DistributorBalance), tick, distributor.ToHex());
+        var path = GetPath(nameof(State.DistributorBalance), tick, distributor.ToString());
         if (resourceInfo.WritePaths.Contains(path)) return;
         resourceInfo.WritePaths.Add(path);
         AddBalancePath(resourceInfo, distributor, symbol);
@@ -58,20 +58,20 @@ public partial class InscriptionContract
     private void AddBalancePath(ResourceInfo resourceInfo, Hash distributor, string symbol)
     {
         var distributorAddress = Context.ConvertVirtualAddressToContractAddress(distributor);
-        var path = GetPath(State.TokenContract.Value, "Balances", distributorAddress.ToBase58(), symbol);
+        var path = GetPath(State.TokenContract.Value, "Balances", distributorAddress.ToString(), symbol);
         if (resourceInfo.WritePaths.Contains(path)) return;
         resourceInfo.WritePaths.Add(path);
     }
 
     private void AddPathForDelegatees(ResourceInfo resourceInfo, Address from, Address to, string methodName)
     {
-        var delegateeList = new List<string>();
+        var delegateeList = new List<Address>();
         //get and add first-level delegatee list
         delegateeList.AddRange(GetDelegateeList(from, to, methodName));
         if (delegateeList.Count <= 0) return;
-        var secondDelegateeList = new List<string>();
+        var secondDelegateeList = new List<Address>();
         //get and add second-level delegatee list
-        foreach (var delegateeAddress in delegateeList.Select(Address.FromBase58))
+        foreach (var delegateeAddress in delegateeList)
         {
             //delegatee of the first-level delegate is delegator of the second-level delegate
             secondDelegateeList.AddRange(GetDelegateeList(delegateeAddress, to, methodName));
@@ -80,8 +80,8 @@ public partial class InscriptionContract
         delegateeList.AddRange(secondDelegateeList);
         foreach (var delegatee in delegateeList.Distinct())
         {
-            AddPathForTransactionFee(resourceInfo, delegatee, methodName);
-            AddPathForTransactionFeeFreeAllowance(resourceInfo, Address.FromBase58(delegatee));
+            AddPathForTransactionFee(resourceInfo, delegatee.ToString(), methodName);
+            AddPathForTransactionFeeFreeAllowance(resourceInfo, delegatee);
         }
     }
 
@@ -202,9 +202,8 @@ public partial class InscriptionContract
     }
 
 
-    private List<string> GetDelegateeList(Address delegator, Address to, string methodName)
+    private List<Address> GetDelegateeList(Address delegator, Address to, string methodName)
     {
-        var delegateeList = new List<string>();
         var allDelegatees = State.TokenContract.GetTransactionFeeDelegateeList.Call(
             new GetTransactionFeeDelegateeListInput
             {
@@ -221,11 +220,6 @@ public partial class InscriptionContract
             }).DelegateeAddresses;
         }
 
-        if (allDelegatees != null)
-        {
-            delegateeList.AddRange(allDelegatees.Select(address => address.ToBase58()));
-        }
-
-        return delegateeList;
+        return allDelegatees.ToList();
     }
 }
