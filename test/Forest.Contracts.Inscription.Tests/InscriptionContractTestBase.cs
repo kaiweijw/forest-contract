@@ -8,6 +8,7 @@ using AElf.Cryptography;
 using AElf.Cryptography.ECDSA;
 using AElf.Kernel;
 using AElf.Standards.ACS0;
+using AElf.Standards.ACS2;
 using AElf.Types;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -23,13 +24,16 @@ namespace Forest.Contracts.Inscription
 
         internal TokenContractContainer.TokenContractStub TokenContractStub { get; set; }
         internal TokenContractContainer.TokenContractStub TokenContractUserStub { get; set; }
-        internal TokenContractContainer.TokenContractStub TokenContractUser2Stub { get; set; }
-        
+        internal TokenContractImplContainer.TokenContractImplStub TokenContractImplStub { get; set; }
+        internal TokenContractImplContainer.TokenContractImplStub TokenContractImplUserStub { get; set; }
+        internal TokenContractImplContainer.TokenContractImplStub TokenContractImplUser2Stub { get; set; }
+
         internal InscriptionContractContainer.InscriptionContractStub InscriptionContractStub { get; set; }
         
         internal InscriptionContractContainer.InscriptionContractStub InscriptionContractAccount1Stub { get; set; }
-
         
+        internal ACS2BaseContainer.ACS2BaseStub Acs2BaseStub;
+
         protected ECKeyPair DefaultKeyPair => Accounts[0].KeyPair;
         protected Address DefaultAddress => Accounts[0].Address;
 
@@ -38,6 +42,9 @@ namespace Forest.Contracts.Inscription
 
         protected ECKeyPair User2KeyPair => Accounts[2].KeyPair;
         protected Address User2Address => Accounts[2].Address;
+        
+        protected ECKeyPair User3KeyPair => Accounts[3].KeyPair;
+        protected Address User3Address => Accounts[3].Address;
 
         
         protected InscriptionContractTestBase()
@@ -69,8 +76,11 @@ namespace Forest.Contracts.Inscription
             InscriptionContractStub = GetInscriptionContractStub(DefaultKeyPair);
             TokenContractStub = GetTokenContractStub(DefaultKeyPair);
             TokenContractUserStub = GetTokenContractStub(UserKeyPair);
-            TokenContractUser2Stub = GetTokenContractStub(User2KeyPair);
+            TokenContractImplStub = GetTokenImplContractStub(User2KeyPair);
+            TokenContractImplUserStub = GetTokenImplContractStub(UserKeyPair);
+            TokenContractImplUser2Stub = GetTokenImplContractStub(User3KeyPair);
             InscriptionContractAccount1Stub = GetInscriptionContractStub(User2KeyPair);
+            Acs2BaseStub = GetTester<ACS2BaseContainer.ACS2BaseStub>(InscriptionContractAddress, DefaultKeyPair);
 
         }
 
@@ -89,6 +99,11 @@ namespace Forest.Contracts.Inscription
         internal TokenContractContainer.TokenContractStub GetTokenContractStub(ECKeyPair senderKeyPair)
         {
             return GetTester<TokenContractContainer.TokenContractStub>(TokenContractAddress, senderKeyPair);
+        }
+        
+        internal TokenContractImplContainer.TokenContractImplStub GetTokenImplContractStub(ECKeyPair senderKeyPair)
+        {
+            return GetTester<TokenContractImplContainer.TokenContractImplStub>(TokenContractAddress, senderKeyPair);
         }
         internal async Task<long> GetParentChainHeight(
             CrossChainContractImplContainer.CrossChainContractImplStub crossChainContractStub)
