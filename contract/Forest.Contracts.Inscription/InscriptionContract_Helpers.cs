@@ -95,12 +95,13 @@ public partial class InscriptionContract
         }
     }
 
-    private HashList GenerateDistributors(string tick)
+    private HashList GenerateDistributors(string tick, long totalSupply)
     {
         var distributors = new HashList();
         var distributorCount = State.DistributorCount.Value == 0
             ? InscriptionContractConstants.DistributorsCount
             : State.DistributorCount.Value;
+        distributorCount = totalSupply < distributorCount ? 1 : distributorCount;
         for (var i = 0; i < distributorCount; i++)
         {
             var distributor = HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(i), Context.OriginTransactionId);
