@@ -237,8 +237,7 @@ message CancelOfferInput {
 }
 message CancelOfferListByExpireTimeInput {
   string symbol = 1;
-  aelf.Address offer_from = 2;
-  repeated CancelOffer cancel_offer_list =3;
+  repeated CancelOffer cancel_offer_list =2;
 }
 
 message CancelOffer{

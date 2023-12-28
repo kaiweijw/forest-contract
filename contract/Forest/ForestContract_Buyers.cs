@@ -476,10 +476,10 @@ public partial class ForestContract
     public override Empty CancelOfferListByExpireTime(CancelOfferListByExpireTimeInput input)
     {
         AssertContractInitialized();
+        Assert(Context.Sender != null, "Invalid input data : Context.Sender");
         Assert(input != null, "Invalid input data");
-        Assert(input.OfferFrom != null, "Invalid input data:OfferFrom");
-        Assert(input.Symbol != null, "Invalid input data:Symbol");
-        Assert(input.CancelOfferList != null && input.CancelOfferList.Any(), "Invalid input data:CancelOfferList");
+        Assert(input.Symbol != null, "Invalid input data : Symbol");
+        Assert(input.CancelOfferList != null && input.CancelOfferList.Any(), "Invalid input data : CancelOfferList");
         var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
             Symbol = input.Symbol,
@@ -519,7 +519,7 @@ public partial class ForestContract
         }
         foreach (var cancelOffer in cancelOfferMap)
         {
-            ModifyOfferTotalAmount(input.OfferFrom, cancelOffer.Key, -cancelOffer.Value);
+            ModifyOfferTotalAmount(Context.Sender, cancelOffer.Key, -cancelOffer.Value);
         }
         
         State.OfferListMap[input.Symbol][Context.Sender] = newOfferList;
