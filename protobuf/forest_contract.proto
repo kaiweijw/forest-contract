@@ -238,10 +238,10 @@ message CancelOfferInput {
 message CancelOfferListByExpireTimeInput {
   string symbol = 1;
   aelf.Address offer_from = 2;
-  repeated CancelOfferList cancel_offer_list =3;
+  repeated CancelOffer cancel_offer_list =3;
 }
 
-message CancelOfferList{
+message CancelOffer{
   google.protobuf.Timestamp expire_time = 1;
   aelf.Address offer_to = 2;
   Price price = 3;
