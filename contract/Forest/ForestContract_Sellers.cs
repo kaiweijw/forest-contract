@@ -223,21 +223,14 @@ public partial class ForestContract
         }
 
         var fixedPriceListedNftInfoList =
-            listedNftInfoList.Value.Where(i => i.ListType == ListType.FixedPrice).ToList();
+            listedNftInfoList.Value.Where(i => i.ListType == ListType.FixedPrice 
+                                               && i.Price.Symbol == input.Price.Symbol).ToList();
 
         if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
         {
             return new Empty();
         }
-        
-        fixedPriceListedNftInfoList =
-            fixedPriceListedNftInfoList.Where(i => i.Price.Symbol == input.Price.Symbol).ToList();
 
-        if (fixedPriceListedNftInfoList == null || !fixedPriceListedNftInfoList.Any())
-        {
-            return new Empty();
-        }
-        
         switch (input.BatchDelistType)
         {
             case BatchDeListTypeGreaterThan:

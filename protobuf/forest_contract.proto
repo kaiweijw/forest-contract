@@ -37,6 +37,8 @@ service ForestContract {
   }
   rpc CancelOffer (CancelOfferInput) returns (google.protobuf.Empty) {
   }
+  rpc CancelOfferListByExpireTime (CancelOfferListByExpireTimeInput) returns (google.protobuf.Empty) {
+  }
   rpc BatchBuyNow (BatchBuyNowInput) returns (google.protobuf.Empty){
   }
 
@@ -232,6 +234,16 @@ message CancelOfferInput {
   string symbol = 1;
   Int32List index_list = 3;
   aelf.Address offer_from = 4;
+}
+message CancelOfferListByExpireTimeInput {
+  string symbol = 1;
+  repeated CancelOffer cancel_offer_list =2;
+}
+
+message CancelOffer{
+  google.protobuf.Timestamp expire_time = 1;
+  aelf.Address offer_to = 2;
+  Price price = 3;
 }
 
 message BatchBuyNowInput{
