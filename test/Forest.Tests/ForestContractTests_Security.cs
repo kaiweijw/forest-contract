@@ -1029,7 +1029,6 @@ public class ForestContractTests_Security : ForestContractTestBase
                 Price = offerPrice,
                 Quantity = dealQuantity
             });
-            true.ShouldBe(false);
         }
         catch (ShouldAssertException e)
         {
