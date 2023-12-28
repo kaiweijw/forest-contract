@@ -488,6 +488,250 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
             }
         }
     }
+    
+    [Fact]
+    public async Task IssueTest_Success_TotalSupplyLessThanCount()
+    {
+        await InitializeTest_Success();
+        await BuySeed();
+        await InscriptionContractStub.DeployInscription.SendAsync(new DeployInscriptionInput
+        {
+            Tick = _tick,
+            SeedSymbol = "SEED-1",
+            Max = 1,
+            Limit = 1,
+            Image = _image
+        });
+        var result = await InscriptionContractStub.IssueInscription.SendAsync(new IssueInscriptionInput
+        {
+            Tick = "ELFS"
+        });
+        {
+            var limit = await InscriptionContractStub.GetInscribedLimit.CallAsync(new StringValue
+            {
+                Value = "ELFS"
+            });
+            limit.Value.ShouldBe(1);
+        }
+        {
+            var log = InscriptionIssued.Parser.ParseFrom(result.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(InscriptionIssued))?.NonIndexed);
+            log.Tick.ShouldBe("ELFS");
+            log.To.ShouldBe(InscriptionContractAddress);
+            var info =
+                @"{ ""p"": ""aelf"", ""op"": ""deploy"", ""tick"": ""ELFS"", ""max"": ""1"", ""lim"": ""1"" }";
+            log.InscriptionInfo.ShouldBe(info);
+            log.Amt.ShouldBe(1);
+        }
+        var list = await InscriptionContractStub.GetDistributorList.CallAsync(new StringValue
+        {
+            Value = "ELFS"
+        });
+        list.Values.Count.ShouldBe(1);
+        foreach (var distributor in list.Values)
+        {
+            var balanceOutput = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+            {
+                Owner = distributor,
+                Symbol = "ELFS-1"
+            });
+            balanceOutput.Balance.ShouldBe(list.Values.IndexOf(distributor) == 0 ? 1 : 0);
+        }
+        {
+            var balanceList = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
+            {
+                Value = "ELFS"
+            });
+            balanceList.Values.Count.ShouldBe(1);
+            balanceList.Values[0].Distributor.ShouldBe(list.Values[0]);
+            balanceList.Values[0].Balance.ShouldBe(1);
+        }
+    }
+    
+    [Fact]
+    public async Task IssueTest_Success_TotalSupplyLessThanCount_9()
+    {
+        await InitializeTest_Success();
+        await BuySeed();
+        await InscriptionContractStub.DeployInscription.SendAsync(new DeployInscriptionInput
+        {
+            Tick = _tick,
+            SeedSymbol = "SEED-1",
+            Max = 9,
+            Limit = 1,
+            Image = _image
+        });
+        var result = await InscriptionContractStub.IssueInscription.SendAsync(new IssueInscriptionInput
+        {
+            Tick = "ELFS"
+        });
+        {
+            var limit = await InscriptionContractStub.GetInscribedLimit.CallAsync(new StringValue
+            {
+                Value = "ELFS"
+            });
+            limit.Value.ShouldBe(1);
+        }
+        {
+            var log = InscriptionIssued.Parser.ParseFrom(result.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(InscriptionIssued))?.NonIndexed);
+            log.Tick.ShouldBe("ELFS");
+            log.To.ShouldBe(InscriptionContractAddress);
+            var info =
+                @"{ ""p"": ""aelf"", ""op"": ""deploy"", ""tick"": ""ELFS"", ""max"": ""9"", ""lim"": ""1"" }";
+            log.InscriptionInfo.ShouldBe(info);
+            log.Amt.ShouldBe(9);
+        }
+        var list = await InscriptionContractStub.GetDistributorList.CallAsync(new StringValue
+        {
+            Value = "ELFS"
+        });
+        list.Values.Count.ShouldBe(1);
+        foreach (var distributor in list.Values)
+        {
+            var balanceOutput = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+            {
+                Owner = distributor,
+                Symbol = "ELFS-1"
+            });
+            balanceOutput.Balance.ShouldBe(list.Values.IndexOf(distributor) == 0 ? 9 : 0);
+        }
+        {
+            var balanceList = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
+            {
+                Value = "ELFS"
+            });
+            balanceList.Values.Count.ShouldBe(1);
+            balanceList.Values[0].Distributor.ShouldBe(list.Values[0]);
+            balanceList.Values[0].Balance.ShouldBe(9);
+        }
+    }
+    
+    [Fact]
+    public async Task IssueTest_Success_TotalSupplyLessThanCount_10()
+    {
+        await InitializeTest_Success();
+        await BuySeed();
+        await InscriptionContractStub.DeployInscription.SendAsync(new DeployInscriptionInput
+        {
+            Tick = _tick,
+            SeedSymbol = "SEED-1",
+            Max = 10,
+            Limit = 2,
+            Image = _image
+        });
+        var result = await InscriptionContractStub.IssueInscription.SendAsync(new IssueInscriptionInput
+        {
+            Tick = "ELFS"
+        });
+        {
+            var limit = await InscriptionContractStub.GetInscribedLimit.CallAsync(new StringValue
+            {
+                Value = "ELFS"
+            });
+            limit.Value.ShouldBe(2);
+        }
+        {
+            var log = InscriptionIssued.Parser.ParseFrom(result.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(InscriptionIssued))?.NonIndexed);
+            log.Tick.ShouldBe("ELFS");
+            log.To.ShouldBe(InscriptionContractAddress);
+            var info =
+                @"{ ""p"": ""aelf"", ""op"": ""deploy"", ""tick"": ""ELFS"", ""max"": ""10"", ""lim"": ""2"" }";
+            log.InscriptionInfo.ShouldBe(info);
+            log.Amt.ShouldBe(10);
+        }
+        var list = await InscriptionContractStub.GetDistributorList.CallAsync(new StringValue
+        {
+            Value = "ELFS"
+        });
+        list.Values.Count.ShouldBe(10);
+        foreach (var distributor in list.Values)
+        {
+            var balanceOutput = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+            {
+                Owner = distributor,
+                Symbol = "ELFS-1"
+            });
+            balanceOutput.Balance.ShouldBe(list.Values.IndexOf(distributor) == 0 ? 1 : 1);
+        }
+        {
+            var balanceList = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
+            {
+                Value = "ELFS"
+            });
+            balanceList.Values.Count.ShouldBe(10);
+            balanceList.Values[0].Distributor.ShouldBe(list.Values[0]);
+            balanceList.Values[0].Balance.ShouldBe(1);
+            for (var i = 1; i < balanceList.Values.Count; i++)
+            {
+                balanceList.Values[i].Distributor.ShouldBe(list.Values[i]);
+                balanceList.Values[i].Balance.ShouldBe(1);
+            }
+        }
+    }
+    [Fact]
+    public async Task IssueTest_Success_TotalSupplyLessThanCount_5()
+    {
+        await InitializeTest_Success();
+        await BuySeed();
+        await InscriptionContractStub.SetDistributorCount.SendAsync(new Int32Value
+        {
+            Value = 3
+        });
+        await InscriptionContractStub.DeployInscription.SendAsync(new DeployInscriptionInput
+        {
+            Tick = _tick,
+            SeedSymbol = "SEED-1",
+            Max = 2,
+            Limit = 1,
+            Image = _image
+        });
+        var result = await InscriptionContractStub.IssueInscription.SendAsync(new IssueInscriptionInput
+        {
+            Tick = "ELFS"
+        });
+        {
+            var limit = await InscriptionContractStub.GetInscribedLimit.CallAsync(new StringValue
+            {
+                Value = "ELFS"
+            });
+            limit.Value.ShouldBe(1);
+        }
+        {
+            var log = InscriptionIssued.Parser.ParseFrom(result.TransactionResult.Logs
+                .FirstOrDefault(l => l.Name == nameof(InscriptionIssued))?.NonIndexed);
+            log.Tick.ShouldBe("ELFS");
+            log.To.ShouldBe(InscriptionContractAddress);
+            var info =
+                @"{ ""p"": ""aelf"", ""op"": ""deploy"", ""tick"": ""ELFS"", ""max"": ""2"", ""lim"": ""1"" }";
+            log.InscriptionInfo.ShouldBe(info);
+            log.Amt.ShouldBe(2);
+        }
+        var list = await InscriptionContractStub.GetDistributorList.CallAsync(new StringValue
+        {
+            Value = "ELFS"
+        });
+        list.Values.Count.ShouldBe(1);
+        foreach (var distributor in list.Values)
+        {
+            var balanceOutput = await TokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+            {
+                Owner = distributor,
+                Symbol = "ELFS-1"
+            });
+            balanceOutput.Balance.ShouldBe(list.Values.IndexOf(distributor) == 0 ? 2 : 0);
+        }
+        {
+            var balanceList = await InscriptionContractStub.GetDistributorBalance.CallAsync(new StringValue
+            {
+                Value = "ELFS"
+            });
+            balanceList.Values.Count.ShouldBe(1);
+            balanceList.Values[0].Distributor.ShouldBe(list.Values[0]);
+            balanceList.Values[0].Balance.ShouldBe(2);
+        }
+    }
 
     [Fact]
     public async Task IssueTest_Failed_NotInitialized()
