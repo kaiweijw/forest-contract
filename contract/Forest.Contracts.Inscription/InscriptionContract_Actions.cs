@@ -100,7 +100,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
             Symbol = collectionSymbol
         });
         Assert(tokenInfo != null && !string.IsNullOrEmpty(tokenInfo.Symbol), $"Token not exist.{tokenInfo?.Symbol}");
-        var distributors = GenerateDistributors(tick);
+        var distributors = GenerateDistributors(tick, tokenInfo.TotalSupply);
         var info = DeployInscriptionInfo.Parser.ParseJson(
             tokenInfo?.ExternalInfo.Value[InscriptionContractConstants.InscriptionDeployKey]);
         Assert(long.TryParse(info.Lim, out var lim), "Invalid inscription limit.");
