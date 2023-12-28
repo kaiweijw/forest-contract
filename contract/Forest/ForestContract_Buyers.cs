@@ -505,16 +505,16 @@ public partial class ForestContract
 
         for (var i = 0; i < cancelOfferList?.Count; i++)
         {
-            var amount = cancelOfferMap.TryGetValue(offerList.Value[i].Price.Symbol, out var value)
+            var amount = cancelOfferMap.TryGetValue(cancelOfferList[i].Price.Symbol, out var value)
                 ? value
                 : 0;
-            cancelOfferMap[offerList.Value[i].Price.Symbol] = amount + offerList.Value[i].Quantity.Mul(offerList.Value[i].Price.Amount);
+            cancelOfferMap[cancelOfferList[i].Price.Symbol] = amount + cancelOfferList[i].Quantity.Mul(cancelOfferList[i].Price.Amount);
             Context.Fire(new OfferRemoved
             {
                 Symbol = input.Symbol,
                 OfferFrom = Context.Sender,
-                OfferTo = offerList.Value[i].To,
-                ExpireTime = offerList.Value[i].ExpireTime
+                OfferTo = cancelOfferList[i].To,
+                ExpireTime = cancelOfferList[i].ExpireTime
             });
         }
         foreach (var cancelOffer in cancelOfferMap)
