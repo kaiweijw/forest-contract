@@ -710,13 +710,13 @@ public class ForestContractTests_Deal : ForestContractTestBase
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60
                 },
             });
             
@@ -1813,13 +1813,13 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 IsWhitelistAvailable = false,
                 Price = sellPrice,
                 Whitelists = null,
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }

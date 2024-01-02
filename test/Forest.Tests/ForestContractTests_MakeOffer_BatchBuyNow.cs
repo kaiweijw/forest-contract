@@ -30,7 +30,7 @@ public partial class ForestContractTests_MakeOffer
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
                         StartTime = startTime,
                         PublicTime = startTime,

@@ -85,47 +85,40 @@ public partial class ForestContract
         return tokenWhiteList;
     }
 
-    private ListDuration AdjustListDuration(ListDuration duration)
+    private ListDuration AdjustListDuration(ListWithFixedPriceDuration originDuration)
     {
         const int SIX_MONTH_MINUTES = 263520;
-        if (duration == null)
+        var duration = new ListDuration
         {
-            duration = new ListDuration
-            {
-                StartTime = Context.CurrentBlockTime,
-                PublicTime = Context.CurrentBlockTime,
-                DurationHours = 0,
-                DurationMinutes = SIX_MONTH_MINUTES
-            };
-        }
-        else
+            StartTime = Context.CurrentBlockTime,
+            PublicTime = Context.CurrentBlockTime,
+            DurationHours = 0,
+            DurationMinutes = SIX_MONTH_MINUTES
+        };
+        if (originDuration == null)
         {
-            if (duration.StartTime == null || duration.StartTime < Context.CurrentBlockTime)
-            {
-                duration.StartTime = Context.CurrentBlockTime;
-            }
-
-            if (duration.PublicTime == null || duration.PublicTime < duration.StartTime)
-            {
-                duration.PublicTime = duration.StartTime;
-            }
-
-            if (duration.DurationMinutes < 0)
-            {
-                duration.DurationMinutes = 0;
-            }
-
-            if (duration.DurationHours < 0)
-            {
-                duration.DurationHours = 0;
-            }
-            
-            if (duration.DurationHours == 0 && duration.DurationMinutes == 0)
-            {
-                duration.DurationMinutes = SIX_MONTH_MINUTES;
-            }
-            
+            return duration;
         }
+
+        duration.StartTime = originDuration.StartTime;
+        duration.PublicTime = originDuration.PublicTime;
+        duration.DurationMinutes = originDuration.DurationMinutes;
+        
+        if (duration.StartTime == null || duration.StartTime < Context.CurrentBlockTime)
+        {
+            duration.StartTime = Context.CurrentBlockTime;
+        }
+
+        if (duration.PublicTime == null || duration.PublicTime < duration.StartTime)
+        {
+            duration.PublicTime = duration.StartTime;
+        }
+
+        if ( duration.DurationMinutes <= 0)
+        {
+            duration.DurationMinutes = SIX_MONTH_MINUTES;
+        }
+        
 
         return duration;
     }

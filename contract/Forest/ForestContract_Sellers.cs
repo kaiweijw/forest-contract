@@ -33,7 +33,7 @@ public partial class ForestContract
         Assert(balance.Balance >= input.Quantity, "Check sender NFT balance failed.");
         
         AssertAllowanceInsufficient(input.Symbol, Context.Sender, input.Quantity);
-
+        
         var duration = AdjustListDuration(input.Duration);
         var whitelists = input.Whitelists;
         var projectId = CalculateProjectId(input.Symbol, Context.Sender);

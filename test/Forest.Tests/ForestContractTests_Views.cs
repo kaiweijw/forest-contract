@@ -406,10 +406,10 @@ public class ForestContractTests_Views : ForestContractTestBase
                     Whitelists = new WhitelistInfoList()
                     {
                     },
-                    Duration = new ListDuration
+                    Duration = new ListWithFixedPriceDuration
                     {
                         StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(2)),
-                        DurationHours = 24
+                        DurationMinutes = 24 * 60
                     }
                 });
         }
@@ -690,10 +690,10 @@ public class ForestContractTests_Views : ForestContractTestBase
                     Whitelists = new WhitelistInfoList()
                     {
                     },
-                    Duration = new ListDuration
+                    Duration = new ListWithFixedPriceDuration
                     {
                         StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1)),
-                        DurationHours = 24
+                        DurationMinutes = 24 * 60
                     }
                 });
 
@@ -709,10 +709,10 @@ public class ForestContractTests_Views : ForestContractTestBase
                     Whitelists = new WhitelistInfoList()
                     {
                     },
-                    Duration = new ListDuration
+                    Duration = new ListWithFixedPriceDuration
                     {
                         StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(2)),
-                        DurationHours = 24
+                        DurationMinutes = 24 * 60
                     }
                 });
         }
@@ -757,9 +757,9 @@ public class ForestContractTests_Views : ForestContractTestBase
                         Whitelists = new WhitelistInfoList()
                         {
                         },
-                        Duration = new ListDuration
+                        Duration = new ListWithFixedPriceDuration
                         {
-                            DurationHours = 24
+                            DurationMinutes = 24 * 60
                         }
                     });
             }
@@ -792,9 +792,9 @@ public class ForestContractTests_Views : ForestContractTestBase
                         Whitelists = new WhitelistInfoList()
                         {
                         },
-                        Duration = new ListDuration
+                        Duration = new ListWithFixedPriceDuration
                         {
-                            DurationHours = 24
+                            DurationMinutes = 24 * 60
                         }
                     });
             }
@@ -848,9 +848,9 @@ public class ForestContractTests_Views : ForestContractTestBase
                     Whitelists = new WhitelistInfoList()
                     {
                     },
-                    Duration = new ListDuration
+                    Duration = new ListWithFixedPriceDuration
                     {
-                        DurationHours = 24
+                        DurationMinutes = 24 * 60
                     }
                 });
             await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
@@ -865,10 +865,10 @@ public class ForestContractTests_Views : ForestContractTestBase
                     Whitelists = new WhitelistInfoList()
                     {
                     },
-                    Duration = new ListDuration
+                    Duration = new ListWithFixedPriceDuration
                     {
                         StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
-                        DurationHours = 24
+                        DurationMinutes = 24 * 60
                     }
                 });
         }
@@ -1092,9 +1092,9 @@ public class ForestContractTests_Views : ForestContractTestBase
                     Whitelists = new WhitelistInfoList()
                     {
                     },
-                    Duration = new ListDuration
+                    Duration = new ListWithFixedPriceDuration
                     {
-                        DurationHours = 24
+                        DurationMinutes = 24 * 60
                     }
                 });
             await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
@@ -1109,10 +1109,10 @@ public class ForestContractTests_Views : ForestContractTestBase
                     Whitelists = new WhitelistInfoList()
                     {
                     },
-                    Duration = new ListDuration
+                    Duration = new ListWithFixedPriceDuration
                     {
                         StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
-                        DurationHours = 24
+                        DurationMinutes = 24 * 60
                     }
                 });
         }
