@@ -166,8 +166,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             batchBuyNowInput.Symbol = NftSymbol;
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
@@ -178,7 +178,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList2 = new FixPriceList()
+            var priceList2 = new FixPrice()
             {
                 StartTime = startTime2,
                 OfferTo = User1Address,
@@ -194,7 +194,12 @@ public partial class ForestContractTests_MakeOffer
             batchBuyNowInput.FixPriceList.AddRange(fixPriceList);
             
             // user2 BatchBuyNow
-            await BuyerForestContractStub.BatchBuyNow.SendAsync(batchBuyNowInput);
+            var executionResult = await BuyerForestContractStub.BatchBuyNow.SendAsync(batchBuyNowInput);
+            var log = BatchBuyNowResult.Parser.ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(BatchBuyNowResult))
+                .NonIndexed);
+            log.Symbol.ShouldBe("TESTNFT-1");
+            log.AllSuccessFlag.ShouldBe(true);
+            log.FailPriceList.ShouldBe(new FailPriceList());
         }
 
         #endregion
@@ -293,8 +298,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             batchBuyNowInput.Symbol = NftSymbol;
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
@@ -305,7 +310,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList2 = new FixPriceList()
+            var priceList2 = new FixPrice()
             {
                 StartTime = startTime2,
                 OfferTo = User1Address,
@@ -424,8 +429,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             batchBuyNowInput.Symbol = NftSymbol;
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
@@ -436,7 +441,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList2 = new FixPriceList()
+            var priceList2 = new FixPrice()
             {
                 StartTime = startTime2,
                 OfferTo = User1Address,
@@ -447,7 +452,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList3 = new FixPriceList()
+            var priceList3 = new FixPrice()
             {
                 StartTime = startTime3,
                 OfferTo = User1Address,
@@ -464,7 +469,12 @@ public partial class ForestContractTests_MakeOffer
             batchBuyNowInput.FixPriceList.AddRange(fixPriceList);
             
             // user2 BatchBuyNow
-            await BuyerForestContractStub.BatchBuyNow.SendAsync(batchBuyNowInput);
+            var executionResult = await BuyerForestContractStub.BatchBuyNow.SendAsync(batchBuyNowInput);
+            var log = BatchBuyNowResult.Parser.ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(BatchBuyNowResult))
+                .NonIndexed);
+            log.Symbol.ShouldBe("TESTNFT-1");
+            log.AllSuccessFlag.ShouldBe(true);
+            log.FailPriceList.ShouldBe(new FailPriceList());
         }
 
         #endregion
@@ -530,8 +540,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             batchBuyNowInput.Symbol = NftSymbol;
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
@@ -548,7 +558,16 @@ public partial class ForestContractTests_MakeOffer
             batchBuyNowInput.FixPriceList.AddRange(fixPriceList);
             
             // user2 BatchBuyNow
-            await BuyerForestContractStub.BatchBuyNow.SendAsync(batchBuyNowInput);
+            var executionResult = await BuyerForestContractStub.BatchBuyNow.SendAsync(batchBuyNowInput);
+            var log = BatchBuyNowResult.Parser.ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(BatchBuyNowResult))
+                .NonIndexed);
+            log.Symbol.ShouldBe("TESTNFT-1");
+            log.AllSuccessFlag.ShouldBe(false);
+            log.FailPriceList.ShouldNotBeNull();
+            log.FailPriceList.Value.First().Quantity.ShouldBe(user1InputListQuantity1);
+            log.FailPriceList.Value.First().Price.Amount.ShouldBe(user1InputSellPrice1);
+            log.FailPriceList.Value.First().Price.Symbol.ShouldBe("ELF");
+            
         }
 
         #endregion
@@ -647,8 +666,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             batchBuyNowInput.Symbol = NftSymbol;
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
@@ -659,7 +678,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList2 = new FixPriceList()
+            var priceList2 = new FixPrice()
             {
                 StartTime = startTime3,
                 OfferTo = User3Address,
@@ -675,7 +694,14 @@ public partial class ForestContractTests_MakeOffer
             batchBuyNowInput.FixPriceList.AddRange(fixPriceList);
             
             // user2 BatchBuyNow
-            await BuyerForestContractStub.BatchBuyNow.SendAsync(batchBuyNowInput);
+            var executionResult = await BuyerForestContractStub.BatchBuyNow.SendAsync(batchBuyNowInput);
+            var log = BatchBuyNowResult.Parser.ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(BatchBuyNowResult))
+                .NonIndexed);
+            log.Symbol.ShouldBe("TESTNFT-1");
+            log.AllSuccessFlag.ShouldBe(true);
+            log.FailPriceList.ShouldBe(new FailPriceList());
+            
+            
         }
 
         #endregion
@@ -790,8 +816,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             batchBuyNowInput.Symbol = NftSymbol;
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
@@ -802,7 +828,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList2 = new FixPriceList()
+            var priceList2 = new FixPrice()
             {
                 StartTime = startTime3,
                 OfferTo = User3Address,
@@ -932,8 +958,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             batchBuyNowInput.Symbol = NftSymbol+"abc";
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
@@ -944,7 +970,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList2 = new FixPriceList()
+            var priceList2 = new FixPrice()
             {
                 StartTime = startTime3,
                 OfferTo = User3Address,
@@ -1074,8 +1100,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             batchBuyNowInput.Symbol = NftSymbol;
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = null,
@@ -1086,7 +1112,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList2 = new FixPriceList()
+            var priceList2 = new FixPrice()
             {
                 StartTime = startTime3,
                 OfferTo = User3Address,
@@ -1216,8 +1242,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             batchBuyNowInput.Symbol = NftSymbol;
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
@@ -1228,7 +1254,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELFA"
                 }
             };
-            var priceList2 = new FixPriceList()
+            var priceList2 = new FixPrice()
             {
                 StartTime = startTime3,
                 OfferTo = User3Address,
@@ -1358,8 +1384,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             //batchBuyNowInput.Symbol = NftSymbol;
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
@@ -1370,7 +1396,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList2 = new FixPriceList()
+            var priceList2 = new FixPrice()
             {
                 StartTime = startTime3,
                 OfferTo = User3Address,
@@ -1500,8 +1526,8 @@ public partial class ForestContractTests_MakeOffer
 
             var batchBuyNowInput = new BatchBuyNowInput();
             batchBuyNowInput.Symbol = NftSymbol;
-            var fixPriceList = new RepeatedField<FixPriceList>(); 
-            var priceList1 = new FixPriceList()
+            var fixPriceList = new RepeatedField<FixPrice>(); 
+            var priceList1 = new FixPrice()
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
@@ -1512,7 +1538,7 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList2 = new FixPriceList()
+            var priceList2 = new FixPrice()
             {
                 StartTime = startTime3,
                 OfferTo = User3Address,

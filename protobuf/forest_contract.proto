@@ -244,10 +244,26 @@ message CancelOfferInput {
 
 message BatchBuyNowInput{
   string symbol = 1;
-  repeated FixPriceList fix_price_list = 2;
+  repeated FixPrice fix_price_list = 2;
 }
 
-message FixPriceList{
+message BatchBuyNowResult{
+  option (aelf.is_event) = true;
+  string symbol = 1;
+  bool all_success_flag = 2;
+  FailPriceList fail_price_list = 3;
+}
+
+message FailPriceList {
+  repeated FailPrice value= 1;
+}
+
+message FailPrice{
+  int64 quantity = 1;
+  Price price = 2;
+}
+
+message FixPrice{
   aelf.Address offer_to = 1;
   int64 quantity = 2;
   Price price = 3;
