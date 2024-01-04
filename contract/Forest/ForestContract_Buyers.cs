@@ -425,7 +425,7 @@ public partial class ForestContract
         }
 
         Assert(offerList?.Value?.Count > 0, "Offer not exists");
-
+        
         if (input.IndexList != null && input.IndexList.Value.Any())
         {
             for (var i = 0; i < offerList?.Value?.Count; i++)
@@ -470,6 +470,71 @@ public partial class ForestContract
         return new Empty();
     }
 
+    /// <summary>
+    /// Sender is buyer.
+    /// </summary>
+    public override Empty CancelOfferListByExpireTime(CancelOfferListByExpireTimeInput input)
+    {
+        AssertContractInitialized();
+        Assert(Context.Sender != null, "Invalid input data : Context.Sender");
+        Assert(input != null, "Invalid input data");
+        Assert(input.Symbol != null, "Invalid input data : Symbol");
+        Assert(input.CancelOfferList != null && input.CancelOfferList.Any(), "Invalid input data : CancelOfferList");
+        var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        {
+            Symbol = input.Symbol,
+        });
+        Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
+        
+        var offerList = State.OfferListMap[input.Symbol][Context.Sender];
+        Assert(offerList?.Value?.Count > 0, "Offer not exists");
+
+
+        var cancelOfferList = offerList?.Value.Where(existOffer => input.CancelOfferList.Any(cannelOffer =>
+            AreOffersEqual(existOffer, cannelOffer)
+        )).ToList();
+        Assert(cancelOfferList?.Count > 0, "Cannel Offer not exists");
+        
+        var newOfferList = new OfferList();
+        var remainOfferList = offerList?.Value.Where(existOffer => !input.CancelOfferList.Any(cannelOffer =>
+            AreOffersEqual(existOffer, cannelOffer)
+        )).ToList();
+        newOfferList.Value.Add(remainOfferList);
+        
+        var cancelOfferMap = new Dictionary<string, long>();
+
+        for (var i = 0; i < cancelOfferList?.Count; i++)
+        {
+            var amount = cancelOfferMap.TryGetValue(cancelOfferList[i].Price.Symbol, out var value)
+                ? value
+                : 0;
+            cancelOfferMap[cancelOfferList[i].Price.Symbol] = amount + cancelOfferList[i].Quantity.Mul(cancelOfferList[i].Price.Amount);
+            Context.Fire(new OfferRemoved
+            {
+                Symbol = input.Symbol,
+                OfferFrom = Context.Sender,
+                OfferTo = cancelOfferList[i].To,
+                ExpireTime = cancelOfferList[i].ExpireTime
+            });
+        }
+        foreach (var cancelOffer in cancelOfferMap)
+        {
+            ModifyOfferTotalAmount(Context.Sender, cancelOffer.Key, -cancelOffer.Value);
+        }
+        
+        State.OfferListMap[input.Symbol][Context.Sender] = newOfferList;
+        return new Empty();
+        
+    }
+    
+    private bool AreOffersEqual(Offer existOffer, CancelOffer cancelOffer)
+    {
+        return existOffer.To == cancelOffer.OfferTo &&
+               existOffer.Price.Symbol == cancelOffer.Price.Symbol &&
+               existOffer.Price.Amount == cancelOffer.Price.Amount &&
+               existOffer.ExpireTime.Seconds == cancelOffer.ExpireTime.Seconds;
+    }
+    
 
     /// <summary>
     /// Sender is buyer.
@@ -493,7 +558,7 @@ public partial class ForestContract
         });
         return true;
     }
-    
+
     /// <summary>
     /// Sender is buyer.
     /// </summary>
