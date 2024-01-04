@@ -954,6 +954,7 @@ public class ForestContractTests_Security : ForestContractTestBase
         #endregion
     }
 
+    
     [Fact]
     public async void Security_Case17_Deal_needToDelist_success()
     {
@@ -1043,6 +1044,7 @@ public class ForestContractTests_Security : ForestContractTestBase
 
         #endregion
     }
+    
 
     [Fact]
     public async void Security_Case18_Delist_invalidQty_fail()
