@@ -44,6 +44,14 @@ internal class MakeOfferService
             throw new AssertionException("Origin owner cannot be sender himself.");
         }
     }
+    
+    public void ValidateFixPriceList(FixPriceList input)
+    {
+        if (_context.Sender == input.OfferTo)
+        {
+            throw new AssertionException("Origin owner cannot be sender himself.");
+        }
+    }
 
     public bool IsSenderInWhitelist(MakeOfferInput makeOfferInput, out Hash whitelistId)
     {
@@ -92,6 +100,30 @@ internal class MakeOfferService
         return DealStatus.DealWithMultiPrice;
     }
 
+    public void GetAffordableNftInfoList(string symbol, FixPriceList input,
+        out List<ListedNFTInfo> affordableNftInfoList)
+    {
+        affordableNftInfoList = new List<ListedNFTInfo>();
+        var nftInfo = _tokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        {
+            Symbol = symbol,
+        });
+
+        if (nftInfo.Supply <= 0)
+        {
+            throw new AssertionException("NFT does not exist.");
+        }
+
+        var listedNftInfoList = _listedNFTInfoListMap[symbol][input.OfferTo];
+
+        if (listedNftInfoList == null)
+        {
+            return;
+        }
+
+        affordableNftInfoList = GetAffordableNftInfoListFixPrice(symbol, input, listedNftInfoList);
+    }
+
     private List<ListedNFTInfo> GetAffordableNftInfoList(MakeOfferInput makeOfferInput,
         ListedNFTInfoList listedNftInfoList)
     {
@@ -100,8 +132,22 @@ internal class MakeOfferService
         return listedNftInfoList.Value.Where(i =>
                 (i.Price.Symbol == makeOfferInput.Price.Symbol && i.Price.Amount <= makeOfferInput.Price.Amount ||
                  i.ListType != ListType.FixedPrice)
-                && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours))
+                && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours).AddMinutes(i.Duration.DurationMinutes))
             .OrderBy(i => i.Price.Amount)
+            .Take(maxDealCount > 0 ? maxDealCount : ForestContract.DefaultMaxOfferDealCount)
+            .ToList();
+    }
+
+    private List<ListedNFTInfo> GetAffordableNftInfoListFixPrice(string symbol, FixPriceList input,
+        ListedNFTInfoList listedNftInfoList)
+    {
+        var blockTime = _context.CurrentBlockTime;
+        var maxDealCount = _bizConfig.Value.MaxOfferDealCount;
+        return listedNftInfoList.Value.Where(i =>
+                i.Symbol == symbol && i.Price.Symbol == input.Price.Symbol && i.Price.Amount == input.Price.Amount
+                && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours).AddMinutes(i.Duration.DurationMinutes)
+                && input.StartTime.Seconds == i.Duration.StartTime.Seconds)
+            .OrderBy(i => i.Duration.StartTime)
             .Take(maxDealCount > 0 ? maxDealCount : ForestContract.DefaultMaxOfferDealCount)
             .ToList();
     }

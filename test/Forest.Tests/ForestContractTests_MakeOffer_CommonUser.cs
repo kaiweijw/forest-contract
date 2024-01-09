@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using AElf.ContractTestBase.ContractTestKit;
 using AElf.CSharp.Core.Extension;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
@@ -1217,4 +1219,153 @@ public partial class ForestContractTests_MakeOffer
         #endregion
     }
 
+    
+     [Fact]
+    public async void MakeOffer_Case44_ListingExpire_Add_New_Offer()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+
+        // whitePrice < sellPrice < offerPrice
+        var sellPrice = Elf(5_0000_0000);
+        var whitePrice = Elf(2_0000_0000);
+        var offerPrice = Elf(10_0000_0000);
+        var serviceFee = sellPrice.Amount * ServiceFeeRate / 10000;
+
+        // after publicTime
+        var startTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1));
+        var publicTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(1));
+
+        // list 5 NFTs
+
+        #region ListWithFixedPrice
+
+        {
+            await Seller1ForestContractStub.ListWithFixedPrice.SendAsync(new ListWithFixedPriceInput()
+            {
+                Symbol = NftSymbol,
+                Quantity = 5,
+                IsWhitelistAvailable = false,
+                Price = sellPrice,
+                Whitelists = null,
+                Duration = new ListDuration()
+                {
+                    StartTime = startTime,
+                    PublicTime = publicTime,
+                    DurationHours = 0,
+                    DurationMinutes = 1
+                },
+            });
+        }
+
+        #endregion
+        //modify BlockTime
+        var BlockTimeProvider = GetRequiredService<IBlockTimeProvider>();
+        BlockTimeProvider.SetBlockTime(BlockTimeProvider.GetBlockTime().AddMinutes(5));
+
+        // buy 100 NFTs
+
+        #region common user buy
+
+        {
+            // check buyer ELF balance
+            var elfBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = ElfSymbol,
+                Owner = User2Address
+            });
+            elfBalance.Output.Balance.ShouldBe(InitializeElfAmount);
+
+            // check seller ELF balance
+            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            nftBalance.Output.Balance.ShouldBe(10);
+
+            // user2 make offer to user1
+            var executionResult = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = 100,
+                Price = offerPrice,
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
+            });
+            
+            var log1 = OfferAdded.Parser
+                .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(OfferAdded))
+                    .NonIndexed);
+            log1.Quantity.ShouldBe(100);
+            log1.Price.Symbol.ShouldBe("ELF");
+            log1.Price.Amount.ShouldBe(1000000000L);
+            log1.OfferFrom.Value.ToBase64().ShouldBe("P4WQFMCR41OJM9wXi7E0YQ2ICxHehKNETw7atEG+w78=");
+            log1.OfferTo.Value.ToBase64().ShouldBe("90sRtkKOqGD6FWcCCDUX8/7ctl/DnnDkKVNgk9TFu7g=");
+            log1.OriginBalance.ShouldBe(1000000000000L);
+            log1.OriginBalanceSymbol.ShouldBe("ELF");
+            
+        }
+
+        #endregion
+
+        #region check seller NFT
+
+        {
+            var nftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User1Address
+            });
+            //nftBalance.Output.Balance.ShouldBe(5);
+        }
+
+        #endregion
+
+        #region check buyer NFT
+
+        {
+            var nftBalance = await User2TokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = NftSymbol,
+                Owner = User2Address
+            });
+            //nftBalance.Output.Balance.ShouldBe(5);
+        }
+
+        #endregion
+
+        #region check service fee
+
+        {
+            // check buyer ELF balance
+            var user1ElfBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
+            {
+                Symbol = ElfSymbol,
+                Owner = User1Address
+            });
+            user1ElfBalance.Output.Balance.ShouldBe(InitializeElfAmount);
+        }
+
+        #endregion
+
+        // 95 NFTs to offer list
+
+        #region check offer list
+
+        {
+            // list offers just sent
+            var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
+            {
+                Symbol = NftSymbol,
+                // Address = User2Address,
+            }).Result.Output;
+            offerList.Value.Count.ShouldBeGreaterThan(0);
+            offerList.Value[0].To.ShouldBe(User1Address);
+            offerList.Value[0].From.ShouldBe(User2Address);
+            offerList.Value[0].Quantity.ShouldBe(100);
+        }
+
+        #endregion
+    }
 }
