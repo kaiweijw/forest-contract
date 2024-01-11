@@ -2974,9 +2974,8 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
-                        DurationHours = 0,
                         DurationMinutes = -1
                     }
                 });
@@ -3023,9 +3022,8 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
-                        DurationHours = 0,
                         DurationMinutes = 0
                     }
                 });
@@ -3072,9 +3070,8 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
-                        DurationHours = 1,
                         DurationMinutes = 0
                     }
                 });
