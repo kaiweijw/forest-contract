@@ -132,7 +132,7 @@ internal class MakeOfferService
         return listedNftInfoList.Value.Where(i =>
                 (i.Price.Symbol == makeOfferInput.Price.Symbol && i.Price.Amount <= makeOfferInput.Price.Amount ||
                  i.ListType != ListType.FixedPrice)
-                && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours))
+                && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours).AddMinutes(i.Duration.DurationMinutes))
             .OrderBy(i => i.Price.Amount)
             .Take(maxDealCount > 0 ? maxDealCount : ForestContract.DefaultMaxOfferDealCount)
             .ToList();
@@ -145,7 +145,7 @@ internal class MakeOfferService
         var maxDealCount = _bizConfig.Value.MaxOfferDealCount;
         return listedNftInfoList.Value.Where(i =>
                 i.Symbol == symbol && i.Price.Symbol == input.Price.Symbol && i.Price.Amount == input.Price.Amount
-                && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours)
+                && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours).AddMinutes(i.Duration.DurationMinutes)
                 && input.StartTime.Seconds == i.Duration.StartTime.Seconds)
             .OrderBy(i => i.Duration.StartTime)
             .Take(maxDealCount > 0 ? maxDealCount : ForestContract.DefaultMaxOfferDealCount)

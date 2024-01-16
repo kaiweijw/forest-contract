@@ -45,7 +45,8 @@ public partial class ForestContractTests_MakeOffer
             log.Price.Symbol.ShouldBe(ElfSymbol);
             log.Price.Amount.ShouldBe(inputSellPrice);
             log.Duration.StartTime.ShouldNotBeNull();
-            log.Duration.DurationHours.ShouldBe(4392L);
+            log.Duration.DurationHours.ShouldBe(0);
+            log.Duration.DurationMinutes.ShouldBe(263520);
             
             var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
                 new GetListedNFTInfoListInput
@@ -58,7 +59,8 @@ public partial class ForestContractTests_MakeOffer
             listedNftInfo.Quantity.ShouldBe(listQuantity);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(0);
+            listedNftInfo.Duration.DurationMinutes.ShouldBe(263520);
             return startTime;
         }
     }
@@ -78,7 +80,8 @@ public partial class ForestContractTests_MakeOffer
             listedNftInfo.Quantity.ShouldBe(intpuListQuantity);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(0);
+            listedNftInfo.Duration.DurationMinutes.ShouldBe(263520);
         }
     }
 
@@ -97,7 +100,8 @@ public partial class ForestContractTests_MakeOffer
             listedNftInfo.Quantity.ShouldBe(intpuListQuantity);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(4392L);
+            listedNftInfo.Duration.DurationHours.ShouldBe(0);
+            listedNftInfo.Duration.DurationMinutes.ShouldBe(263520);
         }
     }
 
