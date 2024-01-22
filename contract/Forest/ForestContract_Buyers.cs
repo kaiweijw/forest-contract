@@ -219,7 +219,7 @@ public partial class ForestContract
         Assert(input != null && input.FixPriceList.Any(), "Invalid input data");
         var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
         {
-            Symbol = input.Symbol,
+            Symbol = input.Symbol
         });
         Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
         var userBalanceDic = new Dictionary<string,long>();
