@@ -294,23 +294,28 @@ public partial class ForestContract
 
             TryDealWithFixedPriceForBatch(sender, symbol, inputFixPrice, dealResult
                 , listedNftInfo, userBalanceDic, out var dealQuantity);
-            
-            if (failPriceDic.TryGetValue(inputFixPrice.Price.Amount, out var value))
+
+            long realFail = dealResult.Quantity - dealQuantity;
+            if (realFail > 0)
             {
-                value.Quantity += listedNftInfo.Quantity - dealQuantity;
-            }
-            else
-            {
-                failPriceDic.Add(inputFixPrice.Price.Amount, new FailPrice
+                if (failPriceDic.TryGetValue(inputFixPrice.Price.Amount, out var value))
                 {
-                    Quantity = listedNftInfo.Quantity - dealQuantity,
-                    Price = new Price
+                    value.Quantity += realFail;
+                }
+                else
+                {
+                    failPriceDic.Add(inputFixPrice.Price.Amount, new FailPrice
                     {
-                        Symbol = inputFixPrice.Price.Symbol,
-                        Amount = inputFixPrice.Price.Amount
-                    }
-                });
+                        Quantity = dealResult.Quantity - dealQuantity,
+                        Price = new Price
+                        {
+                            Symbol = inputFixPrice.Price.Symbol,
+                            Amount = inputFixPrice.Price.Amount
+                        }
+                    });
+                }
             }
+            
             
             if (dealQuantity == 0)
             {
