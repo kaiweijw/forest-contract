@@ -212,6 +212,8 @@ namespace Forest.Contracts.SymbolRegistrar
             Assert(proxyAccount?.ProxyAccountHash != null, "ProxyAccountHash not existed.");
             State.ProxyAccountHash.Value = proxyAccount.ProxyAccountHash;
             return proxyAccount.ProxyAccountHash;
+            
+
 
         }
     }
