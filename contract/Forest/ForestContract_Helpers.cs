@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
@@ -99,7 +98,6 @@ public partial class ForestContract
         {
             return duration;
         }
-
         duration.StartTime = originDuration.StartTime;
         duration.PublicTime = originDuration.PublicTime;
         duration.DurationMinutes = originDuration.DurationMinutes;
@@ -114,11 +112,20 @@ public partial class ForestContract
             duration.PublicTime = duration.StartTime;
         }
 
-        if ( duration.DurationMinutes <= 0)
+        if (duration.DurationMinutes < 0)
+        {
+            duration.DurationMinutes = 0;
+        }
+
+        if (duration.DurationHours < 0)
+        {
+            duration.DurationHours = 0;
+        }
+        
+        if (duration.DurationHours == 0 && duration.DurationMinutes == 0)
         {
             duration.DurationMinutes = SIX_MONTH_MINUTES;
         }
-        
 
         return duration;
     }
