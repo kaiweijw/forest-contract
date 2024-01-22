@@ -2138,7 +2138,7 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
     {
         await InitializeForestContract();
         await PrepareNftData();
-
+ 
         var sellPrice = Elf(1000_0000_0000);
         var whitePrice = Elf(1_0000_0000);
 
