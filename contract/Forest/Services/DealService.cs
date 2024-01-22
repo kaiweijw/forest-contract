@@ -98,7 +98,7 @@ public class DealService
             }
             else
             {
-                failNumber = needToDealQuantity - listedNftInfo.Quantity;
+                failNumber = inputFixPrice.Quantity - listedNftInfo.Quantity;
                 if (failPriceDic.TryGetValue(inputFixPrice.Price.Amount, out var value))
                 {
                     value.Quantity += failNumber;
