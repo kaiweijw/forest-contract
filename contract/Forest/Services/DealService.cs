@@ -80,6 +80,7 @@ public class DealService
                      && blockTime >= i.Duration.PublicTime
                      ).OrderByDescending(i => i.Duration.PublicTime))
         {
+            long failNumber = 0;
             if (listedNftInfo.Quantity >= needToDealQuantity)
             {
                 var dealResult = new DealResult
@@ -97,6 +98,23 @@ public class DealService
             }
             else
             {
+                failNumber = needToDealQuantity - listedNftInfo.Quantity;
+                if (failPriceDic.TryGetValue(inputFixPrice.Price.Amount, out var value))
+                {
+                    value.Quantity += failNumber;
+                }
+                else
+                {
+                    failPriceDic.Add(inputFixPrice.Price.Amount, new FailPrice
+                    {
+                        Quantity = failNumber,
+                        Price = new Price
+                        {
+                            Symbol = inputFixPrice.Price.Symbol,
+                            Amount = inputFixPrice.Price.Amount
+                        }
+                    });
+                }
                 var dealResult = new DealResult
                 {
                     Symbol = symbol,
@@ -114,8 +132,7 @@ public class DealService
             {
                 break;
             }
-
-
+            
             currentIndex = currentIndex.Add(1);
         }
 
@@ -124,23 +141,6 @@ public class DealService
             return dealResultList;
         }
 
-        if (failPriceDic.TryGetValue(inputFixPrice.Price.Amount, out var value))
-        {
-            value.Quantity += needToDealQuantity;
-        }
-        else
-        {
-            failPriceDic.Add(inputFixPrice.Price.Amount, new FailPrice
-            {
-                Quantity = needToDealQuantity,
-                Price = new Price
-                {
-                    Symbol = inputFixPrice.Price.Symbol,
-                    Amount = inputFixPrice.Price.Amount
-                }
-            });
-        }
-   
         return dealResultList;
     }
 }

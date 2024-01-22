@@ -292,9 +292,31 @@ public partial class ForestContract
         {
             var listedNftInfo = affordableNftInfoList[dealResult.Index];
 
-            if (!TryDealWithFixedPriceForBatch(sender, symbol, inputFixPrice, dealResult
-                    , listedNftInfo, userBalanceDic,out var dealQuantity))
+            TryDealWithFixedPriceForBatch(sender, symbol, inputFixPrice, dealResult
+                , listedNftInfo, userBalanceDic, out var dealQuantity);
+            
+            if (failPriceDic.TryGetValue(inputFixPrice.Price.Amount, out var value))
+            {
+                value.Quantity += listedNftInfo.Quantity - dealQuantity;
+            }
+            else
+            {
+                failPriceDic.Add(inputFixPrice.Price.Amount, new FailPrice
+                {
+                    Quantity = listedNftInfo.Quantity - dealQuantity,
+                    Price = new Price
+                    {
+                        Symbol = inputFixPrice.Price.Symbol,
+                        Amount = inputFixPrice.Price.Amount
+                    }
+                });
+            }
+            
+            if (dealQuantity == 0)
+            {
                 continue;
+            }
+            
             listedNftInfo.Quantity = listedNftInfo.Quantity.Sub(dealQuantity);
             inputFixPrice.Quantity = inputFixPrice.Quantity.Sub(dealQuantity);
             if (listedNftInfo.Quantity == 0)
