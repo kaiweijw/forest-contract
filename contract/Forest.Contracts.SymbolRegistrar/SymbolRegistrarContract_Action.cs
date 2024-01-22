@@ -211,8 +211,8 @@ namespace Forest.Contracts.SymbolRegistrar
             var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(GetSeedCollectionOwner());
             Assert(proxyAccount?.ProxyAccountHash != null, "ProxyAccountHash not existed.");
             State.ProxyAccountHash.Value = proxyAccount.ProxyAccountHash;
+            
             return proxyAccount.ProxyAccountHash;
-         
         }
     }
 }
