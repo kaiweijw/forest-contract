@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
@@ -281,6 +282,9 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
             log.Symbol.ShouldBe(NftSymbol);
             log.ExpireTime.ShouldNotBeNull();
             log.OfferTo.ShouldBe(User1Address);
+            log.Price.ShouldNotBeNull();
+            log.Price.Amount.ShouldBe(5_0000_0000);
+            log.Price.Symbol.ShouldBe("ELF");
         }
 
         #endregion
@@ -300,6 +304,127 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
         #endregion
     }
 
+    
+     [Fact]
+    public async void CancelOfferListByExpireTime_Case_CancelOfferSuccess()
+    {
+        await InitializeForestContract();
+        await PrepareNftData();
+
+        var sellPrice = Elf(5_0000_0000);
+        var offerPrice = Elf(5_0000_0000);
+        var offerPrice2 = Elf(5_0000_0000 * 2);
+        var offerQuantity = 2;
+        var dealQuantity = 2;
+        var serviceFee = dealQuantity * sellPrice.Amount * ServiceFeeRate / 10000;
+
+        #region user buy
+        var expireTime1 = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5));
+        {
+            // user2 make offer VALID
+            var executionResult = await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = offerQuantity,
+                Price = offerPrice,
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
+            });
+            var log = OfferAdded.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(OfferAdded))
+                .NonIndexed);
+            log.OfferFrom.ShouldBe(User2Address);
+            log.Quantity.ShouldBe(2);
+            log.Symbol.ShouldBe(NftSymbol);
+            log.Price.Symbol.ShouldBe(ElfSymbol);
+            log.Price.Amount.ShouldBe(500000000);
+            log.ExpireTime.ShouldNotBeNull();
+            log.OfferTo.ShouldBe(User1Address);
+            //OfferMade
+            // user2 make offer EXPIRE1
+            
+            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = offerQuantity,
+                Price = offerPrice,
+                ExpireTime = expireTime1,
+            });
+
+            // user2 make offer EXPIRE2
+            await BuyerForestContractStub.MakeOffer.SendAsync(new MakeOfferInput()
+            {
+                Symbol = NftSymbol,
+                OfferTo = User1Address,
+                Quantity = offerQuantity,
+                Price = offerPrice2,
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(10)),
+            });
+        }
+
+        #endregion
+
+        #region check offer list
+
+        {
+            // list offers just sent
+            var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
+            {
+                Symbol = NftSymbol,
+                Address = User2Address,
+            }).Result.Output;
+            offerList.Value.Count.ShouldBe(3);
+        }
+
+        #endregion
+
+        #region Cancel order
+
+        {
+            var cancelOfferList = new RepeatedField<CancelOffer>(); 
+            cancelOfferList.Add(new CancelOffer
+            {
+                OfferTo = User1Address,
+                ExpireTime = expireTime1,
+                Price = offerPrice
+            });
+            
+            var cancelOfferListByExpireTimeInput = new CancelOfferListByExpireTimeInput();
+            cancelOfferListByExpireTimeInput.Symbol = NftSymbol;
+            cancelOfferListByExpireTimeInput.CancelOfferList.AddRange(cancelOfferList);
+            var executionResult = await BuyerForestContractStub.CancelOfferListByExpireTime.SendAsync(cancelOfferListByExpireTimeInput);
+            
+            var log = OfferRemoved.Parser.ParseFrom(executionResult.TransactionResult.Logs
+                .First(l => l.Name == nameof(OfferRemoved))
+                .NonIndexed);
+            log.OfferFrom.ShouldBe(User2Address);
+            log.Symbol.ShouldBe(NftSymbol);
+            log.ExpireTime.ShouldNotBeNull();
+            log.OfferTo.ShouldBe(User1Address);
+            log.Price.ShouldNotBeNull();
+            log.Price.Amount.ShouldBe(5_0000_0000);
+            log.Price.Symbol.ShouldBe("ELF");
+        }
+
+        #endregion
+
+        #region check offer list
+
+        {
+            // list offers just sent
+            var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
+            {
+                Symbol = NftSymbol,
+                Address = User2Address,
+            }).Result.Output;
+            offerList.Value.Count.ShouldBe(1);
+            offerList.Value.First().Price.Amount.ShouldBe(offerPrice2.Amount);
+        }
+
+        #endregion
+    }
+    
     [Fact]
     public async void CancelOffer_Case3_ContractNotInitialize_fail()
     {
