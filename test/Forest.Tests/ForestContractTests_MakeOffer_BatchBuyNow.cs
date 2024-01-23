@@ -519,8 +519,8 @@ public partial class ForestContractTests_MakeOffer
         #region basic begin
         //seller user1 add listing
         var user1ApproveQuantity = 0;
-        var user1InputListQuantity1 = 7;
-        var user1InputSellPrice1 = 2;
+        var user1InputListQuantity1 = 10;
+        var user1InputSellPrice1 = 10;
         user1ApproveQuantity += user1InputListQuantity1;
         var startTime1 = await InitUserListInfo(user1InputListQuantity1, user1InputSellPrice1, user1ApproveQuantity
             , UserTokenContractStub, Seller1ForestContractStub, User1Address);
@@ -530,6 +530,15 @@ public partial class ForestContractTests_MakeOffer
             User1Address);
 
         #endregion basic end
+        
+        #region user1 transfer to other
+        await UserTokenContractStub.Transfer.SendAsync(new TransferInput()
+        {
+            To = User3Address,
+            Symbol = NftSymbol,
+            Amount = 8
+        });
+        #endregion
 
         #region BatchBuyNow user2 buy from user1 listing records
         
@@ -545,7 +554,7 @@ public partial class ForestContractTests_MakeOffer
             {
                 StartTime = startTime1,
                 OfferTo = User1Address,
-                Quantity = user1InputListQuantity1*2,
+                Quantity = 3,
                 Price = new Price()
                 {
                     Amount = user1InputSellPrice1,
@@ -554,7 +563,6 @@ public partial class ForestContractTests_MakeOffer
             };
             
             fixPriceList.Add(priceList1);
-            //fixPriceList.Add(priceList2);
             batchBuyNowInput.FixPriceList.AddRange(fixPriceList);
             
             // user2 BatchBuyNow
@@ -564,7 +572,7 @@ public partial class ForestContractTests_MakeOffer
             log.Symbol.ShouldBe("TESTNFT-1");
             log.AllSuccessFlag.ShouldBe(false);
             log.FailPriceList.ShouldNotBeNull();
-            log.FailPriceList.Value.First().Quantity.ShouldBe(user1InputListQuantity1);
+            log.FailPriceList.Value.First().Quantity.ShouldBe(1L);
             log.FailPriceList.Value.First().Price.Amount.ShouldBe(user1InputSellPrice1);
             log.FailPriceList.Value.First().Price.Symbol.ShouldBe("ELF");
             
@@ -572,21 +580,21 @@ public partial class ForestContractTests_MakeOffer
 
         #endregion
 
-        // user1 nft number from 10 to 3
+        // user1 nft number from 10 to 0
         var user1NftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
         {
             Symbol = NftSymbol,
             Owner = User1Address
         });
-        user1NftBalance.Output.Balance.ShouldBe(3);
+        user1NftBalance.Output.Balance.ShouldBe(0);
         
-        // user 2 nft number from 0 to 7
+        // user 2 nft number from 0 to 2
         var user2NftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
         {
             Symbol = NftSymbol,
             Owner = User2Address
         });
-        user2NftBalance.Output.Balance.ShouldBe(7);
+        user2NftBalance.Output.Balance.ShouldBe(2);
         
         // 0 NFTs to offer list
         #region check offer list
