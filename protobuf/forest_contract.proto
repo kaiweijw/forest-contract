@@ -444,6 +444,7 @@ message OfferRemoved {
   aelf.Address offer_from = 3;
   aelf.Address offer_to = 4;
   google.protobuf.Timestamp expire_time = 5;
+  Price price = 6;
 }
 
 message ListedNFTAdded {

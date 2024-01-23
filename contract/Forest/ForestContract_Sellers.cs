@@ -332,7 +332,12 @@ public partial class ForestContract
                 Symbol = input.Symbol,
                 OfferFrom = input.OfferFrom,
                 OfferTo = offer.To,
-                ExpireTime = offer.ExpireTime
+                ExpireTime = offer.ExpireTime,
+                Price = new Price()
+                {
+                    Amount = offer.Price.Amount,
+                    Symbol = offer.Price.Symbol
+                }
             });
         }
         else

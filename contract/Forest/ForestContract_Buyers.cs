@@ -432,7 +432,12 @@ public partial class ForestContract
                             Symbol = input.Symbol,
                             OfferFrom = offer.From,
                             OfferTo = offer.To,
-                            ExpireTime = offer.ExpireTime
+                            ExpireTime = offer.ExpireTime,
+                            Price = new Price()
+                            {
+                                Amount = offer.Price.Amount,
+                                Symbol = offer.Price.Symbol
+                            }
                         });
                     }
                 }
@@ -483,7 +488,12 @@ public partial class ForestContract
                         Symbol = input.Symbol,
                         OfferFrom = Context.Sender,
                         OfferTo = offerList.Value[i].To,
-                        ExpireTime = offerList.Value[i].ExpireTime
+                        ExpireTime = offerList.Value[i].ExpireTime,
+                        Price = new Price()
+                        {
+                            Amount = offerList.Value[i].Price.Amount,
+                            Symbol = offerList.Value[i].Price.Symbol
+                        }
                     });
                 }
             }
@@ -552,7 +562,12 @@ public partial class ForestContract
                 Symbol = input.Symbol,
                 OfferFrom = Context.Sender,
                 OfferTo = cancelOfferList[i].To,
-                ExpireTime = cancelOfferList[i].ExpireTime
+                ExpireTime = cancelOfferList[i].ExpireTime,
+                Price = new Price()
+                {
+                    Amount = cancelOfferList[i].Price.Amount,
+                    Symbol = cancelOfferList[i].Price.Symbol
+                }
             });
         }
         foreach (var cancelOffer in cancelOfferMap)
