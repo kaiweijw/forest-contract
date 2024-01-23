@@ -397,29 +397,21 @@ public partial class ForestContractTests_MakeOffer
             User1Address);
         await QueryFirstByStartAscListInfo(Seller1ForestContractStub, user1InputListQuantity1, user1InputSellPrice1,
             User1Address);
-
-        var user1InputListQuantity2 = 6;
-        var user1InputSellPrice2 = 3;
-        user1ApproveQuantity += user1InputListQuantity2;
-        var startTime2 = await InitUserListInfo(user1InputListQuantity2, user1InputSellPrice2, user1ApproveQuantity
-            , UserTokenContractStub, Seller1ForestContractStub, User1Address);
-        await QueryLastByStartAscListInfo(Seller1ForestContractStub, user1InputListQuantity2, user1InputSellPrice2,
-            User1Address);
-        await QueryFirstByStartAscListInfo(Seller1ForestContractStub, user1InputListQuantity1, user1InputSellPrice1,
-            User1Address);
-        
-        var user1InputListQuantity3 = 6;
-        var user1InputSellPrice3 = 3;
-        user1ApproveQuantity += user1InputListQuantity3;
-        var startTime3 = await InitUserListInfo(user1InputListQuantity3, user1InputSellPrice3, user1ApproveQuantity
-            , UserTokenContractStub, Seller1ForestContractStub, User1Address);
-        await QueryLastByStartAscListInfo(Seller1ForestContractStub, user1InputListQuantity2, user1InputSellPrice2,
-            User1Address);
         await QueryFirstByStartAscListInfo(Seller1ForestContractStub, user1InputListQuantity1, user1InputSellPrice1,
             User1Address);
         
         #endregion basic end
 
+        #region user1 transfer to other
+        await UserTokenContractStub.Transfer.SendAsync(new TransferInput()
+        {
+            To = User3Address,
+            Symbol = NftSymbol,
+            Amount = 10
+        });
+        #endregion
+
+        
         #region BatchBuyNow user2 buy from user1 listing records
         
         {
@@ -441,31 +433,8 @@ public partial class ForestContractTests_MakeOffer
                     Symbol = "ELF"
                 }
             };
-            var priceList2 = new FixPrice()
-            {
-                StartTime = startTime2,
-                OfferTo = User1Address,
-                Quantity = user1InputListQuantity2,
-                Price = new Price()
-                {
-                    Amount = user1InputSellPrice2,
-                    Symbol = "ELF"
-                }
-            };
-            var priceList3 = new FixPrice()
-            {
-                StartTime = startTime3,
-                OfferTo = User1Address,
-                Quantity = user1InputListQuantity3,
-                Price = new Price()
-                {
-                    Amount = user1InputSellPrice3,
-                    Symbol = "ELF"
-                }
-            };
+           
             fixPriceList.Add(priceList1);
-            fixPriceList.Add(priceList2);
-            fixPriceList.Add(priceList3);
             batchBuyNowInput.FixPriceList.AddRange(fixPriceList);
             
             // user2 BatchBuyNow
@@ -473,8 +442,12 @@ public partial class ForestContractTests_MakeOffer
             var log = BatchBuyNowResult.Parser.ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(BatchBuyNowResult))
                 .NonIndexed);
             log.Symbol.ShouldBe("TESTNFT-1");
-            log.AllSuccessFlag.ShouldBe(true);
-            log.FailPriceList.ShouldBe(new FailPriceList());
+            log.AllSuccessFlag.ShouldBe(false);
+            log.FailPriceList.ShouldNotBeNull();
+            log.FailPriceList.ShouldNotBeNull();
+            log.FailPriceList.Value.First().Quantity.ShouldBe(user1InputListQuantity1);
+            log.FailPriceList.Value.First().Price.Amount.ShouldBe(user1InputSellPrice1);
+            log.FailPriceList.Value.First().Price.Symbol.ShouldBe("ELF");
         }
 
         #endregion
@@ -487,13 +460,13 @@ public partial class ForestContractTests_MakeOffer
         });
         user1NftBalance.Output.Balance.ShouldBe(0);
         
-        // user 2 nft number from 0 to 10
+        // user 2 nft number from 0 to 0
         var user2NftBalance = await UserTokenContractStub.GetBalance.SendAsync(new GetBalanceInput()
         {
             Symbol = NftSymbol,
             Owner = User2Address
         });
-        user2NftBalance.Output.Balance.ShouldBe(10);
+        user2NftBalance.Output.Balance.ShouldBe(0);
         
         // 0 NFTs to offer list
         #region check offer list
