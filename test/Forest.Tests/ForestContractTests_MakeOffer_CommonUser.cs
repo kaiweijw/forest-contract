@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
 using AElf.ContractTestBase.ContractTestKit;
 using AElf.CSharp.Core.Extension;
@@ -62,13 +61,13 @@ public partial class ForestContractTests_MakeOffer
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }
@@ -210,13 +209,13 @@ public partial class ForestContractTests_MakeOffer
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }
@@ -358,13 +357,13 @@ public partial class ForestContractTests_MakeOffer
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }
@@ -505,13 +504,13 @@ public partial class ForestContractTests_MakeOffer
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }
@@ -631,13 +630,13 @@ public partial class ForestContractTests_MakeOffer
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }
@@ -768,13 +767,13 @@ public partial class ForestContractTests_MakeOffer
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }
@@ -905,13 +904,13 @@ public partial class ForestContractTests_MakeOffer
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }
@@ -1109,13 +1108,13 @@ public partial class ForestContractTests_MakeOffer
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }
@@ -1248,11 +1247,10 @@ public partial class ForestContractTests_MakeOffer
                 IsWhitelistAvailable = false,
                 Price = sellPrice,
                 Whitelists = null,
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     StartTime = startTime,
                     PublicTime = publicTime,
-                    DurationHours = 0,
                     DurationMinutes = 1
                 },
             });

@@ -180,9 +180,9 @@ public class ForestContractListTests : ForestContractTestBase
                             },
                         }
                     },
-                    Duration = new ListDuration
+                    Duration = new ListWithFixedPriceDuration
                     {
-                        DurationHours = 24
+                        DurationMinutes = 24 * 60
                     }
                 });
             var log1 = ListedNFTAdded.Parser
@@ -194,7 +194,8 @@ public class ForestContractListTests : ForestContractTestBase
             log1.Price.Symbol.ShouldBe(ElfSymbol);
             log1.Price.Amount.ShouldBe(3);
             log1.Duration.StartTime.ShouldNotBeNull();
-            log1.Duration.DurationHours.ShouldBe(24);
+            log1.Duration.DurationHours.ShouldBe(0);
+            log1.Duration.DurationMinutes.ShouldBe(24 * 60);
             
             var lo2 = FixedPriceNFTListed.Parser
                 .ParseFrom(executionResult1.TransactionResult.Logs.First(l => l.Name == nameof(FixedPriceNFTListed))
@@ -205,7 +206,8 @@ public class ForestContractListTests : ForestContractTestBase
             lo2.Price.Symbol.ShouldBe(ElfSymbol);
             lo2.Price.Amount.ShouldBe(3);
             lo2.Duration.StartTime.ShouldNotBeNull();
-            lo2.Duration.DurationHours.ShouldBe(24);
+            lo2.Duration.DurationHours.ShouldBe(0);
+            lo2.Duration.DurationMinutes.ShouldBe(24 * 60);
             
 
             var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
@@ -219,7 +221,8 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(2);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(24);
+            listedNftInfo.Duration.DurationHours.ShouldBe(0);
+            listedNftInfo.Duration.DurationMinutes.ShouldBe(24 * 60);
         }
 
         //GetWhitelistId
@@ -260,9 +263,9 @@ public class ForestContractListTests : ForestContractTestBase
                 IsWhitelistAvailable = false,
                 Price = sellPrice,
                 Whitelists = null,
-                Duration = new ListDuration
+                Duration = new ListWithFixedPriceDuration
                 {
-                    DurationHours = 24
+                    DurationMinutes = 24 * 60
                 }
             });
 
@@ -277,7 +280,8 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(2);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(24);
+            listedNftInfo.Duration.DurationHours.ShouldBe(0);
+            listedNftInfo.Duration.DurationMinutes.ShouldBe(24 * 60);
         }
 
         //GetWhitelistId
@@ -327,9 +331,9 @@ public class ForestContractListTests : ForestContractTestBase
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration
+                Duration = new ListWithFixedPriceDuration
                 {
-                    DurationHours = 24
+                    DurationMinutes = 24 * 60
                 }
             });
 
@@ -344,7 +348,8 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(2);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(24);
+            listedNftInfo.Duration.DurationHours.ShouldBe(0);
+            listedNftInfo.Duration.DurationMinutes.ShouldBe(24 * 60);
         }
 
         //GetWhitelistId
@@ -373,9 +378,9 @@ public class ForestContractListTests : ForestContractTestBase
                 Quantity = listQuantity,
                 IsWhitelistAvailable = true,
                 Price = sellPrice,
-                Duration = new ListDuration
+                Duration = new ListWithFixedPriceDuration
                 {
-                    DurationHours = 24
+                    DurationMinutes = 24 * 60
                 }
             });
 
@@ -386,10 +391,10 @@ public class ForestContractListTests : ForestContractTestBase
                 Quantity = listQuantity,
                 IsWhitelistAvailable = true,
                 Price = sellPrice,
-                Duration = new ListDuration
+                Duration = new ListWithFixedPriceDuration
                 {
                     StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddMinutes(5)),
-                    DurationHours = 24
+                    DurationMinutes = 24 * 60
                 }
             });
 
@@ -404,7 +409,8 @@ public class ForestContractListTests : ForestContractTestBase
             listedNftInfo.Quantity.ShouldBe(2);
             listedNftInfo.ListType.ShouldBe(ListType.FixedPrice);
             listedNftInfo.Duration.StartTime.ShouldNotBeNull();
-            listedNftInfo.Duration.DurationHours.ShouldBe(24);
+            listedNftInfo.Duration.DurationHours.ShouldBe(0);
+            listedNftInfo.Duration.DurationMinutes.ShouldBe(24 * 60);
         }
     }
 
@@ -638,6 +644,9 @@ public class ForestContractListTests : ForestContractTestBase
             log.Price.Amount.ShouldBe(3);
             log.Duration.StartTime.ShouldNotBeNull();
             log.Duration.DurationHours.ShouldBe(0);
+            
+            log.Duration.DurationMinutes.ShouldBe(4392 * 60);
+            log.Duration.DurationHours.ShouldBe(0);
             log.Duration.DurationMinutes.ShouldBe(4392 * 60);
 
             var listedNftInfo = (await Seller1ForestContractStub.GetListedNFTInfoList.CallAsync(
@@ -822,7 +831,6 @@ public class ForestContractListTests : ForestContractTestBase
         listedNftInfo.Duration.StartTime.ShouldNotBeNull();
         listedNftInfo.Duration.DurationHours.ShouldBe(0);
         listedNftInfo.Duration.DurationMinutes.ShouldBe(4392 * 60);
-    
 
         var executionResult1 = await Seller1ForestContractStub.Delist.SendAsync(new DelistInput
         {
@@ -1226,7 +1234,7 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
                         StartTime = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddSeconds(approveQuantity)),
                         PublicTime = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddSeconds(approveQuantity)),
@@ -2663,13 +2671,13 @@ public class ForestContractListTests : ForestContractTestBase
                 Quantity = listQuantity,
                 IsWhitelistAvailable = false,
                 Price = sellPrice,
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }
@@ -2688,13 +2696,13 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = false,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
                         // start 1sec ago
                         StartTime = startTime,
                         // public 10min after
                         PublicTime = publicTime,
-                        DurationHours = 1,
+                        DurationMinutes = 1 * 60,
                     },
                 })
             );
@@ -2808,9 +2816,9 @@ public class ForestContractListTests : ForestContractTestBase
                 Quantity = listQuantity,
                 IsWhitelistAvailable = true,
                 Price = sellPrice,
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
-                    DurationHours = -1
+                    DurationMinutes = -1 * 60
                 }
             });
             var log1 = ListedNFTAdded.Parser
@@ -2845,9 +2853,8 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
-                        DurationHours = -1,
                         DurationMinutes = 60
                     }
                 });
@@ -2883,9 +2890,8 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
-                        DurationHours = -1,
                         DurationMinutes = 59
                     }
                 });
@@ -2921,9 +2927,8 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
-                        DurationHours = 0,
                         DurationMinutes = 59
                     }
                 });
@@ -2970,9 +2975,8 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
-                        DurationHours = 0,
                         DurationMinutes = -1
                     }
                 });
@@ -3019,9 +3023,8 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
-                        DurationHours = 0,
                         DurationMinutes = 0
                     }
                 });
@@ -3068,9 +3071,8 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
-                        DurationHours = 1,
                         DurationMinutes = 0
                     }
                 });
@@ -3083,8 +3085,8 @@ public class ForestContractListTests : ForestContractTestBase
             log1.Price.Symbol.ShouldBe(ElfSymbol);
             log1.Price.Amount.ShouldBe(sellPrice.Amount);
             log1.Duration.StartTime.ShouldNotBeNull();
-            log1.Duration.DurationHours.ShouldBe(1);
-            log1.Duration.DurationMinutes.ShouldBe(0);
+            log1.Duration.DurationHours.ShouldBe(0);
+            log1.Duration.DurationMinutes.ShouldBe(263520);
             
             var lo2 = FixedPriceNFTListed.Parser
                 .ParseFrom(executionResult.TransactionResult.Logs.First(l => l.Name == nameof(FixedPriceNFTListed))
@@ -3095,8 +3097,8 @@ public class ForestContractListTests : ForestContractTestBase
             lo2.Price.Symbol.ShouldBe(ElfSymbol);
             lo2.Price.Amount.ShouldBe(sellPrice.Amount);
             lo2.Duration.StartTime.ShouldNotBeNull();
-            lo2.Duration.DurationHours.ShouldBe(1);
-            lo2.Duration.DurationMinutes.ShouldBe(0);
+            lo2.Duration.DurationHours.ShouldBe(0);
+            lo2.Duration.DurationMinutes.ShouldBe(263520);
         }
     }
     
@@ -3117,9 +3119,8 @@ public class ForestContractListTests : ForestContractTestBase
                     Quantity = listQuantity,
                     IsWhitelistAvailable = true,
                     Price = sellPrice,
-                    Duration = new ListDuration()
+                    Duration = new ListWithFixedPriceDuration()
                     {
-                        DurationHours = 0,
                         DurationMinutes = 59
                     }
                 });

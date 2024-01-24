@@ -66,27 +66,28 @@ public class DealService
         return dealResultList;
     }
 
-    public IEnumerable<DealResult> GetDealResultListForBatchBuy(string symbol, FixPriceList fixPriceList
-        ,ListedNFTInfoList listedNftInfoList)
+    public IEnumerable<DealResult> GetDealResultListForBatchBuy(string symbol, FixPrice inputFixPrice
+        , ListedNFTInfoList listedNftInfoList, Dictionary<long, FailPrice> failPriceDic)
     {
         
         var dealResultList = new List<DealResult>();
-        var needToDealQuantity = fixPriceList.Quantity;
+        var needToDealQuantity = inputFixPrice.Quantity;
         var currentIndex = 0;
         var blockTime = _context.CurrentBlockTime;
         foreach (var listedNftInfo in listedNftInfoList.Value.Where(i =>
-                     i.Price.Symbol == fixPriceList.Price.Symbol
+                     i.Price.Symbol == inputFixPrice.Price.Symbol
                      && blockTime >= i.Duration.StartTime
                      && blockTime >= i.Duration.PublicTime
                      ).OrderByDescending(i => i.Duration.PublicTime))
         {
+            long failNumber = 0;
             if (listedNftInfo.Quantity >= needToDealQuantity)
             {
                 var dealResult = new DealResult
                 {
                     Symbol = symbol,
                     Quantity = needToDealQuantity,
-                    PurchaseSymbol = fixPriceList.Price.Symbol,
+                    PurchaseSymbol = inputFixPrice.Price.Symbol,
                     PurchaseAmount = listedNftInfo.Price.Amount,
                     Duration = listedNftInfo.Duration,
                     Index = currentIndex
@@ -97,11 +98,28 @@ public class DealService
             }
             else
             {
+                failNumber = inputFixPrice.Quantity - listedNftInfo.Quantity;
+                if (failPriceDic.TryGetValue(inputFixPrice.Price.Amount, out var value))
+                {
+                    value.Quantity += failNumber;
+                }
+                else
+                {
+                    failPriceDic.Add(inputFixPrice.Price.Amount, new FailPrice
+                    {
+                        Quantity = failNumber,
+                        Price = new Price
+                        {
+                            Symbol = inputFixPrice.Price.Symbol,
+                            Amount = inputFixPrice.Price.Amount
+                        }
+                    });
+                }
                 var dealResult = new DealResult
                 {
                     Symbol = symbol,
                     Quantity = listedNftInfo.Quantity,
-                    PurchaseSymbol = fixPriceList.Price.Symbol,
+                    PurchaseSymbol = inputFixPrice.Price.Symbol,
                     PurchaseAmount = listedNftInfo.Price.Amount,
                     Duration = listedNftInfo.Duration,
                     Index = currentIndex
@@ -114,10 +132,15 @@ public class DealService
             {
                 break;
             }
-
+            
             currentIndex = currentIndex.Add(1);
         }
-   
+
+        if (needToDealQuantity == 0)
+        {
+            return dealResultList;
+        }
+
         return dealResultList;
     }
 }
