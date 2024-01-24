@@ -954,8 +954,9 @@ public class ForestContractTests_Security : ForestContractTestBase
         #endregion
     }
 
+    
     [Fact]
-    public async void Security_Case17_Deal_needToDelist_fail()
+    public async void Security_Case17_Deal_needToDelist_success()
     {
         await InitializeForestContract();
         await PrepareNftData();
@@ -987,7 +988,7 @@ public class ForestContractTests_Security : ForestContractTestBase
             {
                 StartTime = startTime,
                 PublicTime = publicTime,
-                DurationHours = 1,
+                DurationMinutes = 1 * 60,
             },
         });
 
@@ -1016,31 +1017,34 @@ public class ForestContractTests_Security : ForestContractTestBase
 
         #endregion
 
-        #region User1 deal offer, FAILED
-
-        try
+        #region User1 deal offer, SUCCESS
+        
+        await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
+            { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = dealQuantity+listQuantity });
+        await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
         {
-            await UserTokenContractStub.Approve.SendAsync(new ApproveInput()
-                { Spender = ForestContractAddress, Symbol = NftSymbol, Amount = dealQuantity+listQuantity });
-            await Seller1ForestContractStub.Deal.SendAsync(new DealInput()
+            Symbol = NftSymbol,
+            OfferFrom = User2Address,
+            Price = offerPrice,
+            Quantity = dealQuantity
+        });
+
+        #endregion
+        
+        #region check offer list
+
+        {
+            var offerList = BuyerForestContractStub.GetOfferList.SendAsync(new GetOfferListInput()
             {
                 Symbol = NftSymbol,
-                OfferFrom = User2Address,
-                Price = offerPrice,
-                Quantity = dealQuantity
-            });
-        }
-        catch (ShouldAssertException e)
-        {
-            throw;
-        }
-        catch (Exception e)
-        {
-            e.Message.ShouldContain("Need to delist");
+                Address = User1Address,
+            }).Result.Output;
+            offerList.Value.Count.ShouldBe(0);
         }
 
         #endregion
     }
+    
 
     [Fact]
     public async void Security_Case18_Delist_invalidQty_fail()

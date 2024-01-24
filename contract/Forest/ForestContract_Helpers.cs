@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
@@ -86,14 +87,15 @@ public partial class ForestContract
 
     private ListDuration AdjustListDuration(ListDuration duration)
     {
-        const int SIX_MONTH_HOURS = 4392;
+        const int SIX_MONTH_MINUTES = 263520;
         if (duration == null)
         {
             duration = new ListDuration
             {
                 StartTime = Context.CurrentBlockTime,
                 PublicTime = Context.CurrentBlockTime,
-                DurationHours = SIX_MONTH_HOURS
+                DurationHours = 0,
+                DurationMinutes = SIX_MONTH_MINUTES
             };
         }
         else
@@ -108,10 +110,21 @@ public partial class ForestContract
                 duration.PublicTime = duration.StartTime;
             }
 
-            if (duration.DurationHours == 0)
+            if (duration.DurationMinutes < 0)
             {
-                duration.DurationHours = SIX_MONTH_HOURS;
+                duration.DurationMinutes = 0;
             }
+
+            if (duration.DurationHours < 0)
+            {
+                duration.DurationHours = 0;
+            }
+            
+            if (duration.DurationHours == 0 && duration.DurationMinutes == 0)
+            {
+                duration.DurationMinutes = SIX_MONTH_MINUTES;
+            }
+            
         }
 
         return duration;
@@ -264,7 +277,7 @@ public partial class ForestContract
         {
             foreach (var listedNftInfo in listedNftInfoList.Value)
             {
-                var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours);
+                var expireTime = listedNftInfo.Duration.StartTime.AddHours(listedNftInfo.Duration.DurationHours).AddMinutes(listedNftInfo.Duration.DurationMinutes);
                 if(expireTime >= Context.CurrentBlockTime)
                 {
                     totalAmount = totalAmount.Add(listedNftInfo.Quantity);

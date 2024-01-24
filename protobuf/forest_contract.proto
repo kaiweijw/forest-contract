@@ -155,6 +155,7 @@ message ListDuration {
   google.protobuf.Timestamp start_time = 1;
   google.protobuf.Timestamp public_time = 2;
   int64 duration_hours = 3;
+  int32 duration_minutes =4;
 }
 
 message DealInfo {
@@ -214,6 +215,7 @@ message DelistInput {
   string symbol = 1;
   Price price = 2;
   int64 quantity = 4;
+  google.protobuf.Timestamp start_time = 5;
 }
 
 message BatchDeListInput{

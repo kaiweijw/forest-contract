@@ -148,7 +148,9 @@ public partial class ForestContract
         Assert(input.Price != null, "Need to specific list record.");
         var listedNftInfo = listedNftInfoList.Value.FirstOrDefault(i =>
             i.Price.Amount == input.Price.Amount && i.Price.Symbol == input.Price.Symbol &&
-            i.Owner == Context.Sender);
+            i.Owner == Context.Sender &&
+            (input.StartTime == null ? true : input.StartTime.Seconds == i.Duration.StartTime.Seconds));
+        
         if (listedNftInfo == null)
         {
             throw new AssertionException("Listed NFT Info not exists. (Or already delisted.)");
