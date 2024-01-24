@@ -341,11 +341,11 @@ public class ForestContractTests_Security : ForestContractTestBase
                 IsWhitelistAvailable = true,
                 Price = sellPrice,
                 Whitelists = GenWhiteInfoList(GenWhiteList(GenPriceTag("WHITELIST_TAG", whitePrice), User3Address)),
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     StartTime = startTime,
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
 
@@ -704,11 +704,11 @@ public class ForestContractTests_Security : ForestContractTestBase
                 IsWhitelistAvailable = true,
                 Price = sellPrice,
                 Whitelists = GenWhiteInfoList(GenWhiteList(GenPriceTag("WHITELIST_TAG", whitePrice), User3Address)),
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     StartTime = startTime,
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
 
@@ -752,11 +752,11 @@ public class ForestContractTests_Security : ForestContractTestBase
                 IsWhitelistAvailable = true,
                 Price = sellPrice,
                 Whitelists = GenWhiteInfoList(GenWhiteList(GenPriceTag("WHITELIST_TAG", whitePrice), User3Address)),
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     StartTime = startTime,
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
 
@@ -802,11 +802,11 @@ public class ForestContractTests_Security : ForestContractTestBase
                 IsWhitelistAvailable = true,
                 Price = sellPrice,
                 Whitelists = GenWhiteInfoList(GenWhiteList(GenPriceTag("WHITELIST_TAG", whitePrice), User3Address)),
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     StartTime = startTime,
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
 
@@ -984,7 +984,7 @@ public class ForestContractTests_Security : ForestContractTestBase
             IsWhitelistAvailable = true,
             Price = sellPrice,
             Whitelists = GenWhiteInfoList(GenWhiteList(GenPriceTag("WHITELIST_TAG", whitePrice), User3Address)),
-            Duration = new ListDuration()
+            Duration = new ListWithFixedPriceDuration()
             {
                 StartTime = startTime,
                 PublicTime = publicTime,
@@ -1074,11 +1074,11 @@ public class ForestContractTests_Security : ForestContractTestBase
             IsWhitelistAvailable = true,
             Price = sellPrice,
             Whitelists = GenWhiteInfoList(GenWhiteList(GenPriceTag("WHITELIST_TAG", whitePrice), User3Address)),
-            Duration = new ListDuration()
+            Duration = new ListWithFixedPriceDuration()
             {
                 StartTime = startTime,
                 PublicTime = publicTime,
-                DurationHours = 1,
+                DurationMinutes = 1 * 60,
             },
         });
 
@@ -1273,11 +1273,11 @@ public class ForestContractTests_Security : ForestContractTestBase
                 Quantity = 1,
                 IsWhitelistAvailable = false,
                 Price = sellPrice,
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     StartTime = startTime,
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 }
             });
         }
@@ -1301,11 +1301,11 @@ public class ForestContractTests_Security : ForestContractTestBase
                 Quantity = 1,
                 IsWhitelistAvailable = false,
                 Price = sellPrice,
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     StartTime = startTime.AddSeconds(1),
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 }
             }));
         exception.Message.ShouldContain("reached the maximum");

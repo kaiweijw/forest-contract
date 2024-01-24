@@ -33,7 +33,7 @@ public partial class ForestContract
         Assert(balance.Balance >= input.Quantity, "Check sender NFT balance failed.");
         
         AssertAllowanceInsufficient(input.Symbol, Context.Sender, input.Quantity);
-
+        
         var duration = AdjustListDuration(input.Duration);
         var whitelists = input.Whitelists;
         var projectId = CalculateProjectId(input.Symbol, Context.Sender);
@@ -332,7 +332,12 @@ public partial class ForestContract
                 Symbol = input.Symbol,
                 OfferFrom = input.OfferFrom,
                 OfferTo = offer.To,
-                ExpireTime = offer.ExpireTime
+                ExpireTime = offer.ExpireTime,
+                Price = new Price()
+                {
+                    Amount = offer.Price.Amount,
+                    Symbol = offer.Price.Symbol
+                }
             });
         }
         else
