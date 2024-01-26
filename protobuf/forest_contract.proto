@@ -404,6 +404,14 @@ message OfferCanceled {
   Int32List index_list = 5;
 }
 
+message OfferCanceledByExpireTime {
+  option (aelf.is_event) = true;
+  string symbol = 1;
+  aelf.Address offer_from = 2;
+  aelf.Address offer_to = 3;
+  google.protobuf.Timestamp expire_time = 4;
+}
+
 message Sold {
   option (aelf.is_event) = true;
   aelf.Address nft_from = 1;
