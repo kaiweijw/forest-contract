@@ -1244,7 +1244,7 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
         {
             To = User2Address,
             Symbol = "ELF",
-            Amount = 5,
+            Amount = InscriptionContractConstants.DefaultMinimumELFAmount,
         });        
         var executionResult1 = await InscriptionContractAccount1Stub.MintInscription.SendAsync(new InscribedInput
         {
@@ -1390,7 +1390,7 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
         {
             To = User2Address,
             Symbol = "ELF",
-            Amount = 5,
+            Amount = InscriptionContractConstants.DefaultMinimumELFAmount,
         });
         result = await InscriptionContractAccount1Stub.MintInscription.SendWithExceptionAsync(new InscribedInput
         {
@@ -1504,7 +1504,7 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
         result.TransactionResult.Error.ShouldContain("No permission");
         {
             var size = await InscriptionContractStub.GetMinimumELFBalance.CallAsync(new Empty());
-            size.Value.ShouldBe(5);
+            size.Value.ShouldBe(InscriptionContractConstants.DefaultMinimumELFAmount);
         }
     }
 
