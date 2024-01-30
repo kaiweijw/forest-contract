@@ -205,8 +205,6 @@ public partial class InscriptionContract
     
     private int GetMinimumELFBalance()
     {
-        return State.MinimumELFBalance.Value == 0
-            ? InscriptionContractConstants.DefaultMinimumELFAmount
-            : State.MinimumELFBalance.Value;
+        return State.MinimumELFBalance.Value;
     }
 }

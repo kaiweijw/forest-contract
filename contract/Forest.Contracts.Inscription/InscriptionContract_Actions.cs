@@ -139,12 +139,18 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
 
     private void CheckUserBalance()
     {
+        var minimumELFBalance = GetMinimumELFBalance();
+        if (minimumELFBalance == 0)
+        {
+            return;
+        }
+
         var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
         {
             Symbol = InscriptionContractConstants.ELFSymbol,
             Owner = Context.Sender
         });
-        Assert(balance.Balance >= GetMinimumELFBalance(), "Not enough ELF balance.");
+        Assert(balance.Balance >= minimumELFBalance, "Not enough ELF balance.");
     }
 
     public override Empty MintInscription(InscribedInput input)
@@ -192,7 +198,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
     public override Empty SetMinimumELFBalance(Int32Value input)
     {
         Assert(Context.Sender == State.Admin.Value, "No permission.");
-        Assert(input != null && input.Value > 0, "Invalid input.");
+        Assert(input != null && input.Value >= 0, "Invalid input.");
         State.MinimumELFBalance.Value = input.Value;
         return new Empty();
     }

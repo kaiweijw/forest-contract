@@ -1244,7 +1244,7 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
         {
             To = User2Address,
             Symbol = "ELF",
-            Amount = InscriptionContractConstants.DefaultMinimumELFAmount,
+            Amount = 5,
         });        
         var executionResult1 = await InscriptionContractAccount1Stub.MintInscription.SendAsync(new InscribedInput
         {
@@ -1380,6 +1380,10 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
             Tick = "ELFS",
             Amt = 80
         });
+        await InscriptionContractStub.SetMinimumELFBalance.SendAsync(new Int32Value
+        {
+            Value = 6
+        });
         var result = await InscriptionContractAccount1Stub.MintInscription.SendWithExceptionAsync(new InscribedInput
         {
             Tick = "ELFS",
@@ -1390,7 +1394,7 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
         {
             To = User2Address,
             Symbol = "ELF",
-            Amount = InscriptionContractConstants.DefaultMinimumELFAmount,
+            Amount = 6,
         });
         result = await InscriptionContractAccount1Stub.MintInscription.SendWithExceptionAsync(new InscribedInput
         {
@@ -1504,7 +1508,7 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
         result.TransactionResult.Error.ShouldContain("No permission");
         {
             var size = await InscriptionContractStub.GetMinimumELFBalance.CallAsync(new Empty());
-            size.Value.ShouldBe(InscriptionContractConstants.DefaultMinimumELFAmount);
+            size.Value.ShouldBe(0);
         }
     }
 
@@ -1512,20 +1516,6 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
     public async Task SetMinimumELFBalance_InvalidInput()
     {
         await InitializeTest_Success();
-        {
-            var result = await InscriptionContractStub.SetMinimumELFBalance.SendWithExceptionAsync(new Int32Value
-            {
-
-            });
-            result.TransactionResult.Error.ShouldContain("Invalid input");
-        }
-        {
-            var result = await InscriptionContractStub.SetMinimumELFBalance.SendWithExceptionAsync(new Int32Value
-            {
-                Value = 0
-            });
-            result.TransactionResult.Error.ShouldContain("Invalid input");
-        }
         {
             var result = await InscriptionContractStub.SetMinimumELFBalance.SendWithExceptionAsync(new Int32Value
             {
