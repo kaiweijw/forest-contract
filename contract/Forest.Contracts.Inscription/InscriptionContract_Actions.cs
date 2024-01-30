@@ -141,7 +141,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
     {
         var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
         {
-            Symbol = "ELF",
+            Symbol = InscriptionContractConstants.ElfSymbol,
             Owner = Context.Sender
         });
         Assert(balance.Balance >= GetMinimumELFBalance(), "Not enough ELF balance.");
