@@ -509,6 +509,15 @@ public partial class ForestContract
                 ? value
                 : 0;
             cancelOfferMap[cancelOfferList[i].Price.Symbol] = amount + cancelOfferList[i].Quantity.Mul(cancelOfferList[i].Price.Amount);
+
+            Context.Fire(new OfferCanceledByExpireTime
+            {
+                Symbol = input.Symbol,
+                OfferFrom = Context.Sender,
+                OfferTo = cancelOfferList[i].To,
+                ExpireTime = cancelOfferList[i].ExpireTime
+            });
+
             Context.Fire(new OfferRemoved
             {
                 Symbol = input.Symbol,
