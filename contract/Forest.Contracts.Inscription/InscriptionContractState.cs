@@ -29,4 +29,6 @@ public partial class InscriptionContractState : ContractState
     public SingletonState<int> IssueChainId { get; set; }
 
     public SingletonState<int> ImageSizeLimit { get; set; }
+    
+    public SingletonState<int> MinimumELFBalance { get; set; }
 }

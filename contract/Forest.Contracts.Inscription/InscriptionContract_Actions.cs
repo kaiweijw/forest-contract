@@ -122,6 +122,7 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
     public override Empty Inscribe(InscribedInput input)
     {
         Assert(State.Initialized.Value, "Not initialized yet.");
+        CheckUserBalance();
         var tick = input.Tick?.ToUpper();
         var tokenInfo = CheckInputAndGetSymbol(tick, input.Amt);
         TransferWithDistributor(tick, tokenInfo.Symbol, input.Amt);
@@ -136,9 +137,20 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         return new Empty();
     }
 
+    private void CheckUserBalance()
+    {
+        var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+        {
+            Symbol = "ELF",
+            Owner = Context.Sender
+        });
+        Assert(balance.Balance >= GetMinimumELFBalance(), "Not enough ELF balance.");
+    }
+
     public override Empty MintInscription(InscribedInput input)
     {
         Assert(State.Initialized.Value, "Not initialized yet.");
+        CheckUserBalance();
         var tick = input.Tick?.ToUpper();
         var tokenInfo = CheckInputAndGetSymbol(tick, input.Amt);
         TransferWithDistributors(tick, tokenInfo.Symbol, input.Amt);
@@ -176,4 +188,13 @@ public partial class InscriptionContract : InscriptionContractContainer.Inscript
         State.ImageSizeLimit.Value = input.Value;
         return new Empty();
     }
+
+    public override Empty SetMinimumELFBalance(Int32Value input)
+    {
+        Assert(Context.Sender == State.Admin.Value, "No permission.");
+        Assert(input != null && input.Value > 0, "Invalid input.");
+        State.MinimumELFBalance.Value = input.Value;
+        return new Empty();
+    }
+    
 }

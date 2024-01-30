@@ -17,7 +17,6 @@ option csharp_namespace = "Forest.Contracts.Inscription";
 service InscriptionContract {
   option (aelf.csharp_state) = "Forest.Contracts.Inscription.InscriptionContractState";
   option (aelf.base) = "acs12.proto";
-  option (aelf.base) = "acs2.proto";
 
   rpc Initialize (InitializeInput) returns (google.protobuf.Empty) {}
 
@@ -66,6 +65,13 @@ service InscriptionContract {
     option (aelf.is_view) = true;
   }
   rpc GetImageSizeLimit(google.protobuf.Empty) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
+  
+  rpc SetMinimumELFBalance(google.protobuf.Int32Value) returns (google.protobuf.Empty) {
+  }
+
+  rpc GetMinimumELFBalance(google.protobuf.Empty) returns (google.protobuf.Int32Value) {
     option (aelf.is_view) = true;
   }
 }

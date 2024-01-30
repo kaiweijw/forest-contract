@@ -14,7 +14,7 @@ namespace Forest.Contracts.Inscription;
 
 public partial class InscriptionContract
 {
-    public override ResourceInfo GetResourceInfo(Transaction txn)
+    public  ResourceInfo GetResourceInfo(Transaction txn)
     {
         switch (txn.MethodName)
         {

@@ -12,4 +12,5 @@ public static class InscriptionContractConstants
     public const int DefaultImageMaxLength = 10240; // 10kb
     public const int InscriptionAmt = 1;
     public const int DistributorsCount = 10; 
+    public const int DefaultMinimumELFAmount = 5; 
 }

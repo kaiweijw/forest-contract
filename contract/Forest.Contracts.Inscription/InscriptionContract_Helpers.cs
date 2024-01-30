@@ -202,4 +202,11 @@ public partial class InscriptionContract
     {
         return $"{tick.ToUpper()}-{InscriptionContractConstants.CollectionSymbolSuffix}";
     }
+    
+    private int GetMinimumELFBalance()
+    {
+        return State.MinimumELFBalance.Value == 0
+            ? InscriptionContractConstants.DefaultMinimumELFAmount
+            : State.MinimumELFBalance.Value;
+    }
 }
