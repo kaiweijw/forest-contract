@@ -215,7 +215,8 @@ message DropClaimAdded {
   aelf.Hash drop_id = 1;
   aelf.Address address = 2;
   ClaimDetailRecordList claim_detail_record = 3;
-  int64 amount = 4;
+  int64 current_amount = 4;
+  int64 total_amount = 5;
 }
 
 
