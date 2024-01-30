@@ -17,7 +17,8 @@ namespace Forest.Contracts.Drop
             State.TokenContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
             State.Admin.Value = Context.Sender;
-            State.MaxDropDetailListCount.Value = input.MaxDropListCount;
+            State.MaxDropDetailListCount.Value = input.MaxDropDetailListCount;
+            State.MaxDropDetailIndexCount.Value = input.MaxDropDetailIndexCount;
             State.Initialized.Value = true;
             
             return new Empty();
@@ -39,6 +40,15 @@ namespace Forest.Contracts.Drop
             Assert(input != null && input.Value > 0, "Invalid input.");
 
             State.MaxDropDetailListCount.Value = input.Value;
+            return new Empty();
+        }
+        
+        public override Empty SetMaxDropDetailIndexCount(Int32Value input)
+        {
+            AssertAdmin();
+            Assert(input != null && input.Value > 0, "Invalid input.");
+
+            State.MaxDropDetailIndexCount.Value = input.Value;
             return new Empty();
         }
 

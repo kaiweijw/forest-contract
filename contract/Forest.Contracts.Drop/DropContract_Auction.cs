@@ -21,7 +21,6 @@ public partial class DropContract
         Assert(input.ClaimPrice != null && input.ClaimPrice.Amount >= 0, "Invalid claim price.");
         
         AssertSymbolExist(input.CollectionSymbol, SymbolType.NftCollection);
-        AssertDropDetailList(input.DetailList, input.CollectionSymbol, out var totalAmount);
         
         var dropId = HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(Context.OriginTransactionId), HashHelper.ComputeFrom(Context.Sender));
         var dropInfo = new DropInfo
@@ -30,10 +29,9 @@ public partial class DropContract
             ExpireTime = input.ExpireTime,
             ClaimMax = input.ClaimMax,
             ClaimPrice = input.ClaimPrice,
-            DetailList = input.DetailList,
-            MaxIndex = 1,
-            CurrentIndex = 1,
-            TotalAmount = totalAmount,
+            MaxIndex = 0,
+            CurrentIndex = 0,
+            TotalAmount = 0,
             ClaimAmount = 0,
             Owner = Context.Sender,
             IsBurn = input.IsBurn,
@@ -52,7 +50,6 @@ public partial class DropContract
             ExpireTime = dropInfo.ExpireTime,
             ClaimMax = dropInfo.ClaimMax,
             ClaimPrice = dropInfo.ClaimPrice,
-            DetailList = dropInfo.DetailList,
             MaxIndex = dropInfo.MaxIndex,
             CurrentIndex = dropInfo.CurrentIndex,
             TotalAmount = dropInfo.TotalAmount,
@@ -70,55 +67,33 @@ public partial class DropContract
     public override Empty AddDropNFTDetailList(AddDropNFTDetailListInput input)
     {
         Assert(input != null, "Invalid input.");
-        var dropDetailList = new DropDetailList();
-        dropDetailList.Value.AddRange(input.Value.Distinct());
+        var inputDropDetailList = new DropDetailList();
+        inputDropDetailList.Value.AddRange(input.Value.Distinct());
         
         var dropInfo = State.DropInfoMap[input.DropId];
         Assert(dropInfo != null, "Invalid drop id.");
         var collectionSymbol = dropInfo.CollectionSymbol;
-        AssertDropDetailList(dropDetailList, dropInfo.CollectionSymbol, out var totalAmount);
+        AssertDropDetailList(inputDropDetailList, dropInfo.CollectionSymbol, input.DropId, input.Index, out var totalAmount);
+        var initMaxIndex = State.MaxDropDetailIndexCount.Value;
+        Assert(input.Index<=dropInfo.MaxIndex+1 && input.Index <= initMaxIndex, "Invalid index.");
 
         dropInfo.TotalAmount += totalAmount;
-        if (dropInfo.MaxIndex == 1)
+        dropInfo.MaxIndex = Math.Max(dropInfo.MaxIndex, input.Index);
+        var dropDetailList = State.DropDetailListMap[input.DropId][input.Index];
+        if (dropDetailList != null)
         {
-            if ((dropInfo.DetailList.Value.Count + dropDetailList.Value.Count) <= State.MaxDropDetailListCount.Value)
-            {
-                dropInfo.DetailList.Value.AddRange(dropDetailList.Value);
-            }
-            
-            if ((dropInfo.DetailList.Value.Count + dropDetailList.Value.Count) > State.MaxDropDetailListCount.Value)
-            {
-                dropInfo.DetailList.Value.AddRange(dropDetailList.Value.ToList().GetRange(0, State.MaxDropDetailListCount.Value-dropInfo.DetailList.Value.Count));
-                //write next index
-                State.DropDetailListMap[input.DropId][dropInfo.MaxIndex + 1] = new DropDetailList() 
-                { 
-                    Value = { dropDetailList.Value.ToList().GetRange(State.MaxDropDetailListCount.Value-dropInfo.DetailList.Value.Count, dropDetailList.Value.Count)}
-                };
-                dropInfo.MaxIndex ++;
-            }
+            dropDetailList = new DropDetailList();
         }
         else
         {
-            var lastDetailList = State.DropDetailListMap[input.DropId][dropInfo.MaxIndex];
-            if ((lastDetailList.Value.Count + dropDetailList.Value.Count) <= State.MaxDropDetailListCount.Value)
-            {
-                lastDetailList.Value.AddRange(dropDetailList.Value);
-            }
-
-            if ((lastDetailList.Value.Count + dropDetailList.Value.Count) > State.MaxDropDetailListCount.Value)
-            {   
-                lastDetailList.Value.AddRange(dropDetailList.Value.ToList().GetRange(0, State.MaxDropDetailListCount.Value-lastDetailList.Value.Count));
-                //write next index
-                State.DropDetailListMap[input.DropId][dropInfo.MaxIndex + 1] = new DropDetailList() 
-                { 
-                    Value = { dropDetailList.Value.ToList().GetRange(State.MaxDropDetailListCount.Value-lastDetailList.Value.Count, dropDetailList.Value.Count)}
-                };
-                dropInfo.MaxIndex ++;
-            }
+            Assert((dropDetailList.Value.Count + input.Value.Distinct().Count()) < State.MaxDropDetailListCount.Value, "Drop detail list is full.");
         }
+        dropDetailList.Value.AddRange(input.Value.Distinct());
+
+        State.DropDetailListMap[input.DropId][input.Index] = dropDetailList;
         State.DropInfoMap[input.DropId] = dropInfo;
 
-        //Fire dropdetail added
+        //Fire drop-detail added
         Context.Fire(new DropDetailAdded
         {
             DropId = input.DropId,
@@ -271,9 +246,7 @@ public partial class DropContract
         var claimDetailRecordList = new List<ClaimDetailRecord>();
         while (actualClaimAmount < input.ClaimAmount && currentIndex <= dropInfo.MaxIndex)
         {
-            var currentClaimDropDetailList = currentIndex == 1
-                ? dropInfo.DetailList
-                : State.DropDetailListMap[input.DropId][currentIndex];
+            var currentClaimDropDetailList = State.DropDetailListMap[input.DropId][currentIndex];
 
             foreach (var detailInfo in currentClaimDropDetailList.Value)
             {
@@ -310,12 +283,7 @@ public partial class DropContract
                     Amount = currentClaimAmount
                 });
             }
-
-            if (dropInfo.CurrentIndex == 1)
-            {
-                dropInfo.DetailList = currentClaimDropDetailList;
-            }
-
+            
             //update claim drop detail
             State.DropDetailListMap[input.DropId][currentIndex] = currentClaimDropDetailList;
         }
@@ -353,7 +321,8 @@ public partial class DropContract
         Context.Fire(new DropClaimAdded
         {
             DropId = input.DropId,
-            Amount = actualClaimAmount,
+            CurrentAmount = actualClaimAmount,
+            TotalAmount = dropInfo.ClaimAmount,
             ClaimDetailRecord = new ClaimDetailRecordList()
             {
                 Value = {claimDetailRecordList}

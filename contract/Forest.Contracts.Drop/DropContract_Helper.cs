@@ -19,18 +19,19 @@ public partial class DropContract
         Assert(State.Initialized.Value, "Not initialized.");
     }
     
-    private void AssertDropDetailList(DropDetailList dropDetailList, string collection ,out long totalAmount)
+    private void AssertDropDetailList(DropDetailList dropDetailList, string collection, Hash dropId, int index, out long totalAmount)
     {
         Assert(dropDetailList != null, "Invalid detail list.");
         Assert(dropDetailList.Value.Count > 0 && dropDetailList.Value.Count <= State.MaxDropDetailListCount.Value, $"Invalid detail list.count:{dropDetailList.Value.Count}");
         totalAmount = 0L;
         foreach(var detail in dropDetailList.Value.Distinct())
         {
+            detail.ClaimAmount = 0;
             Assert(detail.Symbol != null && !string.IsNullOrWhiteSpace(detail.Symbol), $"Invalid symbol data.token:{detail.Symbol}");
             Assert(detail.TotalAmount > 0, "Invalid amount.");
             AssertSymbolExist(detail.Symbol, SymbolType.Nft);
             AssertCollectionContainsNft(collection, detail.Symbol);
-            
+            Assert(State.DropSymbolMap[dropId][detail.Symbol] == null || State.DropSymbolMap[dropId][detail.Symbol] == 0, $"symbol:{detail.Symbol} is already exist in index{State.DropSymbolMap[dropId][detail.Symbol]}.");
             var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
             {
                 Symbol = detail.Symbol,
@@ -38,6 +39,7 @@ public partial class DropContract
             });
             Assert(balance.Balance >= detail.TotalAmount, $"Insufficient balance. {detail.Symbol}: {balance},{detail.TotalAmount}");
             totalAmount += detail.TotalAmount;
+            State.DropSymbolMap[dropId][detail.Symbol] = index;
         }
         totalAmount = 0L;
     }

@@ -24,6 +24,9 @@ service DropContract {
 
   rpc SetMaxDropDetailListCount(google.protobuf.Int32Value) returns (google.protobuf.Empty){
   }
+
+  rpc SetMaxDropDetailIndexCount(google.protobuf.Int32Value) returns (google.protobuf.Empty){
+  }
   // Actions.
   rpc CreateDrop(CreateDropInput)returns (google.protobuf.Empty){
   }
@@ -51,6 +54,10 @@ service DropContract {
     option (aelf.is_view) = true;
   }
 
+  rpc GetMaxDropDetailIndexCount(google.protobuf.Empty) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
+
   rpc GetDropInfo(GetDropInfoInput) returns (DropInfo){
     option (aelf.is_view) = true;
   }
@@ -59,12 +66,16 @@ service DropContract {
     option (aelf.is_view) = true;
   }
 
+  rpc GetDropSymbolIndex(GetDropSymbolIndexInput) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
 }
 
 //Data structure
 message InitializeInput {
   aelf.Address admin = 1;
-  int32 max_drop_list_count = 2;
+  int32 max_drop_detail_list_count = 2;
+  int32 max_drop_detail_index_count = 3;
 }
 
 message DropInfo {
@@ -72,17 +83,16 @@ message DropInfo {
   google.protobuf.Timestamp expire_time = 2;
   int64 claim_max = 3;
   Price claim_price = 4;
-  DropDetailList detail_list = 5;
-  int32 max_index = 6;
-  int32 current_index =7;
-  int64 total_amount = 8;
-  int64 claim_amount = 9;
-  aelf.Address owner = 10;
-  bool is_burn = 11;
-  DropState state = 12;
-  string collection_symbol = 13;
-  google.protobuf.Timestamp create_time = 14;
-  google.protobuf.Timestamp update_time = 15;
+  int32 max_index = 5;
+  int32 current_index =6;
+  int64 total_amount = 7;
+  int64 claim_amount = 8;
+  aelf.Address owner = 9;
+  bool is_burn = 10;
+  DropState state = 11;
+  string collection_symbol = 12;
+  google.protobuf.Timestamp create_time = 13;
+  google.protobuf.Timestamp update_time = 14;
 }
 
 message DropDetailList{
@@ -108,14 +118,14 @@ message CreateDropInput{
   google.protobuf.Timestamp expire_time = 2;
   int64 claim_max = 3;
   Price claim_price = 4;
-  DropDetailList detail_list = 5;
-  bool is_burn = 6;
-  string collection_symbol = 7;
+  bool is_burn = 5;
+  string collection_symbol = 6;
 }
 
 message AddDropNFTDetailListInput{
   aelf.Hash drop_id = 1;
-  repeated DropDetailInfo value = 2;
+  int32 index = 2;
+  repeated DropDetailInfo value = 3;
 }
 
 message Price {
@@ -158,6 +168,11 @@ message ClaimDetailRecord{
   int64 amount = 2;
 }
 
+message GetDropSymbolIndexInput{
+  aelf.Hash drop_id = 1;
+  string symbol = 2;
+}
+
 // Log Event
 message DropCreated {
   option (aelf.is_event) = true;
@@ -167,16 +182,15 @@ message DropCreated {
   google.protobuf.Timestamp expire_time = 4;
   int64 claim_max = 5;
   Price claim_price = 6;
-  DropDetailList detail_list = 7;
-  int32 max_index = 8;
-  int32 current_index =9;
-  int64 total_amount = 10;
-  int64 claim_amount = 11;
-  aelf.Address owner = 12;
-  bool is_burn = 13;
-  DropState state = 14;
-  google.protobuf.Timestamp create_time = 15;
-  google.protobuf.Timestamp update_time = 16;
+  int32 max_index = 7;
+  int32 current_index =8;
+  int64 total_amount = 9;
+  int64 claim_amount = 10;
+  aelf.Address owner = 11;
+  bool is_burn = 12;
+  DropState state = 13;
+  google.protobuf.Timestamp create_time = 14;
+  google.protobuf.Timestamp update_time = 15;
 }
 
 message DropDetailAdded {
