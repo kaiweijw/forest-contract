@@ -62,11 +62,18 @@ service DropContract {
     option (aelf.is_view) = true;
   }
 
+  rpc GetDropDetailList(GetDropDetailListInput) returns (DropDetailList){
+    option (aelf.is_view) = true;
+  }
   rpc GetClaimDropInfo(GetClaimDropInfoInput) returns (ClaimDropDetail){
     option (aelf.is_view) = true;
   }
 
-  rpc GetDropSymbolIndex(GetDropSymbolIndexInput) returns (google.protobuf.Int32Value){
+  rpc GetDropSymbolExist(GetDropSymbolExistInput) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetDropId(GetDropIdInput) returns (aelf.Hash){
     option (aelf.is_view) = true;
   }
 }
@@ -124,8 +131,7 @@ message CreateDropInput{
 
 message AddDropNFTDetailListInput{
   aelf.Hash drop_id = 1;
-  int32 index = 2;
-  repeated DropDetailInfo value = 3;
+  repeated DropDetailInfo value = 2;
 }
 
 message Price {
@@ -151,7 +157,6 @@ message ClaimDropDetail{
 
 message GetDropInfoInput{
   aelf.Hash drop_id = 1;
-  int32 index = 2;
 }
 
 message GetClaimDropInfoInput{
@@ -166,11 +171,22 @@ message ClaimDetailRecordList{
 message ClaimDetailRecord{
   string symbol = 1;
   int64 amount = 2;
+  string tokenName = 3;
 }
 
-message GetDropSymbolIndexInput{
+message GetDropSymbolExistInput{
   aelf.Hash drop_id = 1;
   string symbol = 2;
+}
+
+message GetDropIdInput{
+  aelf.Hash transaction_id = 1;
+  aelf.Address address = 2;
+}
+
+message GetDropDetailListInput{
+  aelf.Hash drop_id = 1;
+  int32 index = 2;
 }
 
 // Log Event
@@ -231,6 +247,11 @@ message DropClaimAdded {
   ClaimDetailRecordList claim_detail_record = 3;
   int64 current_amount = 4;
   int64 total_amount = 5;
+}
+enum SymbolType {
+  TOKEN = 0;
+  NFT = 1;
+  NFT_COLLECTION = 2;
 }
 
 

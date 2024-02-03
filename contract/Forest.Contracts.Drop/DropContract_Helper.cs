@@ -19,7 +19,7 @@ public partial class DropContract
         Assert(State.Initialized.Value, "Not initialized.");
     }
     
-    private void AssertDropDetailList(DropDetailList dropDetailList, string collection, Hash dropId, int index, out long totalAmount)
+    private void AssertDropDetailList(DropDetailList dropDetailList, string collection, Hash dropId, out long totalAmount)
     {
         Assert(dropDetailList != null, "Invalid detail list.");
         Assert(dropDetailList.Value.Count > 0 && dropDetailList.Value.Count <= State.MaxDropDetailListCount.Value, $"Invalid detail list.count:{dropDetailList.Value.Count}");
@@ -31,7 +31,7 @@ public partial class DropContract
             Assert(detail.TotalAmount > 0, "Invalid amount.");
             AssertSymbolExist(detail.Symbol, SymbolType.Nft);
             AssertCollectionContainsNft(collection, detail.Symbol);
-            Assert(State.DropSymbolMap[dropId][detail.Symbol] == null || State.DropSymbolMap[dropId][detail.Symbol] == 0, $"symbol:{detail.Symbol} is already exist in index{State.DropSymbolMap[dropId][detail.Symbol]}.");
+            Assert(State.DropSymbolMap[dropId][detail.Symbol] == 0, $"symbol:{detail.Symbol} is already exist in index{State.DropSymbolMap[dropId][detail.Symbol]}.");
             var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
             {
                 Symbol = detail.Symbol,
@@ -39,15 +39,14 @@ public partial class DropContract
             });
             Assert(balance.Balance >= detail.TotalAmount, $"Insufficient balance. {detail.Symbol}: {balance},{detail.TotalAmount}");
             totalAmount += detail.TotalAmount;
-            State.DropSymbolMap[dropId][detail.Symbol] = index;
+            State.DropSymbolMap[dropId][detail.Symbol] = 1;
         }
-        totalAmount = 0L;
     }
 
     private void AssertCollectionContainsNft(string collection, string nft)
     {
-        var collectionPrefix = collection.Split(TokenContractConstants.NFTSymbolSeparator)[0];
-        var nftPrefix = nft.Split(TokenContractConstants.NFTSymbolSeparator)[0];
+        var collectionPrefix = collection.Split(DropContractConstants.NFTSymbolSeparator)[0];
+        var nftPrefix = nft.Split(DropContractConstants.NFTSymbolSeparator)[0];
         Assert(collectionPrefix == nftPrefix, $"Invalid nft. collection:{collection},nft:{nft}");
     }
     
@@ -65,11 +64,11 @@ public partial class DropContract
 
     private SymbolType GetCreateInputSymbolType(string symbol)
     {
-        var words = symbol.Split(TokenContractConstants.NFTSymbolSeparator);
+        var words = symbol.Split(DropContractConstants.NFTSymbolSeparator);
         Assert(words[0].Length > 0 && words[0].All(IsValidCreateSymbolChar), "Invalid Symbol input");
         if (words.Length == 1) return SymbolType.Token;
         Assert(words.Length == 2 && words[1].Length > 0 && words[1].All(IsValidItemIdChar), "Invalid NFT Symbol input");
-        return words[1] == TokenContractConstants.CollectionSymbolSuffix ? SymbolType.NftCollection : SymbolType.Nft;
+        return words[1] == DropContractConstants.CollectionSymbolSuffix ? SymbolType.NftCollection : SymbolType.Nft;
     }
     
     private bool IsValidCreateSymbolChar(char character)

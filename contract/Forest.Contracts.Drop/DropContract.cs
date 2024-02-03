@@ -11,7 +11,7 @@ namespace Forest.Contracts.Drop
         public override Empty Initialize(InitializeInput input)
         {
             Assert(!State.Initialized.Value, "Already initialized.");
-
+            Assert(input != null && input.MaxDropDetailListCount > 0 && input.MaxDropDetailIndexCount > 0, "Invalid input.");
             State.GenesisContract.Value = Context.GetZeroSmartContractAddress();
             //Assert(State.GenesisContract.GetContractAuthor.Call(Context.Self) == Context.Sender, "No permission.");
             State.TokenContract.Value =

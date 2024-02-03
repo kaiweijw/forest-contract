@@ -13,12 +13,14 @@ public partial class DropContract
 {
     public override Empty CreateDrop(CreateDropInput input)
     {
+        AssertInitialized();
         Assert(input != null, "Invalid input.");
         Assert(input.StartTime >= Context.CurrentBlockTime, "Invalid start time.");
         Assert(input.ExpireTime > input.StartTime, "Invalid expire time.");
         Assert(!string.IsNullOrWhiteSpace(input.CollectionSymbol), "Invalid collection symbol.");
         Assert(input.ClaimMax > 0, "Invalid claim max.");
         Assert(input.ClaimPrice != null && input.ClaimPrice.Amount >= 0, "Invalid claim price.");
+        
         
         AssertSymbolExist(input.CollectionSymbol, SymbolType.NftCollection);
         
@@ -73,32 +75,50 @@ public partial class DropContract
         var dropInfo = State.DropInfoMap[input.DropId];
         Assert(dropInfo != null, "Invalid drop id.");
         var collectionSymbol = dropInfo.CollectionSymbol;
-        AssertDropDetailList(inputDropDetailList, dropInfo.CollectionSymbol, input.DropId, input.Index, out var totalAmount);
-        var initMaxIndex = State.MaxDropDetailIndexCount.Value;
-        Assert(input.Index<=dropInfo.MaxIndex+1 && input.Index <= initMaxIndex, "Invalid index.");
+        AssertDropDetailList(inputDropDetailList, dropInfo.CollectionSymbol, input.DropId, out var totalAmount);
 
-        dropInfo.TotalAmount += totalAmount;
-        dropInfo.MaxIndex = Math.Max(dropInfo.MaxIndex, input.Index);
-        var dropDetailList = State.DropDetailListMap[input.DropId][input.Index];
-        if (dropDetailList != null)
+        var maxDropDetailListCount = State.MaxDropDetailListCount.Value;
+        var maxDropDetailIndexCount = State.MaxDropDetailIndexCount.Value;
+        Assert(inputDropDetailList.Value.Count <= maxDropDetailListCount, "Invalid drop detail list count.");
+        Assert((dropInfo.TotalAmount + inputDropDetailList.Value.Count) <= (maxDropDetailListCount * maxDropDetailIndexCount), "Invalid total amount.");
+
+        if (dropInfo.MaxIndex == 0)
         {
-            dropDetailList = new DropDetailList();
+            State.DropDetailListMap[input.DropId][dropInfo.MaxIndex+1] = inputDropDetailList;
+            dropInfo.MaxIndex = 1;
         }
         else
         {
-            Assert((dropDetailList.Value.Count + input.Value.Distinct().Count()) < State.MaxDropDetailListCount.Value, "Drop detail list is full.");
+            var lastDetailList = State.DropDetailListMap[input.DropId][dropInfo.MaxIndex];
+            if ((lastDetailList.Value.Count + inputDropDetailList.Value.Count) <= maxDropDetailListCount)
+            {
+                lastDetailList.Value.AddRange(inputDropDetailList.Value);
+                State.DropDetailListMap[input.DropId][dropInfo.MaxIndex] = lastDetailList;
+            }else
+            {
+                var lastDetailListCount = lastDetailList.Value.Count;
+                lastDetailList.Value.AddRange(inputDropDetailList.Value.ToList().GetRange(0, State.MaxDropDetailListCount.Value-lastDetailListCount));
+                State.DropDetailListMap[input.DropId][dropInfo.MaxIndex] = lastDetailList;
+                //write next index
+                var nextIndex = dropInfo.MaxIndex + 1; 
+                Assert(nextIndex <= maxDropDetailIndexCount, "Invalid total amount.");
+                State.DropDetailListMap[input.DropId][nextIndex] = new DropDetailList() 
+                { 
+                    Value = { inputDropDetailList.Value.ToList().GetRange(State.MaxDropDetailListCount.Value-lastDetailListCount, inputDropDetailList.Value.Count)}
+                };
+                dropInfo.MaxIndex ++;
+            }
         }
-        dropDetailList.Value.AddRange(input.Value.Distinct());
-
-        State.DropDetailListMap[input.DropId][input.Index] = dropDetailList;
+        
+        dropInfo.TotalAmount += totalAmount;
         State.DropInfoMap[input.DropId] = dropInfo;
-
+        
         //Fire drop-detail added
         Context.Fire(new DropDetailAdded
         {
             DropId = input.DropId,
             CollectionSymbol = collectionSymbol,
-            DetailList = dropDetailList
+            DetailList = inputDropDetailList
         });
         
         //Fire drop changed
@@ -240,36 +260,30 @@ public partial class DropContract
         Assert(claimDropDetail == null || (claimDropDetail.Amount + input.ClaimAmount) <= dropInfo.ClaimMax,
             "Claimed exceed max amount.");
 
-        var actualClaimAmount = 0l;
         var unClaimAmount = input.ClaimAmount;
-        var currentIndex = dropInfo.CurrentIndex;
+        var currentIndex = dropInfo.CurrentIndex == 0 ? 1 : dropInfo.CurrentIndex;
+        var nextIndex = currentIndex;
         var claimDetailRecordList = new List<ClaimDetailRecord>();
-        while (actualClaimAmount < input.ClaimAmount && currentIndex <= dropInfo.MaxIndex)
+        while (unClaimAmount >0 && currentIndex <= dropInfo.MaxIndex)
         {
             var currentClaimDropDetailList = State.DropDetailListMap[input.DropId][currentIndex];
-
             foreach (var detailInfo in currentClaimDropDetailList.Value)
             {
-                var currentClaimAmount = 0l;
+                var currentClaimAmount = 0L;
+                if(unClaimAmount <= 0) break;
                 if (detailInfo.ClaimAmount == detailInfo.TotalAmount) continue;
                 if ((detailInfo.TotalAmount - detailInfo.ClaimAmount) >= unClaimAmount)
                 {
-                    currentIndex = (detailInfo.TotalAmount - detailInfo.ClaimAmount) == unClaimAmount
-                        ? currentIndex + 1
-                        : currentIndex;
                     currentClaimAmount = unClaimAmount;
-                    detailInfo.ClaimAmount += unClaimAmount;
-                    actualClaimAmount += unClaimAmount;
+                    detailInfo.ClaimAmount += currentClaimAmount;
                     unClaimAmount = 0;
                 }
                 else
                 {
                     currentClaimAmount = detailInfo.TotalAmount - detailInfo.ClaimAmount;
                     detailInfo.ClaimAmount = detailInfo.TotalAmount;
-                    actualClaimAmount += currentClaimAmount;
-                    currentIndex++;
+                    unClaimAmount -= currentClaimAmount;
                 }
-
                 //transfer nft
                 Context.SendInline(State.TokenContract.Value, nameof(State.TokenContract.Transfer), new TransferInput
                 {
@@ -280,19 +294,40 @@ public partial class DropContract
                 claimDetailRecordList.Add(new ClaimDetailRecord
                 {
                     Symbol = detailInfo.Symbol,
-                    Amount = currentClaimAmount
+                    Amount = currentClaimAmount,
+                    TokenName = ""
                 });
+                State.DropSymbolMap[input.DropId][detailInfo.Symbol] = 1;
             }
-            
             //update claim drop detail
             State.DropDetailListMap[input.DropId][currentIndex] = currentClaimDropDetailList;
+            if(unClaimAmount > 0 && currentIndex < dropInfo.MaxIndex)
+            {
+                currentIndex++;
+            }
         }
 
         //update drop info  
-        dropInfo.ClaimAmount += actualClaimAmount;
+        dropInfo.ClaimAmount += input.ClaimAmount - unClaimAmount;
         dropInfo.CurrentIndex = Math.Min(currentIndex, dropInfo.MaxIndex);
         dropInfo.UpdateTime = Context.CurrentBlockTime;
         State.DropInfoMap[input.DropId] = dropInfo;
+
+        if (claimDropDetail == null)
+        {
+            claimDropDetail = new ClaimDropDetail
+            {
+                Amount = input.ClaimAmount - unClaimAmount,
+                UpdateTime = Context.CurrentBlockTime,
+                CreateTime = Context.CurrentBlockTime
+            };
+        }
+        else
+        {
+            claimDropDetail.Amount += input.ClaimAmount - unClaimAmount;
+            claimDropDetail.UpdateTime = Context.CurrentBlockTime;
+        }
+        State.ClaimDropMap[input.DropId][Context.Sender] = claimDropDetail;
 
         //transfer token
         if (dropInfo.ClaimPrice.Amount > 0)
@@ -302,7 +337,7 @@ public partial class DropContract
                 From = Context.Sender,
                 To = dropInfo.Owner,
                 Symbol = dropInfo.ClaimPrice.Symbol,
-                Amount = dropInfo.ClaimPrice.Amount * actualClaimAmount
+                Amount = dropInfo.ClaimPrice.Amount * (input.ClaimAmount - unClaimAmount)
             });
         }
 
@@ -316,12 +351,12 @@ public partial class DropContract
             ClaimAmount = dropInfo.ClaimAmount,
             UpdateTime = Context.CurrentBlockTime
         });
-        
+
         //Fire event claim drop
         Context.Fire(new DropClaimAdded
         {
             DropId = input.DropId,
-            CurrentAmount = actualClaimAmount,
+            CurrentAmount = input.ClaimAmount - unClaimAmount,
             TotalAmount = dropInfo.ClaimAmount,
             ClaimDetailRecord = new ClaimDetailRecordList()
             {

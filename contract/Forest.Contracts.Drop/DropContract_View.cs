@@ -1,3 +1,4 @@
+using AElf;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
@@ -23,10 +24,9 @@ public partial class DropContract
     
     public override DropInfo GetDropInfo(GetDropInfoInput input)
     {
-        Assert(input != null && input.DropId != null && input.DropId != null && input.Index > 0, "Invalid input.");
+        Assert(input != null && input.DropId != null && input.DropId != null, "Invalid input.");
         var dropInfo =  State.DropInfoMap[input.DropId];
         Assert(dropInfo != null, "Drop info not found.");
-        Assert(dropInfo.MaxIndex >= input.Index, "Invalid drop index.");
         return dropInfo;
     }
     
@@ -36,8 +36,18 @@ public partial class DropContract
         return State.ClaimDropMap[input.DropId][input.Address];
     }
 
-    public override Int32Value GetDropSymbolIndex(GetDropSymbolIndexInput input)
+    public override Int32Value GetDropSymbolExist(GetDropSymbolExistInput input)
     {
         return new Int32Value { Value = State.DropSymbolMap[input.DropId][input.Symbol]};
+    }
+    
+    public override Hash GetDropId(GetDropIdInput input)
+    {
+        return  HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(input.TransactionId), HashHelper.ComputeFrom(input.Address));
+    }
+
+    public override DropDetailList GetDropDetailList(GetDropDetailListInput input)
+    {
+        return State.DropDetailListMap[input.DropId][input.Index];
     }
 }
