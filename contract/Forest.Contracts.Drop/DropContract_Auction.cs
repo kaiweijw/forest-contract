@@ -20,8 +20,6 @@ public partial class DropContract
         Assert(!string.IsNullOrWhiteSpace(input.CollectionSymbol), "Invalid collection symbol.");
         Assert(input.ClaimMax > 0, "Invalid claim max.");
         Assert(input.ClaimPrice != null && input.ClaimPrice.Amount >= 0, "Invalid claim price.");
-        
-        
         AssertSymbolExist(input.CollectionSymbol, SymbolType.NftCollection);
         
         var dropId = HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(Context.OriginTransactionId), HashHelper.ComputeFrom(Context.Sender));
@@ -74,6 +72,7 @@ public partial class DropContract
         
         var dropInfo = State.DropInfoMap[input.DropId];
         Assert(dropInfo != null, "Invalid drop id.");
+        Assert(dropInfo.State == DropState.Create, "Invalid drop state.");
         var collectionSymbol = dropInfo.CollectionSymbol;
         AssertDropDetailList(inputDropDetailList, dropInfo.CollectionSymbol, input.DropId, out var totalAmount);
 
@@ -182,7 +181,7 @@ public partial class DropContract
         Assert(input.DropId != null && input.Index > 0, "Invalid input.");
         var dropInfo = State.DropInfoMap[input.DropId];
         Assert(dropInfo != null, "Invalid drop id.");
-        Assert(dropInfo.State == DropState.Finish, "Drop already finished.");
+        Assert(dropInfo.State != DropState.Finish, "Drop already finished.");
         Assert(dropInfo.ExpireTime <= Context.CurrentBlockTime, "Drop not expired.");
 
         var dropDetailInfo = State.DropDetailListMap[input.DropId][input.Index];
@@ -253,9 +252,9 @@ public partial class DropContract
         Assert(input != null && input.DropId != null && input.ClaimAmount > 0, "Invalid input.");
         var dropInfo = State.DropInfoMap[input.DropId];
         Assert(dropInfo != null, "Invalid drop id.");
-        Assert(dropInfo.State == DropState.Submit, "Invalid drop state.");
+        Assert(dropInfo.State == DropState.Submit, "The event has ended. You'll be automatically redirected to the Drops page.");
         Assert(dropInfo.ClaimAmount < dropInfo.TotalAmount, "All NFT already claimed.");
-        Assert(dropInfo.ExpireTime > Context.CurrentBlockTime, "Drop already expired.");
+        Assert(dropInfo.ExpireTime > Context.CurrentBlockTime, "The event has ended.");
         var claimDropDetail = State.ClaimDropMap[input.DropId][Context.Sender];
         Assert(claimDropDetail == null || (claimDropDetail.Amount + input.ClaimAmount) <= dropInfo.ClaimMax,
             "Claimed exceed max amount.");
@@ -264,11 +263,26 @@ public partial class DropContract
         var currentIndex = dropInfo.CurrentIndex == 0 ? 1 : dropInfo.CurrentIndex;
         var nextIndex = currentIndex;
         var claimDetailRecordList = new List<ClaimDetailRecord>();
+        var claimDetailEventList = new ClaimDetailList();
         while (unClaimAmount >0 && currentIndex <= dropInfo.MaxIndex)
         {
             var currentClaimDropDetailList = State.DropDetailListMap[input.DropId][currentIndex];
             foreach (var detailInfo in currentClaimDropDetailList.Value)
             {
+                //NFinfo
+                var symbolInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+                {
+                    Symbol = detailInfo.Symbol
+                });
+                if (symbolInfo == null) break;
+                //balance
+                var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+                {
+                    Symbol = detailInfo.Symbol,
+                    Owner = Context.Self
+                });
+                
+                if (balance.Balance < 0) break;
                 var currentClaimAmount = 0L;
                 if(unClaimAmount <= 0) break;
                 if (detailInfo.ClaimAmount == detailInfo.TotalAmount) continue;
@@ -284,6 +298,7 @@ public partial class DropContract
                     detailInfo.ClaimAmount = detailInfo.TotalAmount;
                     unClaimAmount -= currentClaimAmount;
                 }
+                
                 //transfer nft
                 Context.SendInline(State.TokenContract.Value, nameof(State.TokenContract.Transfer), new TransferInput
                 {
@@ -294,8 +309,15 @@ public partial class DropContract
                 claimDetailRecordList.Add(new ClaimDetailRecord
                 {
                     Symbol = detailInfo.Symbol,
+                    Amount = currentClaimAmount
+                });
+                claimDetailEventList.Value.Add(new ClaimDetail
+                {
+                    Symbol = detailInfo.Symbol,
                     Amount = currentClaimAmount,
-                    TokenName = ""
+                    Name = symbolInfo.TokenName,
+                    ChainId = symbolInfo.IssueChainId,
+                    Image = symbolInfo.ExternalInfo == null ? "" : symbolInfo.ExternalInfo.Value[DropContractConstants.NftImageUrlExternalInfoKey],
                 });
                 State.DropSymbolMap[input.DropId][detailInfo.Symbol] = 1;
             }
@@ -357,11 +379,9 @@ public partial class DropContract
         {
             DropId = input.DropId,
             CurrentAmount = input.ClaimAmount - unClaimAmount,
-            TotalAmount = dropInfo.ClaimAmount,
-            ClaimDetailRecord = new ClaimDetailRecordList()
-            {
-                Value = {claimDetailRecordList}
-            }
+            Address = Context.Sender,
+            TotalAmount = claimDropDetail.Amount,
+            ClaimDetailList = claimDetailEventList
         });
         
         return new Empty();

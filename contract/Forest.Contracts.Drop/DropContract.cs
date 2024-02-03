@@ -1,4 +1,3 @@
-using System.Linq;
 using AElf;
 using AElf.Sdk.CSharp;
 using AElf.Types;
@@ -14,6 +13,8 @@ namespace Forest.Contracts.Drop
             Assert(input != null && input.MaxDropDetailListCount > 0 && input.MaxDropDetailIndexCount > 0, "Invalid input.");
             State.GenesisContract.Value = Context.GetZeroSmartContractAddress();
             //Assert(State.GenesisContract.GetContractAuthor.Call(Context.Self) == Context.Sender, "No permission.");
+            Assert(input.ProxyAccountAddress != null && !input.ProxyAccountAddress.Value.IsNullOrEmpty(), "ProxyAccountContractAddress required.");
+            State.ProxyAccountContract.Value = input.ProxyAccountAddress;
             State.TokenContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
             State.Admin.Value = Context.Sender;
@@ -26,6 +27,7 @@ namespace Forest.Contracts.Drop
 
         public override Empty SetAdmin(Address input)
         {
+            AssertInitialized();
             AssertAdmin();
             Assert(input != null && !input.Value.IsNullOrEmpty(), "Invalid input.");
 
@@ -36,6 +38,7 @@ namespace Forest.Contracts.Drop
 
         public override Empty SetMaxDropDetailListCount(Int32Value input)
         {
+            AssertInitialized();
             AssertAdmin();
             Assert(input != null && input.Value > 0, "Invalid input.");
 
@@ -45,10 +48,20 @@ namespace Forest.Contracts.Drop
         
         public override Empty SetMaxDropDetailIndexCount(Int32Value input)
         {
+            AssertInitialized();
             AssertAdmin();
             Assert(input != null && input.Value > 0, "Invalid input.");
 
             State.MaxDropDetailIndexCount.Value = input.Value;
+            return new Empty();
+        }
+        
+        public override Empty SetProxyAccountContractAddress(Address input)
+        {
+            AssertAdmin();
+            AssertInitialized();
+            Assert(input != null && !input.Value.IsNullOrEmpty(), "Invalid param");
+            State.ProxyAccountContract.Value = input;
             return new Empty();
         }
 

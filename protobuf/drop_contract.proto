@@ -25,6 +25,9 @@ service DropContract {
   rpc SetMaxDropDetailListCount(google.protobuf.Int32Value) returns (google.protobuf.Empty){
   }
 
+  rpc SetProxyAccountContractAddress(aelf.Address) returns (google.protobuf.Empty) {
+  }
+
   rpc SetMaxDropDetailIndexCount(google.protobuf.Int32Value) returns (google.protobuf.Empty){
   }
   // Actions.
@@ -51,6 +54,10 @@ service DropContract {
   }
 
   rpc GetMaxDropDetailListCount(google.protobuf.Empty) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
+  
+  rpc GetProxyAccountContractAddress(google.protobuf.Empty) returns (aelf.Address) {
     option (aelf.is_view) = true;
   }
 
@@ -83,6 +90,7 @@ message InitializeInput {
   aelf.Address admin = 1;
   int32 max_drop_detail_list_count = 2;
   int32 max_drop_detail_index_count = 3;
+  aelf.Address proxy_account_address = 4;
 }
 
 message DropInfo {
@@ -171,7 +179,6 @@ message ClaimDetailRecordList{
 message ClaimDetailRecord{
   string symbol = 1;
   int64 amount = 2;
-  string tokenName = 3;
 }
 
 message GetDropSymbolExistInput{
@@ -244,9 +251,20 @@ message DropClaimAdded {
   option (aelf.is_event) = true;
   aelf.Hash drop_id = 1;
   aelf.Address address = 2;
-  ClaimDetailRecordList claim_detail_record = 3;
+  ClaimDetailList claim_detail_list = 3;
   int64 current_amount = 4;
   int64 total_amount = 5;
+}
+
+message ClaimDetailList{
+  repeated ClaimDetail value = 1;
+}
+message ClaimDetail{
+  string symbol = 1;
+  int64 amount = 2;
+  string name = 3;
+  int32 chain_id = 4;
+  string image = 5;
 }
 enum SymbolType {
   TOKEN = 0;

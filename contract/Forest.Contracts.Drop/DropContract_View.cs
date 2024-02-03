@@ -50,4 +50,8 @@ public partial class DropContract
     {
         return State.DropDetailListMap[input.DropId][input.Index];
     }
+    public override Address GetProxyAccountContractAddress(Empty input)
+    {
+        return State.ProxyAccountContract.Value;
+    }
 }

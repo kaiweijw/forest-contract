@@ -1,6 +1,7 @@
 using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
+using AElf.Contracts.ProxyAccountContract;
 using AElf.CSharp.Core;
 using AElf.Types;
 using Google.Protobuf.Collections;
@@ -50,7 +51,7 @@ public partial class DropContract
         Assert(collectionPrefix == nftPrefix, $"Invalid nft. collection:{collection},nft:{nft}");
     }
     
-    private void AssertSymbolExist(string symbol, SymbolType targetType)
+    private void AssertSymbolExist(string symbol, SymbolType targetType, bool checkOwner = false)
     {
         Assert(symbol != null && !string.IsNullOrWhiteSpace(symbol), $"Invalid symbol.{symbol}");
         var actualType = GetCreateInputSymbolType(symbol);
@@ -60,6 +61,24 @@ public partial class DropContract
             Symbol = symbol
         });
         Assert(symbolInfo != null && !string.IsNullOrWhiteSpace(symbolInfo.Symbol), $"Not exist symbol. {targetType} - {symbol}");
+
+        if (!checkOwner) return;
+        //check real address
+        if (symbolInfo.Owner == Context.Sender) return;
+        //check proxy virtual address
+        Assert(IsProxyManager(symbolInfo.Owner), "Not token owner.");
+    }
+
+    private bool IsProxyManager(Address owner)
+    {
+        var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(owner);
+        if (proxyAccount == null || proxyAccount.ManagementAddresses == null) return false;
+        foreach (var managementAddress in proxyAccount.ManagementAddresses)
+        {
+            if (managementAddress.Address == Context.Sender) return true;
+        }
+
+        return false;
     }
 
     private SymbolType GetCreateInputSymbolType(string symbol)
