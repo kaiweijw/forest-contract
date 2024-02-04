@@ -21,6 +21,7 @@ public partial class DropContract
         Assert(input.ClaimMax > 0, "Invalid claim max.");
         Assert(input.ClaimPrice != null && input.ClaimPrice.Amount >= 0, "Invalid claim price.");
         AssertSymbolExist(input.CollectionSymbol, SymbolType.NftCollection);
+        Assert(input.ClaimPrice.Amount>=0, "Invalid claim price.");
         
         var dropId = HashHelper.ConcatAndCompute(HashHelper.ComputeFrom(Context.OriginTransactionId), HashHelper.ComputeFrom(Context.Sender));
         var dropInfo = new DropInfo

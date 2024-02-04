@@ -12,7 +12,7 @@ namespace Forest.Contracts.Drop
             Assert(!State.Initialized.Value, "Already initialized.");
             Assert(input != null && input.MaxDropDetailListCount > 0 && input.MaxDropDetailIndexCount > 0, "Invalid input.");
             State.GenesisContract.Value = Context.GetZeroSmartContractAddress();
-            //Assert(State.GenesisContract.GetContractAuthor.Call(Context.Self) == Context.Sender, "No permission.");
+            Assert(State.GenesisContract.GetContractAuthor.Call(Context.Self) == Context.Sender, "No permission.");
             Assert(input.ProxyAccountAddress != null && !input.ProxyAccountAddress.Value.IsNullOrEmpty(), "ProxyAccountContractAddress required.");
             State.ProxyAccountContract.Value = input.ProxyAccountAddress;
             State.TokenContract.Value =

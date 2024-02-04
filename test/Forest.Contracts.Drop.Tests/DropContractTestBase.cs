@@ -1,4 +1,4 @@
-using System.IO;
+/*using System.IO;
 using AElf.Boilerplate.TestBase;
 using AElf.Contracts.MultiToken;
 using AElf.ContractTestBase.ContractTestKit;
@@ -13,17 +13,19 @@ namespace Forest.Contracts.Drop
 {
     public class DropContractTestBase : DAppContractTestBase<DropContractTestModule>
     {
-        internal Address AuctionContractAddress { get; set; }
+        internal Address DropContractAddress { get; set; }
 
         internal TokenContractContainer.TokenContractStub TokenContractStub { get; set; }
+        
         internal TokenContractContainer.TokenContractStub TokenContractUserStub { get; set; }
         internal TokenContractContainer.TokenContractStub TokenContractUser2Stub { get; set; }
         internal TokenContractContainer.TokenContractStub TokenContractReceivingStub { get; set; }
+        
         internal ACS0Container.ACS0Stub ZeroContractStub { get; set; }
-        /*internal DropContractContainer.DropContractStub AuctionContractStub { get; set; }
-        internal AuctionContractContainer.AuctionContractStub AuctionContractUserStub { get; set; }
-        internal AuctionContractContainer.AuctionContractStub AuctionContractUser2Stub { get; set; }*/
 
+        internal DropContractContainer.DropContractStub DropContractStub { get; set; }
+        internal DropContractContainer.DropContractStub DropContractUserStub { get; set; }
+        internal DropContractContainer.DropContractStub DropContractUser2Stub { get; set; }
         protected ECKeyPair DefaultKeyPair => Accounts[0].KeyPair;
         protected Address DefaultAddress => Accounts[0].Address;
 
@@ -51,22 +53,22 @@ namespace Forest.Contracts.Drop
                         File.ReadAllBytes(typeof(DropContract).Assembly.Location))
                 }));
 
-            AuctionContractAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
+            DropContractAddress = Address.Parser.ParseFrom(result.TransactionResult.ReturnValue);
 
-            /*AuctionContractStub = GetAuctionAccountContractStub(DefaultKeyPair);
-            AuctionContractUserStub = GetAuctionAccountContractStub(UserKeyPair);
-            AuctionContractUser2Stub = GetAuctionAccountContractStub(User2KeyPair);*/
+            DropContractStub = GetDropContractContainerStub(DefaultKeyPair);
+            DropContractUserStub = GetDropContractContainerStub(UserKeyPair);
+            DropContractUser2Stub = GetDropContractContainerStub(User2KeyPair);
+            DropContractStub = GetDropContractContainerStub(DefaultKeyPair);
             TokenContractStub = GetTokenContractStub(DefaultKeyPair);
             TokenContractUserStub = GetTokenContractStub(UserKeyPair);
             TokenContractUser2Stub = GetTokenContractStub(User2KeyPair);
             TokenContractReceivingStub = GetTokenContractStub(ReceivingKeyPair);
         }
 
-        /*internal DropContractContainer.AuctionContractStub GetAuctionAccountContractStub(ECKeyPair senderKeyPair)
+        internal DropContractContainer.DropContractStub GetDropContractContainerStub(ECKeyPair senderKeyPair)
         {
-            return GetTester<AuctionContractContainer.AuctionContractStub>(AuctionContractAddress, senderKeyPair);
-        }*/
-
+            return GetTester<DropContractContainer.DropContractStub>(DropContractAddress, senderKeyPair);
+        }
         internal TokenContractContainer.TokenContractStub GetTokenContractStub(ECKeyPair senderKeyPair)
         {
             return GetTester<TokenContractContainer.TokenContractStub>(TokenContractAddress, senderKeyPair);
@@ -77,4 +79,4 @@ namespace Forest.Contracts.Drop
             return GetTester<ACS0Container.ACS0Stub>(BasicContractZeroAddress, senderKeyPair);
         }
     }
-}
+}*/

@@ -56,7 +56,7 @@ service DropContract {
   rpc GetMaxDropDetailListCount(google.protobuf.Empty) returns (google.protobuf.Int32Value){
     option (aelf.is_view) = true;
   }
-  
+
   rpc GetProxyAccountContractAddress(google.protobuf.Empty) returns (aelf.Address) {
     option (aelf.is_view) = true;
   }
