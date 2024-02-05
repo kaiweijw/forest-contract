@@ -32,12 +32,8 @@
         </ContractBase>
     </ItemGroup>
     <ItemGroup>
-        <!-- Reference the protobuf definition of the contract -->
         <ContractCode Include="..\..\protobuf\drop_contract.proto">
             <Link>Protobuf\Proto\drop_contract.proto</Link>
         </ContractCode>
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="AElf.Contracts.MultiToken" Version="1.5.0" />
     </ItemGroup>
 </Project>

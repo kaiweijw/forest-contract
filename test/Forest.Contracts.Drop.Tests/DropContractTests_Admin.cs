@@ -111,7 +111,14 @@ namespace Forest.Contracts.Drop
             var admin = await DropContractStub.GetAdmin.CallAsync(new Empty());
             admin.ShouldBe(UserAddress);
         }
-        
+
+        [Fact]
+        public async Task SetProxyAccountContractAddress()
+        {
+            await Initialize();
+            var result = await DropContractUserStub.SetProxyAccountContractAddress.SendWithExceptionAsync(DefaultAddress);
+        }
+
         [Fact]
         public async Task SetMaxDropDetailListCount()
         {
@@ -158,6 +165,5 @@ namespace Forest.Contracts.Drop
             var maxDropDetailListCount = await DropContractStub.GetMaxDropDetailIndexCount.CallAsync(new Empty());
             maxDropDetailListCount.Value.ShouldBe(11);
         }
-        
     }
 }

@@ -10,7 +10,7 @@ namespace Forest.Contracts.Drop
         public override Empty Initialize(InitializeInput input)
         {
             Assert(!State.Initialized.Value, "Already initialized.");
-            Assert(input != null && input.MaxDropDetailListCount > 0 && input.MaxDropDetailIndexCount > 0, "Invalid input.");
+            Assert(input is { MaxDropDetailListCount: > 0, MaxDropDetailIndexCount: > 0 }, "Invalid input.");
             State.GenesisContract.Value = Context.GetZeroSmartContractAddress();
             Assert(State.GenesisContract.GetContractAuthor.Call(Context.Self) == Context.Sender, "No permission.");
             Assert(input.ProxyAccountAddress != null && !input.ProxyAccountAddress.Value.IsNullOrEmpty(), "ProxyAccountContractAddress required.");
@@ -40,7 +40,7 @@ namespace Forest.Contracts.Drop
         {
             AssertInitialized();
             AssertAdmin();
-            Assert(input != null && input.Value > 0, "Invalid input.");
+            Assert(input is { Value: > 0 }, "Invalid input.");
 
             State.MaxDropDetailListCount.Value = input.Value;
             return new Empty();
@@ -50,7 +50,7 @@ namespace Forest.Contracts.Drop
         {
             AssertInitialized();
             AssertAdmin();
-            Assert(input != null && input.Value > 0, "Invalid input.");
+            Assert(input is { Value: > 0 }, "Invalid input.");
 
             State.MaxDropDetailIndexCount.Value = input.Value;
             return new Empty();

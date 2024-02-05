@@ -1,10 +1,6 @@
 using System.Linq;
-using AElf;
 using AElf.Contracts.MultiToken;
-using AElf.Contracts.ProxyAccountContract;
-using AElf.CSharp.Core;
 using AElf.Types;
-using Google.Protobuf.Collections;
 
 namespace Forest.Contracts.Drop;
 
@@ -72,7 +68,7 @@ public partial class DropContract
     private bool IsProxyManager(Address owner)
     {
         var proxyAccount = State.ProxyAccountContract.GetProxyAccountByProxyAccountAddress.Call(owner);
-        if (proxyAccount == null || proxyAccount.ManagementAddresses == null) return false;
+        if (proxyAccount?.ManagementAddresses == null) return false;
         foreach (var managementAddress in proxyAccount.ManagementAddresses)
         {
             if (managementAddress.Address == Context.Sender) return true;

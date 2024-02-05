@@ -1,17 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.DirectoryServices.AccountManagement;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AElf;
 using AElf.Contracts.MultiToken;
-using AElf.CSharp.Core;
 using AElf.CSharp.Core.Extension;
 using AElf.Types;
-using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using Moq;
 using Shouldly;
 using Xunit;
 
@@ -35,7 +31,8 @@ namespace Forest.Contracts.Drop
             };
             await DropContractStub.Initialize.SendAsync(init);
         }
-        protected async Task CreateSeedCollection() 
+
+        private async Task CreateSeedCollection() 
         {
             await TokenContractStub.Create.SendAsync(new CreateInput()
             {
@@ -50,7 +47,7 @@ namespace Forest.Contracts.Drop
             });
         }
 
-        protected async Task CreateSeed(string seed, string forNFTSymbol)
+        private async Task CreateSeed(string seed, string forNFTSymbol)
         {
             await TokenContractStub.Create.SendAsync(new CreateInput()
             {
@@ -796,26 +793,6 @@ namespace Forest.Contracts.Drop
             //expire
             Thread.Sleep(11000);
             dropInfo.ExpireTime.ShouldBeLessThanOrEqualTo(DateTime.UtcNow.ToTimestamp());
-            
-            /*//Finish
-            await DropContractStub.FinishDrop.SendAsync(new FinishDropInput()
-            {
-                DropId = dropId,
-                Index = 1
-            });
-            dropInfo = await DropContractStub.GetDropInfo.CallAsync(new GetDropInfoInput()
-            {
-                DropId = dropId
-            });
-            dropInfo.ShouldNotBeNull();
-            dropInfo.State.ShouldBe(DropState.Finish);
-            
-            var dropDetail = await DropContractStub.GetDropDetailList.CallAsync(new GetDropDetailListInput()
-            {
-                DropId = dropId,
-                Index = 1
-            });
-            dropDetail.IsFinish.ShouldBe(true);*/
         }
         
         [Fact]
@@ -1122,14 +1099,6 @@ namespace Forest.Contracts.Drop
                 Value = { nftList.Value }
             });
             await DropContractStub.SubmitDrop.SendAsync(dropId);
-           
-            /*//claim1
-            var claimResult = await DropContractStub.ClaimDrop.SendWithExceptionAsync(new ClaimDropInput()
-            {
-                DropId = dropId,
-                ClaimAmount = 2
-            });
-            claimResult.TransactionResult.Error.ShouldContain("Claimed exceed max amount.");*/
         }
         [Fact]
         public async Task GetDropSymbolExist_Test()

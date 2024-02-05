@@ -19,7 +19,7 @@ public partial class DropContract
         Assert(input.ExpireTime > input.StartTime, "Invalid expire time.");
         Assert(!string.IsNullOrWhiteSpace(input.CollectionSymbol), "Invalid collection symbol.");
         Assert(input.ClaimMax > 0, "Invalid claim max.");
-        Assert(input.ClaimPrice != null && input.ClaimPrice.Amount >= 0, "Invalid claim price.");
+        Assert(input.ClaimPrice is { Amount: >= 0 }, "Invalid claim price.");
         AssertSymbolExist(input.CollectionSymbol, SymbolType.NftCollection);
         Assert(input.ClaimPrice.Amount>=0, "Invalid claim price.");
         
@@ -222,7 +222,7 @@ public partial class DropContract
         
         //change drop state to finish
         var isAllFinish = true;
-        for (int i = 0; i < dropInfo.MaxIndex; i++)
+        for (var i = 0; i < dropInfo.MaxIndex; i++)
         {
             if (i == input.Index) continue;
             
