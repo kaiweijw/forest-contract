@@ -26,7 +26,6 @@ public partial class DropContract
     {
         Assert(input != null && input.DropId != null && input.DropId != null, "Invalid input.");
         var dropInfo =  State.DropInfoMap[input.DropId];
-        Assert(dropInfo != null, "Drop info not found.");
         return dropInfo;
     }
     

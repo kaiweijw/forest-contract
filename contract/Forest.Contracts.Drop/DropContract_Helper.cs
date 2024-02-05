@@ -90,12 +90,12 @@ public partial class DropContract
         return words[1] == DropContractConstants.CollectionSymbolSuffix ? SymbolType.NftCollection : SymbolType.Nft;
     }
     
-    private bool IsValidCreateSymbolChar(char character)
+    private static bool IsValidCreateSymbolChar(char character)
     {
         return character >= 'A' && character <= 'Z';
     }
     
-    private bool IsValidItemIdChar(char character)
+    private static bool IsValidItemIdChar(char character)
     {
         return character >= '0' && character <= '9';
     }

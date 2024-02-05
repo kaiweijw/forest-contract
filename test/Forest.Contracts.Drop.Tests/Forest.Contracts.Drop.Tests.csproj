@@ -53,6 +53,9 @@
         <ContractStub Include="..\..\protobuf\token_contract_impl.proto">
             <Link>Protobuf\Proto\token_contract_impl.proto</Link>
         </ContractStub>
+        <ContractStub Include="..\..\protobuf\drop_contract.proto">
+            <Link>Protobuf\Proto\drop_contract.proto</Link>
+        </ContractStub>
     </ItemGroup>
 
     <ItemGroup>
@@ -63,12 +66,6 @@
 
     <ItemGroup>
         <Folder Include="Protobuf\Generated\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ContractCode Include="..\..\protobuf\drop_contract.proto">
-        <Link>Protobuf\Proto\drop_contract.proto</Link>
-      </ContractCode>
     </ItemGroup>
 
 </Project>

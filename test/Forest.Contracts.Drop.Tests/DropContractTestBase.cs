@@ -1,4 +1,4 @@
-/*using System.IO;
+using System.IO;
 using AElf.Boilerplate.TestBase;
 using AElf.Contracts.MultiToken;
 using AElf.ContractTestBase.ContractTestKit;
@@ -79,4 +79,4 @@ namespace Forest.Contracts.Drop
             return GetTester<ACS0Container.ACS0Stub>(BasicContractZeroAddress, senderKeyPair);
         }
     }
-}*/
+}
