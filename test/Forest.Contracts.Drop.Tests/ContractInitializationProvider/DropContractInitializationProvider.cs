@@ -12,7 +12,8 @@ namespace Forest.Contracts.Drop.ContractInitializationProvider
             return new List<ContractInitializationMethodCall>();
         }
 
-        public Hash SystemSmartContractName { get; } = AuctionContractAddressNameProvider.Name;
-        public string ContractCodeName { get; } = "AuctionContract";
+        public Hash SystemSmartContractName { get; }
+
+        public string ContractCodeName { get; }
     }
 }
