@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AElf;
 using AElf.Contracts.MultiToken;
+using AElf.ContractTestBase.ContractTestKit;
 using AElf.CSharp.Core.Extension;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
@@ -21,6 +22,7 @@ namespace Forest.Contracts.Drop
         private const string NftSymbol3 = "TESTNFT-3";
         private const string ElfSymbol = "ELF";
         private const long InitializeElfAmount = 10000_0000_0000;
+
         private async Task Initialize()
         {
             var init = new InitializeInput
@@ -365,6 +367,35 @@ namespace Forest.Contracts.Drop
             dropInfo.ClaimAmount.ShouldBe(0);
             dropInfo.CurrentIndex.ShouldBe(0);
             dropInfo.TotalAmount.ShouldBe(0);
+            return dropId;
+        }
+        
+        [Fact]
+        public async Task<Hash> CreateDrop_Max10()
+        {
+            await Initialize();
+            await PrepareNftData();
+            var createInput = new CreateDropInput
+            {
+                StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddSeconds(0)),
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(1)),
+                ClaimMax = 10,
+                ClaimPrice = new Price()
+                {
+                    Symbol = ElfSymbol,
+                    Amount = 0
+                },
+                IsBurn = true,
+                CollectionSymbol = CollectionSymbol
+            };
+            //create drop
+            var createResult = await DropContractStub.CreateDrop.SendAsync(createInput);
+            var txId = createResult.TransactionResult.TransactionId;
+            var dropId = await DropContractStub.GetDropId.CallAsync(new GetDropIdInput()
+            {
+                TransactionId = txId,
+                Address = DefaultAddress
+            });
             return dropId;
         }
         [Fact]
@@ -1075,6 +1106,45 @@ namespace Forest.Contracts.Drop
         }
         
         [Fact]
+        public async Task Claim_OutNumber()
+        {
+            var dropId = await CreateDrop_Success();
+            //add nft
+            var nftList = new DropDetailList();
+            nftList.Value.Add(new DropDetailInfo()
+            {
+                Symbol = NftSymbol1,
+                TotalAmount = 10,
+                ClaimAmount = 0
+            });
+            await DropContractStub.AddDropNFTDetailList.SendAsync(new AddDropNFTDetailListInput()
+            {
+                DropId = dropId,//HashHelper.ComputeFrom("test"),
+                Value = { nftList.Value }
+            });
+            
+            //submit 
+            await DropContractStub.SubmitDrop.SendAsync(dropId);
+            
+            //get drop info
+            var dropInfo = await DropContractStub.GetDropInfo.CallAsync(new GetDropInfoInput()
+            {
+                DropId = dropId
+            });
+            dropInfo.State.ShouldBe(DropState.Submit);
+            
+            //claim 1
+            var currentBlockTime = BlockTimeProvider.GetBlockTime();
+            BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(30));
+            var claimResult = await DropContractStub.ClaimDrop.SendWithExceptionAsync(new ClaimDropInput()
+            {
+                DropId = dropId,
+                ClaimAmount = 10
+            });
+            claimResult.TransactionResult.Error.ShouldContain("Claimed exceed max amount");
+        }
+        
+        [Fact]
         public async Task Claim_Submit()
         {
             var dropId = await CreateDrop_Success();
@@ -1147,6 +1217,64 @@ namespace Forest.Contracts.Drop
             }).Result;
             result2.Value.ShouldBe(0);
         }
+        [Fact]
+        public async Task Claim_PartMint()
+        {
+            var dropId = await CreateDrop_Max10();
+            //get drop info
+            var dropInfo = await DropContractStub.GetDropInfo.CallAsync(new GetDropInfoInput()
+            {
+                DropId = dropId
+            });
 
+            //submit
+            var nftList = new DropDetailList();
+            nftList.Value.Add(new DropDetailInfo()
+            {
+                Symbol = NftSymbol1,
+                TotalAmount = 10
+            });
+            await DropContractStub.AddDropNFTDetailList.SendAsync(new AddDropNFTDetailListInput()
+            {
+                DropId = dropId,
+                Value = { nftList.Value }
+            });
+            await DropContractStub.SubmitDrop.SendAsync(dropId);
+            
+            //get drop info
+            dropInfo = await DropContractStub.GetDropInfo.CallAsync(new GetDropInfoInput()
+            {
+                DropId = dropId
+            });
+            dropInfo.State.ShouldBe(DropState.Submit);
+            
+            //claim 1
+            var currentBlockTime = BlockTimeProvider.GetBlockTime();
+            BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(30));
+            await DropContractStub.ClaimDrop.SendAsync(new ClaimDropInput()
+            {
+                DropId = dropId,
+                ClaimAmount = 8
+            });
+            var claimResult = await DropContractStub.GetClaimDropInfo.CallAsync(new GetClaimDropInfoInput()
+            {
+                DropId = dropId,
+                Address = DefaultAddress
+            });
+            claimResult.Amount.ShouldBe(8);
+            
+            //claim 2
+            await DropContractUserStub.ClaimDrop.SendAsync(new ClaimDropInput()
+            {
+                DropId = dropId,
+                ClaimAmount = 10
+            });
+            claimResult = await DropContractStub.GetClaimDropInfo.CallAsync(new GetClaimDropInfoInput()
+            {
+                DropId = dropId,
+                Address = UserAddress
+            });
+            claimResult.Amount.ShouldBe(2);
+        }
     }
 }

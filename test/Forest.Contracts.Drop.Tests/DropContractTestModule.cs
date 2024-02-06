@@ -1,4 +1,5 @@
 using AElf.Boilerplate.TestBase;
+using AElf.ContractTestBase.ContractTestKit;
 using AElf.Kernel.SmartContract;
 using AElf.Kernel.SmartContract.Application;
 using Forest.Contracts.Drop.ContractInitializationProvider;
@@ -14,6 +15,7 @@ namespace Forest.Contracts.Drop
         {
             context.Services.AddSingleton<IContractInitializationProvider, DropContractInitializationProvider>();
             Configure<ContractOptions>(o => o.ContractDeploymentAuthorityRequired = false);
+            context.Services.AddSingleton<IBlockTimeProvider, BlockTimeProvider>();
         }
     }
 }

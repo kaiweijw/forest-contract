@@ -193,7 +193,7 @@ public partial class DropContract
             if (detail.TotalAmount == detail.ClaimAmount) continue;
             if (dropInfo.IsBurn)
             {
-                Context.SendInline(State.TokenContract.Value, nameof(State.TokenContract.Burn), new BurnInput
+                State.TokenContract.Burn.Send(new BurnInput
                 {
                     Symbol = detail.Symbol,
                     Amount = detail.TotalAmount - detail.ClaimAmount,
@@ -201,7 +201,7 @@ public partial class DropContract
             }
             else
             {
-                Context.SendInline(State.TokenContract.Value, nameof(State.TokenContract.Transfer), new TransferInput
+                State.TokenContract.Transfer.Send(new TransferInput
                 {
                     To = dropInfo.Owner,
                     Symbol = detail.Symbol,
@@ -265,7 +265,6 @@ public partial class DropContract
 
         var unClaimAmount = input.ClaimAmount;
         var currentIndex = dropInfo.CurrentIndex == 0 ? 1 : dropInfo.CurrentIndex;
-        var nextIndex = currentIndex;
         var claimDetailRecordList = new List<ClaimDetailRecord>();
         var claimDetailEventList = new List<ClaimDetail>();
         while (unClaimAmount >0 && currentIndex <= dropInfo.MaxIndex)
@@ -273,12 +272,7 @@ public partial class DropContract
             var currentClaimDropDetailList = State.DropDetailListMap[input.DropId][currentIndex];
             foreach (var detailInfo in currentClaimDropDetailList.Value)
             {
-                //NFT info
-                var symbolInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
-                {
-                    Symbol = detailInfo.Symbol
-                });
-                if (symbolInfo == null) break;
+                if (detailInfo.ClaimAmount == detailInfo.TotalAmount) continue;
                 //balance
                 var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
                 {
@@ -287,9 +281,10 @@ public partial class DropContract
                 });
                 
                 if (balance.Balance < 0) break;
+                
                 var currentClaimAmount = 0L;
                 if(unClaimAmount <= 0) break;
-                if (detailInfo.ClaimAmount == detailInfo.TotalAmount) continue;
+               
                 if ((detailInfo.TotalAmount - detailInfo.ClaimAmount) >= unClaimAmount)
                 {
                     currentClaimAmount = unClaimAmount;
@@ -304,7 +299,7 @@ public partial class DropContract
                 }
                 
                 //transfer nft
-                Context.SendInline(State.TokenContract.Value, nameof(State.TokenContract.Transfer), new TransferInput
+                State.TokenContract.Transfer.Send(new TransferInput
                 {
                     To = Context.Sender,
                     Symbol = detailInfo.Symbol,
@@ -315,18 +310,26 @@ public partial class DropContract
                     Symbol = detailInfo.Symbol,
                     Amount = currentClaimAmount
                 });
+                
+                //NFT info
+                var symbolInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+                {
+                    Symbol = detailInfo.Symbol
+                });
+                if (symbolInfo == null) break;
                 claimDetailEventList.Add(new ClaimDetail
                 {
                     Symbol = detailInfo.Symbol,
                     Amount = currentClaimAmount,
                     Name = symbolInfo.TokenName,
                     ChainId = symbolInfo.IssueChainId,
-                    Image = symbolInfo.ExternalInfo == null ? "" : symbolInfo.ExternalInfo.Value[DropContractConstants.NftImageUrlExternalInfoKey],
+                    Image = symbolInfo.ExternalInfo == null ? "" : symbolInfo.ExternalInfo.Value.TryGetValue(DropContractConstants.NftImageUrlExternalInfoKey, out var imageUrl) ? imageUrl : "",
                 });
                 State.DropSymbolMap[input.DropId][detailInfo.Symbol] = 1;
             }
             //update claim drop detail
             State.DropDetailListMap[input.DropId][currentIndex] = currentClaimDropDetailList;
+            if(currentIndex == dropInfo.MaxIndex) break;
             if(unClaimAmount > 0 && currentIndex < dropInfo.MaxIndex)
             {
                 currentIndex++;
