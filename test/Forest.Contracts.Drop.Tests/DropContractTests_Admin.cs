@@ -110,6 +110,10 @@ namespace Forest.Contracts.Drop
             await DropContractStub.SetAdmin.SendAsync(UserAddress);
             var admin = await DropContractStub.GetAdmin.CallAsync(new Empty());
             admin.ShouldBe(UserAddress);
+            
+            await DropContractUserStub.SetAdmin.SendAsync(DefaultAddress);
+            admin = await DropContractStub.GetAdmin.CallAsync(new Empty());
+            admin.ShouldBe(DefaultAddress);
         }
 
         [Fact]
