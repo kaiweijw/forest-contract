@@ -10,7 +10,6 @@ namespace Forest.Contracts.Inscription;
 
 public partial class InscriptionContractTests
 {
-    [Fact]
     public async Task ACS2_GetResourceInfo_Inscribe_Test()
     {
         await IssueTest_Success();

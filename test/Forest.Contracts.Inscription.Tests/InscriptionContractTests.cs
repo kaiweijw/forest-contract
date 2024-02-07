@@ -1240,6 +1240,12 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
             Amt = 100
         });
         var index1 = (int)(Math.Abs(User2Address.ToByteArray().ToInt64(true)) % list.Values.Count);
+        await TokenContractStub.Transfer.SendAsync(new TransferInput
+        {
+            To = User2Address,
+            Symbol = "ELF",
+            Amount = 5,
+        });        
         var executionResult1 = await InscriptionContractAccount1Stub.MintInscription.SendAsync(new InscribedInput
         {
             Tick = "ELFS",
@@ -1374,12 +1380,28 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
             Tick = "ELFS",
             Amt = 80
         });
+        await InscriptionContractStub.SetMinimumELFBalance.SendAsync(new Int32Value
+        {
+            Value = 6
+        });
         var result = await InscriptionContractAccount1Stub.MintInscription.SendWithExceptionAsync(new InscribedInput
         {
             Tick = "ELFS",
             Amt = 40
         });
-        result.TransactionResult.Error.ShouldContain("Not enough inscription amount to mint.");
+        result.TransactionResult.Error.ShouldContain("Not enough ELF balance.");
+        await TokenContractStub.Transfer.SendAsync(new TransferInput
+        {
+            To = User2Address,
+            Symbol = "ELF",
+            Amount = 6,
+        });
+        result = await InscriptionContractAccount1Stub.MintInscription.SendWithExceptionAsync(new InscribedInput
+        {
+            Tick = "ELFS",
+            Amt = 40
+        });
+        result.TransactionResult.Error.ShouldContain(" Not enough inscription amount to mint.");
     }
 
     [Fact]
@@ -1461,6 +1483,48 @@ public partial class InscriptionContractTests : InscriptionContractTestBase
         result2.TransactionResult.Error.ShouldContain("Invalid input");
     }
 
+    [Fact]
+    public async Task SetMinimumELFBalance_Success()
+    {
+        await InitializeTest_Success();
+        await InscriptionContractStub.SetMinimumELFBalance.SendAsync(new Int32Value
+        {
+            Value = 6
+        });
+        {
+            var size = await InscriptionContractStub.GetMinimumELFBalance.CallAsync(new Empty());
+            size.Value.ShouldBe(6);
+        }
+    }
+    
+    [Fact]
+    public async Task SetMinimumELFBalance_Failed()
+    {
+        await InitializeTest_Success();
+        var result = await InscriptionContractAccount1Stub.SetMinimumELFBalance.SendWithExceptionAsync(new Int32Value
+        {
+            Value = 6
+        });
+        result.TransactionResult.Error.ShouldContain("No permission");
+        {
+            var size = await InscriptionContractStub.GetMinimumELFBalance.CallAsync(new Empty());
+            size.Value.ShouldBe(0);
+        }
+    }
+
+    [Fact]
+    public async Task SetMinimumELFBalance_InvalidInput()
+    {
+        await InitializeTest_Success();
+        {
+            var result = await InscriptionContractStub.SetMinimumELFBalance.SendWithExceptionAsync(new Int32Value
+            {
+                Value = -1
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid input");
+        }
+    }
+    
     [Fact]
     public async Task SetImageSizeLimit_Success()
     {

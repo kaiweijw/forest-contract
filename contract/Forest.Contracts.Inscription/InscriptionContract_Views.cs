@@ -108,4 +108,12 @@ public partial class InscriptionContract
         result.Value = true;
         return result;
     }
+
+    public override Int32Value GetMinimumELFBalance(Empty input)
+    {
+        return new Int32Value()
+        {
+            Value = GetMinimumELFBalance()
+        };
+    }
 }

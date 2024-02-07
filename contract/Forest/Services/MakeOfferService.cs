@@ -45,9 +45,9 @@ internal class MakeOfferService
         }
     }
     
-    public void ValidateFixPriceList(FixPriceList input)
+    public void ValidateFixPriceList(FixPrice inputFixPrice)
     {
-        if (_context.Sender == input.OfferTo)
+        if (_context.Sender == inputFixPrice.OfferTo)
         {
             throw new AssertionException("Origin owner cannot be sender himself.");
         }
@@ -100,7 +100,7 @@ internal class MakeOfferService
         return DealStatus.DealWithMultiPrice;
     }
 
-    public void GetAffordableNftInfoList(string symbol, FixPriceList input,
+    public void GetAffordableNftInfoList(string symbol, FixPrice inputFixPrice,
         out List<ListedNFTInfo> affordableNftInfoList)
     {
         affordableNftInfoList = new List<ListedNFTInfo>();
@@ -114,14 +114,14 @@ internal class MakeOfferService
             throw new AssertionException("NFT does not exist.");
         }
 
-        var listedNftInfoList = _listedNFTInfoListMap[symbol][input.OfferTo];
+        var listedNftInfoList = _listedNFTInfoListMap[symbol][inputFixPrice.OfferTo];
 
         if (listedNftInfoList == null)
         {
             return;
         }
 
-        affordableNftInfoList = GetAffordableNftInfoListFixPrice(symbol, input, listedNftInfoList);
+        affordableNftInfoList = GetAffordableNftInfoListFixPrice(symbol, inputFixPrice, listedNftInfoList);
     }
 
     private List<ListedNFTInfo> GetAffordableNftInfoList(MakeOfferInput makeOfferInput,
@@ -138,15 +138,15 @@ internal class MakeOfferService
             .ToList();
     }
 
-    private List<ListedNFTInfo> GetAffordableNftInfoListFixPrice(string symbol, FixPriceList input,
+    private List<ListedNFTInfo> GetAffordableNftInfoListFixPrice(string symbol, FixPrice inputFixPrice,
         ListedNFTInfoList listedNftInfoList)
     {
         var blockTime = _context.CurrentBlockTime;
         var maxDealCount = _bizConfig.Value.MaxOfferDealCount;
         return listedNftInfoList.Value.Where(i =>
-                i.Symbol == symbol && i.Price.Symbol == input.Price.Symbol && i.Price.Amount == input.Price.Amount
+                i.Symbol == symbol && i.Price.Symbol == inputFixPrice.Price.Symbol && i.Price.Amount == inputFixPrice.Price.Amount
                 && blockTime <= i.Duration.StartTime.AddHours(i.Duration.DurationHours).AddMinutes(i.Duration.DurationMinutes)
-                && input.StartTime.Seconds == i.Duration.StartTime.Seconds)
+                && inputFixPrice.StartTime.Seconds == i.Duration.StartTime.Seconds)
             .OrderBy(i => i.Duration.StartTime)
             .Take(maxDealCount > 0 ? maxDealCount : ForestContract.DefaultMaxOfferDealCount)
             .ToList();
