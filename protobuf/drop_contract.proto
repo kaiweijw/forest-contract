@@ -1,0 +1,275 @@
+// the version of the language, use proto3 for contracts
+syntax = "proto3";
+
+import "aelf/core.proto";
+import "aelf/options.proto";
+import "acs12.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Forest.Contracts.Drop";
+
+service DropContract {
+  option (aelf.base) = "acs12.proto";
+  option (aelf.csharp_state) = "Forest.Contracts.Drop.DropContractState";
+
+  // Initialize.
+  rpc Initialize(InitializeInput) returns (google.protobuf.Empty) {
+  }
+
+  rpc SetAdmin(aelf.Address) returns (google.protobuf.Empty) {
+  }
+
+  rpc SetMaxDropDetailListCount(google.protobuf.Int32Value) returns (google.protobuf.Empty){
+  }
+
+  rpc SetProxyAccountContractAddress(aelf.Address) returns (google.protobuf.Empty) {
+  }
+
+  rpc SetMaxDropDetailIndexCount(google.protobuf.Int32Value) returns (google.protobuf.Empty){
+  }
+  // Actions.
+  rpc CreateDrop(CreateDropInput)returns (google.protobuf.Empty){
+  }
+
+  rpc AddDropNFTDetailList(AddDropNFTDetailListInput)returns (google.protobuf.Empty){
+  }
+
+  rpc SubmitDrop(aelf.Hash)returns (google.protobuf.Empty){
+  }
+
+  rpc CancelDrop(aelf.Hash)returns (google.protobuf.Empty){
+  }
+
+  rpc FinishDrop(FinishDropInput)returns (google.protobuf.Empty){
+  }
+
+  rpc ClaimDrop(ClaimDropInput)returns (google.protobuf.Empty){
+  }
+  // Views.
+  rpc GetAdmin(google.protobuf.Empty) returns (aelf.Address) {
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetMaxDropDetailListCount(google.protobuf.Empty) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetProxyAccountContractAddress(google.protobuf.Empty) returns (aelf.Address) {
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetMaxDropDetailIndexCount(google.protobuf.Empty) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetDropInfo(GetDropInfoInput) returns (DropInfo){
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetDropDetailList(GetDropDetailListInput) returns (DropDetailList){
+    option (aelf.is_view) = true;
+  }
+  rpc GetClaimDropInfo(GetClaimDropInfoInput) returns (ClaimDropDetail){
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetDropSymbolExist(GetDropSymbolExistInput) returns (google.protobuf.Int32Value){
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetDropId(GetDropIdInput) returns (aelf.Hash){
+    option (aelf.is_view) = true;
+  }
+}
+
+//Data structure
+message InitializeInput {
+  aelf.Address admin = 1;
+  int32 max_drop_detail_list_count = 2;
+  int32 max_drop_detail_index_count = 3;
+  aelf.Address proxy_account_address = 4;
+}
+
+message DropInfo {
+  google.protobuf.Timestamp start_time = 1;
+  google.protobuf.Timestamp expire_time = 2;
+  int64 claim_max = 3;
+  Price claim_price = 4;
+  int32 max_index = 5;
+  int32 current_index =6;
+  int64 total_amount = 7;
+  int64 claim_amount = 8;
+  aelf.Address owner = 9;
+  bool is_burn = 10;
+  DropState state = 11;
+  string collection_symbol = 12;
+  google.protobuf.Timestamp create_time = 13;
+  google.protobuf.Timestamp update_time = 14;
+}
+
+message DropDetailList{
+  repeated DropDetailInfo value = 1;
+  bool is_finish = 2;
+}
+
+message DropDetailInfo {
+  string symbol = 1;
+  int64 total_amount = 2;
+  int64 claim_amount = 3;
+}
+
+enum DropState {
+  CREATE = 0;
+  SUBMIT = 1;
+  CANCEL = 2;
+  FINISH = 3;
+}
+
+message CreateDropInput{
+  google.protobuf.Timestamp start_time = 1;
+  google.protobuf.Timestamp expire_time = 2;
+  int64 claim_max = 3;
+  Price claim_price = 4;
+  bool is_burn = 5;
+  string collection_symbol = 6;
+}
+
+message AddDropNFTDetailListInput{
+  aelf.Hash drop_id = 1;
+  repeated DropDetailInfo value = 2;
+}
+
+message Price {
+  string symbol = 1;
+  int64 amount = 2;
+}
+
+message FinishDropInput{
+  aelf.Hash drop_id = 1;
+  int32 index = 2;
+}
+
+message ClaimDropInput{
+  aelf.Hash drop_id = 1;
+  int64 claim_amount = 2;
+}
+
+message ClaimDropDetail{
+  int64 amount = 1;
+  google.protobuf.Timestamp create_time = 2;
+  google.protobuf.Timestamp update_time = 3;
+}
+
+message GetDropInfoInput{
+  aelf.Hash drop_id = 1;
+}
+
+message GetClaimDropInfoInput{
+  aelf.Hash drop_id = 1;
+  aelf.Address address = 2;
+}
+
+message ClaimDetailRecordList{
+  repeated ClaimDetailRecord value = 1;
+}
+
+message ClaimDetailRecord{
+  string symbol = 1;
+  int64 amount = 2;
+}
+
+message GetDropSymbolExistInput{
+  aelf.Hash drop_id = 1;
+  string symbol = 2;
+}
+
+message GetDropIdInput{
+  aelf.Hash transaction_id = 1;
+  aelf.Address address = 2;
+}
+
+message GetDropDetailListInput{
+  aelf.Hash drop_id = 1;
+  int32 index = 2;
+}
+
+// Log Event
+message DropCreated {
+  option (aelf.is_event) = true;
+  aelf.Hash drop_id = 1;
+  string collection_symbol = 2;
+  google.protobuf.Timestamp start_time = 3;
+  google.protobuf.Timestamp expire_time = 4;
+  int64 claim_max = 5;
+  Price claim_price = 6;
+  int32 max_index = 7;
+  int32 current_index =8;
+  int64 total_amount = 9;
+  int64 claim_amount = 10;
+  aelf.Address owner = 11;
+  bool is_burn = 12;
+  DropState state = 13;
+  google.protobuf.Timestamp create_time = 14;
+  google.protobuf.Timestamp update_time = 15;
+}
+
+message DropDetailAdded {
+  option (aelf.is_event) = true;
+  aelf.Hash drop_id = 1;
+  string collection_symbol = 2;
+  DropDetailList detail_list = 3;
+}
+
+message DropDetailChanged {
+  option (aelf.is_event) = true;
+  aelf.Hash drop_id = 1;
+  int32 index = 2;
+  bool is_finish = 3;
+}
+
+message DropChanged {
+  option (aelf.is_event) = true;
+  aelf.Hash drop_id = 1;
+  int32 max_index = 2;
+  int32 current_index =3;
+  int64 total_amount = 4;
+  int64 claim_amount = 5;
+  google.protobuf.Timestamp update_time = 6;
+}
+
+message DropStateChanged {
+  option (aelf.is_event) = true;
+  aelf.Hash drop_id = 1;
+  DropState state = 2;
+  google.protobuf.Timestamp update_time = 3;
+}
+
+message DropClaimAdded {
+  option (aelf.is_event) = true;
+  aelf.Hash drop_id = 1;
+  aelf.Address address = 2;
+  ClaimDetailList claim_detail_list = 3;
+  int64 current_amount = 4;
+  int64 total_amount = 5;
+}
+
+message ClaimDetailList{
+  repeated ClaimDetail value = 1;
+}
+message ClaimDetail{
+  string symbol = 1;
+  int64 amount = 2;
+  string name = 3;
+  int32 chain_id = 4;
+  string image = 5;
+}
+enum SymbolType {
+  TOKEN = 0;
+  NFT = 1;
+  NFT_COLLECTION = 2;
+}
+
+
