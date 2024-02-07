@@ -9,6 +9,7 @@ using AElf.ContractTestBase.ContractTestKit;
 using AElf.CSharp.Core.Extension;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
+using Newtonsoft.Json;
 using Shouldly;
 using Xunit;
 
@@ -1309,5 +1310,50 @@ namespace Forest.Contracts.Drop
             });
             claimResult.Amount.ShouldBe(2);
         }
+
+        [Fact]
+        public async Task Dto_Get()
+        {
+            var dropInfo = new DropInfo()
+            {
+                ClaimMax = 10
+            };
+            Console.WriteLine(JsonConvert.SerializeObject(dropInfo));
+            var initInput = new InitializeInput();
+            Console.WriteLine(JsonConvert.SerializeObject(initInput));
+            var createDropInput = new CreateDropInput();
+            Console.WriteLine(JsonConvert.SerializeObject(createDropInput));
+            var price = new Price();
+            Console.WriteLine(JsonConvert.SerializeObject(price));
+            var finishDropInput = new FinishDropInput();
+            Console.WriteLine(JsonConvert.SerializeObject(finishDropInput));
+            var claimDropInput = new ClaimDropInput();
+            Console.WriteLine(JsonConvert.SerializeObject(claimDropInput));
+            var getClaimDropInfoInput = new GetClaimDropInfoInput();
+            Console.WriteLine(JsonConvert.SerializeObject(getClaimDropInfoInput));
+            var getDropInfoInput = new GetDropInfoInput();
+            Console.WriteLine(JsonConvert.SerializeObject(getDropInfoInput));
+            var claimDetailRecord = new ClaimDetailRecord();
+            Console.WriteLine(JsonConvert.SerializeObject(claimDetailRecord));
+            var getDropSymbolExistInput = new GetDropSymbolExistInput();
+            Console.WriteLine(JsonConvert.SerializeObject(getDropSymbolExistInput));
+            var getDropIdListInput = new GetDropIdInput();
+            Console.WriteLine(JsonConvert.SerializeObject(getDropIdListInput));
+            var getDropListInput = new GetDropDetailListInput();
+            Console.WriteLine(JsonConvert.SerializeObject(getDropListInput));
+            var dropCreated = new DropCreated();
+            Console.WriteLine(JsonConvert.SerializeObject(dropCreated));
+            var dropChanged = new DropChanged();
+            Console.WriteLine(JsonConvert.SerializeObject(dropChanged));
+            var dropStateChange = new DropStateChanged();
+            Console.WriteLine(JsonConvert.SerializeObject(dropStateChange));
+            var dropClaimAdded = new DropClaimAdded();
+            Console.WriteLine(JsonConvert.SerializeObject(dropClaimAdded));
+            var dropDetailAdded = new DropDetailAdded();
+            Console.WriteLine(JsonConvert.SerializeObject(dropDetailAdded));
+            var dropDetailChanged = new DropDetailChanged();
+            Console.WriteLine(JsonConvert.SerializeObject(dropDetailChanged));
+        }
+
     }
 }
