@@ -258,11 +258,11 @@ public partial class DropContract
         Assert(dropInfo.ClaimAmount < dropInfo.TotalAmount, "All NFT already claimed.");
         Assert(dropInfo.ExpireTime > Context.CurrentBlockTime, "The event has ended.");
         Assert(dropInfo.StartTime <= Context.CurrentBlockTime, "The drop has not started yet.");
+        Assert(Context.Sender != dropInfo.Owner, "Owner can't claim drop.");
         var claimDropDetail = State.ClaimDropMap[input.DropId][Context.Sender];
         Assert(input.ClaimAmount <= dropInfo.ClaimMax, "Claimed exceed max amount.");
         Assert(claimDropDetail == null || (claimDropDetail.Amount + input.ClaimAmount) <= dropInfo.ClaimMax,
             "Claimed exceed max amount.");
-
         var unClaimAmount = input.ClaimAmount;
         var currentIndex = dropInfo.CurrentIndex == 0 ? 1 : dropInfo.CurrentIndex;
         var claimDetailRecordList = new List<ClaimDetailRecord>();

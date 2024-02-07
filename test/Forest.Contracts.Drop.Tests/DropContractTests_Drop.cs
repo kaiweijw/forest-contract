@@ -1136,7 +1136,7 @@ namespace Forest.Contracts.Drop
             //claim 1
             var currentBlockTime = BlockTimeProvider.GetBlockTime();
             BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(30));
-            var claimResult = await DropContractStub.ClaimDrop.SendWithExceptionAsync(new ClaimDropInput()
+            var claimResult = await DropContractUserStub.ClaimDrop.SendWithExceptionAsync(new ClaimDropInput()
             {
                 DropId = dropId,
                 ClaimAmount = 10
@@ -1251,7 +1251,7 @@ namespace Forest.Contracts.Drop
             //claim 1
             var currentBlockTime = BlockTimeProvider.GetBlockTime();
             BlockTimeProvider.SetBlockTime(currentBlockTime.AddSeconds(30));
-            await DropContractStub.ClaimDrop.SendAsync(new ClaimDropInput()
+            await DropContractUserStub.ClaimDrop.SendAsync(new ClaimDropInput()
             {
                 DropId = dropId,
                 ClaimAmount = 8
@@ -1259,12 +1259,12 @@ namespace Forest.Contracts.Drop
             var claimResult = await DropContractStub.GetClaimDropInfo.CallAsync(new GetClaimDropInfoInput()
             {
                 DropId = dropId,
-                Address = DefaultAddress
+                Address = UserAddress
             });
             claimResult.Amount.ShouldBe(8);
             
             //claim 2
-            await DropContractUserStub.ClaimDrop.SendAsync(new ClaimDropInput()
+            await DropContractUser2Stub.ClaimDrop.SendAsync(new ClaimDropInput()
             {
                 DropId = dropId,
                 ClaimAmount = 10
@@ -1272,7 +1272,7 @@ namespace Forest.Contracts.Drop
             claimResult = await DropContractStub.GetClaimDropInfo.CallAsync(new GetClaimDropInfoInput()
             {
                 DropId = dropId,
-                Address = UserAddress
+                Address = User2Address
             });
             claimResult.Amount.ShouldBe(2);
         }
