@@ -254,6 +254,7 @@ namespace Forest.Contracts.Drop
             };
             var createResult = await DropContractStub.CreateDrop.SendWithExceptionAsync(createInput);
             createResult.TransactionResult.Error.ShouldContain("Invalid start time.");
+            
             // invalid expire time
             createInput = new CreateDropInput
             {
@@ -295,6 +296,22 @@ namespace Forest.Contracts.Drop
             };
             createResult = await DropContractStub.CreateDrop.SendWithExceptionAsync(createInput);
             createResult.TransactionResult.Error.ShouldContain("Invalid claim price.");
+            //claim_max <0
+            createInput = new CreateDropInput
+            {
+                StartTime = Timestamp.FromDateTime(DateTime.UtcNow.AddSeconds(5)),
+                ExpireTime = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(7)),
+                CollectionSymbol = CollectionSymbol,
+                ClaimMax = -1,
+                ClaimPrice = new Price()
+                {
+                    Symbol = ElfSymbol,
+                    Amount = 1
+                },
+                IsBurn = true
+            };
+            createResult = await DropContractStub.CreateDrop.SendWithExceptionAsync(createInput);
+            createResult.TransactionResult.Error.ShouldContain("Invalid claim max.");
             
             createInput = new CreateDropInput
             {
