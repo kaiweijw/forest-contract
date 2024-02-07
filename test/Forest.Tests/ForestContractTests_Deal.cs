@@ -710,13 +710,13 @@ public class ForestContractTests_Deal : ForestContractTestBase
                         // new WhitelistInfo() {}
                     }
                 },
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60
                 },
             });
             
@@ -1813,13 +1813,13 @@ public class ForestContractTests_Deal : ForestContractTestBase
                 IsWhitelistAvailable = false,
                 Price = sellPrice,
                 Whitelists = null,
-                Duration = new ListDuration()
+                Duration = new ListWithFixedPriceDuration()
                 {
                     // start 1sec ago
                     StartTime = startTime,
                     // public 10min after
                     PublicTime = publicTime,
-                    DurationHours = 1,
+                    DurationMinutes = 1 * 60,
                 },
             });
         }
@@ -1877,6 +1877,10 @@ public class ForestContractTests_Deal : ForestContractTestBase
             log1.Symbol.ShouldBe(NftSymbol);
             log1.ExpireTime.ShouldNotBeNull();
             log1.OfferTo.ShouldBe(User1Address);
+            log1.Price.ShouldNotBeNull();
+            log1.Price.Amount.ShouldBe(offerPrice.Amount);
+            log1.Price.Symbol.ShouldBe(offerPrice.Symbol);
+            
 
             var log2 = Sold.Parser.ParseFrom(executionResult.TransactionResult.Logs
                 .First(l => l.Name == nameof(Sold))
