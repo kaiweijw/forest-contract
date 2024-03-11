@@ -39,7 +39,7 @@ public partial class ForestContract
             Symbol = input.Price.Symbol,
             Owner = Context.Sender
         });
-        Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Insufficient funds");
+        Assert(balance.Balance >= input.Price.Amount * NumberHelper.DivideByPowerOfTen(input.Quantity, nftInfo.Decimals), "Insufficient funds");
         var originBalance = balance.Clone();
 
         var amount = GetOfferTotalAmount(Context.Sender, input.Price.Symbol);
