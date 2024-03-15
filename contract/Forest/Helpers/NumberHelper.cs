@@ -9,7 +9,7 @@ public static class NumberHelper
     {
         if (quantity == ForestContract.NumberZero || tokenDecimals == ForestContract.NumberZero)
         {
-            return ForestContract.NumberZero;
+            return quantity;
         }
 
         long divisor = ForestContract.NumberOne;
