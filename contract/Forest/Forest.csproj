@@ -45,5 +45,4 @@
             <Link>Protobuf\Proto\forest_contract.proto</Link>
         </ContractCode>
     </ItemGroup>
-    
 </Project>

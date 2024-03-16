@@ -6,6 +6,7 @@ using AElf.CSharp.Core;
 using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
 using AElf.Types;
+using Forest.Helpers;
 using Forest.Services;
 using Forest.Whitelist;
 using Google.Protobuf.WellKnownTypes;
@@ -32,18 +33,20 @@ public partial class ForestContract
         });
         Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
         Assert(input.Quantity <= nftInfo?.TotalSupply, "Offer quantity beyond totalSupply");
-
+ 
         var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
         {
             Symbol = input.Price.Symbol,
             Owner = Context.Sender
         });
-        Assert(balance.Balance >= input.Price.Amount * input.Quantity, "Insufficient funds");
+        Assert(balance.Balance >=
+               input.Price.Amount.Mul(NumberHelper.DivideByPowerOfTen(input.Quantity, nftInfo.Decimals)), "Insufficient funds");
         var originBalance = balance.Clone();
 
         var amount = GetOfferTotalAmount(Context.Sender, input.Price.Symbol);
         var allowance = GetAllowance(Context.Sender, input.Price.Symbol);
-        var totalAmount = amount.Add(input.Price.Amount.Mul(input.Quantity));
+        var totalAmount =
+            amount.Add(input.Price.Amount.Mul(NumberHelper.DivideByPowerOfTen(input.Quantity, nftInfo.Decimals)));
         Assert(allowance >= totalAmount, $"The allowance you set is less than required. Please reset it.");
         
         var tokenWhiteList = GetTokenWhiteList(input.Symbol).Value;
@@ -76,19 +79,20 @@ public partial class ForestContract
                     .ToList();
                 if (minStartList.Count == 0)
                 {
-                    PerformMakeOffer(input, originBalance);
+                    PerformMakeOffer(input, originBalance, nftInfo.Decimals);
                     return new Empty();
                 }
 
                 if (blockTime < minStartList[0].Duration.StartTime)
                 {
-                    PerformMakeOffer(input, originBalance);
+                    PerformMakeOffer(input, originBalance, nftInfo.Decimals);
                     return new Empty();
                 }
 
-                if (TryDealWithFixedPriceWhitelist(input, price, whitelistId))
+                if (TryDealWithFixedPriceWhitelist(input, price, whitelistId, nftInfo.Decimals))
                 {
-                    minStartList[0].Quantity = minStartList[0].Quantity.Sub(1);
+                    minStartList[0].Quantity = minStartList[0].Quantity
+                        .Sub(NumberHelper.GetPowerOfTen(NumberOne, nftInfo.Decimals));
                     if (minStartList[0].Quantity == 0)
                     {
                         listedNftInfoList.Value.Remove(minStartList[0]);
@@ -127,7 +131,7 @@ public partial class ForestContract
         switch (dealStatus)
         {
             case DealStatus.NotDeal:
-                PerformMakeOffer(input, originBalance);
+                PerformMakeOffer(input, originBalance, nftInfo.Decimals);
                 return new Empty();
         }
 
@@ -135,7 +139,7 @@ public partial class ForestContract
 
         if (listedNftInfoList.Value.All(i => i.ListType != ListType.FixedPrice))
         {
-            PerformMakeOffer(input, originBalance);
+            PerformMakeOffer(input, originBalance, nftInfo.Decimals);
             State.ListedNFTInfoListMap[input.Symbol][input.OfferTo] = listedNftInfoList;
             return new Empty();
         }
@@ -152,7 +156,7 @@ public partial class ForestContract
         var normalPriceDealResultList = dealService.GetDealResultList(getDealResultListInput).ToList();
         if (normalPriceDealResultList.Count == 0)
         {
-            PerformMakeOffer(input, originBalance);
+            PerformMakeOffer(input, originBalance, nftInfo.Decimals);
             return new Empty();
         }
 
@@ -160,7 +164,8 @@ public partial class ForestContract
         foreach (var dealResult in normalPriceDealResultList)
         {
             var listedNftInfo = affordableNftInfoList[dealResult.Index];
-            if (!TryDealWithFixedPrice(sender, input, dealResult, listedNftInfo, out var dealQuantity)) continue;
+            if (!TryDealWithFixedPrice(sender, input, dealResult, listedNftInfo, out var dealQuantity,
+                    nftInfo.Decimals)) continue;
             dealResult.Quantity = dealResult.Quantity.Sub(dealQuantity);
             listedNftInfo.Quantity = listedNftInfo.Quantity.Sub(dealQuantity);
             input.Quantity = input.Quantity.Sub(dealQuantity);
@@ -200,7 +205,7 @@ public partial class ForestContract
 
         if (input.Quantity > 0)
         {
-            PerformMakeOffer(input, originBalance);
+            PerformMakeOffer(input, originBalance, nftInfo.Decimals);
         }
 
         State.ListedNFTInfoListMap[input.Symbol][input.OfferTo] = listedNftInfoList;
@@ -267,7 +272,9 @@ public partial class ForestContract
             Symbol = inputFixPrice.Price.Symbol,
             Owner = Context.Sender
         });
-        Assert(balance.Balance >= inputFixPrice.Price.Amount * inputFixPrice.Quantity, "Insufficient funds");
+        Assert(balance.Balance >= inputFixPrice.Price.Amount.Mul(
+                NumberHelper.DivideByPowerOfTen(inputFixPrice.Quantity, nftInfo.Decimals))
+            , "Insufficient funds");
 
         var makeOfferService = GetMakeOfferService();
         makeOfferService.ValidateFixPriceList(inputFixPrice);
@@ -293,7 +300,7 @@ public partial class ForestContract
             var listedNftInfo = affordableNftInfoList[dealResult.Index];
 
             TryDealWithFixedPriceForBatch(sender, symbol, inputFixPrice, dealResult
-                , listedNftInfo, userBalanceDic, out var dealQuantity);
+                , listedNftInfo, userBalanceDic, out var dealQuantity,nftInfo.Decimals);
 
             long realFail = dealResult.Quantity - dealQuantity;
             if (realFail > 0)
@@ -360,7 +367,7 @@ public partial class ForestContract
         State.ListedNFTInfoListMap[symbol][inputFixPrice.OfferTo] = listedNftInfoList;
     }
 
-    private bool TryDealWithFixedPriceWhitelist(MakeOfferInput input, Price price, Hash whitelistId)
+    private bool TryDealWithFixedPriceWhitelist(MakeOfferInput input, Price price, Hash whitelistId,int decimals)
     {
         Assert(input.Price.Symbol == price.Symbol, $"Need to use token {price.Symbol}, not {input.Price.Symbol}");
         //Get extraInfoId according to the sender.
@@ -384,13 +391,13 @@ public partial class ForestContract
                 }
             }
         });
-        var totalAmount = price.Amount.Mul(1);
+        var totalAmount = price.Amount.Mul(NumberOne);
         PerformDeal(new PerformDealInput
         {
             NFTFrom = input.OfferTo,
             NFTTo = Context.Sender,
             NFTSymbol = input.Symbol,
-            NFTQuantity = 1,
+            NFTQuantity = NumberHelper.GetPowerOfTen(NumberOne, decimals),
             PurchaseSymbol = price.Symbol,
             PurchaseAmount = totalAmount,
         });
@@ -404,7 +411,11 @@ public partial class ForestContract
         OfferList offerList;
         var newOfferList = new OfferList();
         var cancelOfferMap = new Dictionary<string, long>();
-        
+        var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
+        {
+            Symbol = input.Symbol,
+        });
+        Assert(nftInfo != null && !string.IsNullOrWhiteSpace(nftInfo.Symbol), "Invalid symbol data");
         // Admin can remove expired offer.
         if (input.OfferFrom != null && input.OfferFrom != Context.Sender)
         {
@@ -426,7 +437,8 @@ public partial class ForestContract
                         var amount = cancelOfferMap.TryGetValue(offer.Price.Symbol, out var value)
                             ? value
                             : 0;
-                        cancelOfferMap[offer.Price.Symbol] = amount + offer.Quantity.Mul(offer.Price.Amount);
+                        cancelOfferMap[offer.Price.Symbol] = amount + NumberHelper
+                            .DivideByPowerOfTen(offer.Quantity, nftInfo.Decimals).Mul(offer.Price.Amount);
                         Context.Fire(new OfferRemoved
                         {
                             Symbol = input.Symbol,
@@ -456,11 +468,7 @@ public partial class ForestContract
         //owner can remove select offer.
 
         offerList = State.OfferListMap[input.Symbol][Context.Sender];
-
-        var nftInfo = State.TokenContract.GetTokenInfo.Call(new GetTokenInfoInput
-        {
-            Symbol = input.Symbol,
-        });
+        
         if (nftInfo.Issuer == null)
         {
             // This nft does not exist.
@@ -482,7 +490,9 @@ public partial class ForestContract
                     var amount = cancelOfferMap.TryGetValue(offerList.Value[i].Price.Symbol, out var value)
                         ? value
                         : 0;
-                    cancelOfferMap[offerList.Value[i].Price.Symbol] = amount + offerList.Value[i].Quantity.Mul(offerList.Value[i].Price.Amount);
+                    cancelOfferMap[offerList.Value[i].Price.Symbol] = amount + NumberHelper
+                        .DivideByPowerOfTen(offerList.Value[i].Quantity, nftInfo.Decimals)
+                        .Mul(offerList.Value[i].Price.Amount);
                     Context.Fire(new OfferRemoved
                     {
                         Symbol = input.Symbol,
@@ -556,7 +566,8 @@ public partial class ForestContract
             var amount = cancelOfferMap.TryGetValue(cancelOfferList[i].Price.Symbol, out var value)
                 ? value
                 : 0;
-            cancelOfferMap[cancelOfferList[i].Price.Symbol] = amount + cancelOfferList[i].Quantity.Mul(cancelOfferList[i].Price.Amount);
+            cancelOfferMap[cancelOfferList[i].Price.Symbol] = amount + NumberHelper
+                .DivideByPowerOfTen(cancelOfferList[i].Quantity, nftInfo.Decimals).Mul(cancelOfferList[i].Price.Amount);
 
             Context.Fire(new OfferCanceledByExpireTime
             {
@@ -602,13 +613,13 @@ public partial class ForestContract
     /// Sender is buyer.
     /// </summary>
     private bool TryDealWithFixedPrice(Address sender, MakeOfferInput input, DealResult dealResult,
-        ListedNFTInfo listedNftInfo, out long actualQuantity)
+        ListedNFTInfo listedNftInfo, out long actualQuantity, int decimals)
     {
         var usePrice = input.Price.Clone();
         usePrice.Amount = Math.Min(input.Price.Amount, dealResult.PurchaseAmount);
         actualQuantity = Math.Min(input.Quantity, listedNftInfo.Quantity);
 
-        var totalAmount = usePrice.Amount.Mul(actualQuantity);
+        var totalAmount = usePrice.Amount.Mul(NumberHelper.DivideByPowerOfTen(actualQuantity, decimals));
         PerformDeal(new PerformDealInput
         {
             NFTFrom = input.OfferTo,
@@ -625,7 +636,7 @@ public partial class ForestContract
     /// Sender is buyer.
     /// </summary>
     private bool TryDealWithFixedPriceForBatch(Address sender, string symbol, FixPrice input, DealResult dealResult,
-        ListedNFTInfo listedNftInfo, Dictionary<string,long> userBalanceDic ,out long actualQuantity)
+        ListedNFTInfo listedNftInfo, Dictionary<string,long> userBalanceDic ,out long actualQuantity,int decimals)
     {
         var userBalanceKey = symbol + input.OfferTo;
         long senderBalanceCount;
@@ -662,7 +673,7 @@ public partial class ForestContract
         senderBalanceCount -= actualQuantity;
         userBalanceDic[userBalanceKey]=senderBalanceCount;
 
-        var totalAmount = usePrice.Amount.Mul(actualQuantity);
+        var totalAmount = usePrice.Amount.Mul(NumberHelper.DivideByPowerOfTen(actualQuantity, decimals));
         PerformDeal(new PerformDealInput
         {
             NFTFrom = input.OfferTo,
@@ -679,7 +690,7 @@ public partial class ForestContract
     /// Will go to Offer List.
     /// </summary>
     /// <param name="input"></param>
-    private void PerformMakeOffer(MakeOfferInput input, GetBalanceOutput originGetBalanceOutput)
+    private void PerformMakeOffer(MakeOfferInput input, GetBalanceOutput originGetBalanceOutput,int decimals)
     {
         var offerList = State.OfferListMap[input.Symbol][Context.Sender] ?? new OfferList();
         Assert(offerList.Value.Count < State.BizConfig.Value.MaxOfferCount,
@@ -725,7 +736,9 @@ public partial class ForestContract
         }
 
         State.OfferListMap[input.Symbol][Context.Sender] = offerList;
-        ModifyOfferTotalAmount(Context.Sender, input.Price.Symbol, input.Price.Amount.Mul(input.Quantity));
+        ModifyOfferTotalAmount(Context.Sender, input.Price.Symbol, input.Price.Amount.Mul(
+            NumberHelper.DivideByPowerOfTen(input.Quantity, decimals)
+            ));
         var addressList = State.OfferAddressListMap[input.Symbol] ?? new AddressList();
 
         if (!addressList.Value.Contains(Context.Sender))
