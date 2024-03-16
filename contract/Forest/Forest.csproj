@@ -45,9 +45,4 @@
             <Link>Protobuf\Proto\forest_contract.proto</Link>
         </ContractCode>
     </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="xunit.assert" Version="2.4.1" />
-    </ItemGroup>
-    
 </Project>
