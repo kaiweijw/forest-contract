@@ -959,7 +959,7 @@ public class ForestContractTests_CancelOffer : ForestContractTestBase
 
 
     [Fact]
-    public async void gitCancelOffer_Case10_commonUser_cancelAfterBurned()
+    public async void CancelOffer_Case10_commonUser_cancelAfterBurned()
     {
         await InitializeForestContract();
         await PrepareNftData();
