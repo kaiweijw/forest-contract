@@ -4,6 +4,7 @@ using AElf.Contracts.MultiToken;
 using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using AElf.Types;
+using Forest.Helpers;
 using Forest.Whitelist;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
@@ -323,7 +324,9 @@ public partial class ForestContract
 
         Assert(offer.Quantity >= input.Quantity, "Deal quantity exceeded.");
         offer.Quantity = offer.Quantity.Sub(input.Quantity);
-        ModifyOfferTotalAmount(input.OfferFrom, input.Price.Symbol, -input.Quantity.Mul(input.Price.Amount));
+        ModifyOfferTotalAmount(input.OfferFrom, input.Price.Symbol, -NumberHelper
+            .DivideByPowerOfTen(input.Quantity, nftInfo.Decimals)
+            .Mul(input.Price.Amount));
         if (offer.Quantity == 0)
         {
             State.OfferListMap[input.Symbol][input.OfferFrom].Value.Remove(offer);
@@ -354,7 +357,7 @@ public partial class ForestContract
         }
 
         var price = offer.Price;
-        var totalAmount = price.Amount.Mul(input.Quantity);
+        var totalAmount = price.Amount.Mul(NumberHelper.DivideByPowerOfTen(input.Quantity, nftInfo.Decimals));
 
         PerformDeal(new PerformDealInput
         {
