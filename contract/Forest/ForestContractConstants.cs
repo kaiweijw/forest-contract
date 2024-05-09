@@ -14,4 +14,7 @@ public partial class ForestContract
     public const int BatchDeListTypeLessThanOrEquals = 1;
     public const int BatchDeListTypeGreaterThan = 2;
     public const int BatchDeListTypeGreaterThanOrEquals = 3;
+    public const int NumberZero = 0;
+    public const int NumberOne = 1;
+    public const int NumberTen = 10;
 }
