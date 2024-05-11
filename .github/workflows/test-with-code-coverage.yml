@@ -10,29 +10,24 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     permissions:
       pull-requests: write
       contents: write
-    services:
-      elasticsearch:
-        image: elasticsearch:8.13.0
-        ports:
-          - 9200:9200
-        options: -e="discovery.type=single-node" -e="xpack.security.enabled=false" --health-cmd="curl http://localhost:9200/_cluster/health" --health-interval=10s --health-timeout=5s --health-retries=10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '7.0'
-      #- name: Verify Elasticsearch connection
-      #  env:
-      #    ELASTIC_SEARCH_URL: http://127.0.0.1:${{ job.services.elasticsearch.ports[9200] }}
-      #  run: |
-      #    echo $ELASTIC_SEARCH_URL
-      #    curl -fsSL "$ELASTIC_SEARCH_URL/_cat/health?h=status"
+          dotnet-version: '6.0'
+
+      - name: 'Download AElf build tools'
+        run: bash scripts/download_binary.sh
+
+      - name: 'Install protobuf'
+        run: bash scripts/install.sh
+
       - name: Install dependencies
         run: dotnet restore --verbosity quiet
 
@@ -41,9 +36,11 @@ jobs:
 
       - name: Test
         run: |
-          for name in `ls ./test/*.Tests/*.csproj | awk '{print $NF}'`;
+          for name in $(ls ./test/*.Tests/*.csproj | awk '{print $NF}')
           do
-              dotnet test ${name} --no-restore --no-build --logger trx --settings CodeCoverage.runsettings --results-directory coverage --collect:"XPlat Code Coverage" 
+            echo "Running tests for $name..."
+            dotnet test $name --no-restore --no-build --logger trx --settings CodeCoverage.runsettings --results-directory coverage --collect:"XPlat Code Coverage" --verbosity normal
+            echo "Finished running tests for $name."
           done
 
       - name: Upload coverage reports to Codecov
