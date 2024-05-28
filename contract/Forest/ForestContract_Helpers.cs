@@ -299,4 +299,33 @@ public partial class ForestContract
         });
         return allowance?.Allowance ?? 0;
     }
+
+    private void CheckCreateArtPermission()
+    {
+        if (State.AIServiceFeeConfig == null)
+        {
+            State.AIServiceFeeConfig.Value = new Price
+            {
+                Symbol = AIServiceFeeToken,
+                Amount = DefaultAIServiceFeeAmount
+            };
+        }
+
+        if (State.AIServiceFeeReceiver == null)
+        {
+            State.AIServiceFeeReceiver.Value = State.ServiceFeeReceiver.Value ?? State.Admin.Value;
+        }
+
+        State.AIImageSizeList.Value ??= new StringList()
+        {
+            Value = { DefaultAIImageSizeList }
+        };
+    }
+    
+    private void CheckCreateArtParams(CreateArtInput input)
+    {
+        Assert(input != null, $"Invalid input");
+        Assert(input.Number >= 0, $"Invalid input number");
+        Assert(State.AIImageSizeList.Value.Value.Contains(input.Size), $"Invalid input size");
+    }
 }

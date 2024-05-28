@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Forest;
 
 public partial class ForestContract
@@ -17,4 +19,8 @@ public partial class ForestContract
     public const int NumberZero = 0;
     public const int NumberOne = 1;
     public const int NumberTen = 10;
+    public const string AIServiceFeeToken = "ELF";
+    public const int DefaultAIServiceFeeAmount = 1000000;
+    public List<string> DefaultAIImageSizeList = new List<string> {"1024x1024", "512x512", "256x256"};
+
 }

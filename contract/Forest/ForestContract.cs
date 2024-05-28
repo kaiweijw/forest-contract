@@ -1,5 +1,7 @@
 using AElf.Contracts.MultiToken;
 using AElf.Sdk.CSharp;
+using AElf.Sdk.CSharp.State;
+using AElf.CSharp.Core;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
@@ -53,7 +55,7 @@ namespace Forest
             State.ServiceFeeReceiver.Value = input.ServiceFeeReceiver ?? State.Admin.Value;
             return new Empty();
         }
-
+        
         public override Empty SetGlobalTokenWhiteList(StringList input)
         {
             AssertSenderIsAdmin();
@@ -126,5 +128,91 @@ namespace Forest
             State.OfferTotalAmountMap[input.Address][input.PriceSymbol] = input.TotalAmount;
             return new Empty();
         }
+        
+        public override Empty SetAIServiceFee(SetAIServiceFeeInput input)
+        {
+            AssertSenderIsAdmin();
+            Assert(input is { Price: { Amount: >= 0, Symbol: AIServiceFeeToken } } && input.ServiceFeeReceiver != null, "Invalid AIServiceFeeRate");
+            State.AIServiceFeeConfig.Value = input.Price; 
+            State.AIServiceFeeReceiver.Value = input.ServiceFeeReceiver;
+            return new Empty();
+        }
+        
+        public override Empty AddAIImageSize(StringValue input)
+        {
+            AssertSenderIsAdmin();
+            Assert(input != null, "Invalid input");
+            var sizeList = State.AIImageSizeList.Value.Value;
+            foreach (var size in sizeList)
+            {
+                Assert(!size.Contains(input.Value), "input size Already exists");
+            }
+            sizeList.Add(input.Value);
+            State.AIImageSizeList = new SingletonState<StringList>()
+            {
+                Value = new StringList(){Value = { sizeList }}
+            };
+            return new Empty();
+        }
+        
+        public override Empty RemoveAIImageSize(StringValue input)
+        {
+            AssertSenderIsAdmin();
+            Assert(input != null, "Invalid input");
+            var sizeList = State.AIImageSizeList.Value.Value;
+            foreach (var size in sizeList)
+            {
+                Assert(size.Contains(input.Value), "input size not exists");
+            }
+            sizeList.Remove(input.Value);
+            State.AIImageSizeList = new SingletonState<StringList>()
+            {
+                Value = new StringList(){Value = { sizeList }}
+            };
+            return new Empty();
+        }
+        
+        public override Empty CreateArt(CreateArtInput input)
+        {
+            AssertContractInitialized();
+            CheckCreateArtPermission();
+            CheckCreateArtParams(input);
+            var aiServiceFeeConfig = State.AIServiceFeeConfig.Value;
+            var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+            {
+                Symbol = aiServiceFeeConfig.Symbol,
+                Owner = Context.Sender
+            });
+            var serviceFee = aiServiceFeeConfig.Amount.Mul(input.Number);
+            Assert(balance.Balance >= serviceFee, "Check sender balance not enough.");
+            AssertAllowanceInsufficient(aiServiceFeeConfig.Symbol, Context.Sender, serviceFee);
+            if (serviceFee > 0)
+            {
+                State.TokenContract.TransferFrom.Send(new TransferFromInput
+                {
+                    From = Context.Sender,
+                    To = State.AIServiceFeeReceiver.Value,
+                    Symbol = aiServiceFeeConfig.Symbol,
+                    Amount = serviceFee
+                });
+            }
+            State.CreateArtInfoMap[Context.Sender][Context.OriginTransactionId.ToHex()] = new CreateArtInfo()
+            {
+                Promt = input.Promt,
+                NegativePrompt = input.NegativePrompt,
+                Model = input.Model,
+                Quality = input.Quality,
+                Style = input.Style,
+                Size = input.Size,
+                Number = input.Number,
+                CostPrice = new Price()
+                {
+                    Symbol = aiServiceFeeConfig.Symbol,
+                    Amount = serviceFee
+                }
+            };
+            return new Empty();
+        }
+        
     }
 }
