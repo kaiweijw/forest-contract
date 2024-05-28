@@ -21,6 +21,8 @@ public partial class ForestContract
     public const int NumberTen = 10;
     public const string AIServiceFeeToken = "ELF";
     public const int DefaultAIServiceFeeAmount = 1000000;
-    public List<string> DefaultAIImageSizeList = new List<string> {"1024x1024", "512x512", "256x256"};
+    public const string DefaultAIImageSize1024 = "1024x1024";
+    public const string DefaultAIImageSize512 = "512x512";
+    public const string DefaultAIImageSize256 = "256x256";
 
 }

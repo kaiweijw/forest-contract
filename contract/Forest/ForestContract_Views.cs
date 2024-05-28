@@ -143,4 +143,11 @@ public partial class ForestContract
     {
         return State.AIImageSizeList?.Value;
     }
+
+        
+    public override CreateArtInfo GetCreateArtInfo(GetCreateArtInfoInput input)
+    {
+        Assert(input != null, "Invalid TransactionId");
+        return State.CreateArtInfoMap[input.Address ?? Context.Sender][input.TransactionId];
+    }
 }

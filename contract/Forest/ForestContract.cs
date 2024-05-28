@@ -1,9 +1,11 @@
+using System.Collections.Specialized;
 using AElf.Contracts.MultiToken;
 using AElf.Sdk.CSharp;
 using AElf.Sdk.CSharp.State;
 using AElf.CSharp.Core;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.VisualBasic;
 
 namespace Forest
 {
@@ -141,16 +143,23 @@ namespace Forest
         public override Empty AddAIImageSize(StringValue input)
         {
             AssertSenderIsAdmin();
-            Assert(input != null, "Invalid input");
-            var sizeList = State.AIImageSizeList.Value.Value;
-            foreach (var size in sizeList)
+            Assert(input is { Value: { } } && input.Value != "", "Invalid input");
+            var sizeList = State.AIImageSizeList.Value;
+            if (sizeList == null)
             {
-                Assert(!size.Contains(input.Value), "input size Already exists");
+                State.AIImageSizeList.Value = new StringList()
+                {
+                    Value  = { input.Value }
+                };
+                return new Empty();
             }
-            sizeList.Add(input.Value);
-            State.AIImageSizeList = new SingletonState<StringList>()
+
+            Assert(!sizeList.Value.Contains(input.Value), "input size Already exists");
+            
+            sizeList.Value.Add(input.Value);
+            State.AIImageSizeList.Value = new StringList
             {
-                Value = new StringList(){Value = { sizeList }}
+                Value =  { sizeList.Value }
             };
             return new Empty();
         }
@@ -158,16 +167,17 @@ namespace Forest
         public override Empty RemoveAIImageSize(StringValue input)
         {
             AssertSenderIsAdmin();
-            Assert(input != null, "Invalid input");
-            var sizeList = State.AIImageSizeList.Value.Value;
-            foreach (var size in sizeList)
+            Assert(input is { Value: { } } && input.Value != "", "Invalid input");
+            var sizeList = State.AIImageSizeList.Value;
+            if (sizeList?.Value == null)
             {
-                Assert(size.Contains(input.Value), "input size not exists");
+                return new Empty();
             }
-            sizeList.Remove(input.Value);
-            State.AIImageSizeList = new SingletonState<StringList>()
+            Assert(sizeList.Value.Contains(input.Value), "input size not exists");
+            sizeList.Value.Remove(input.Value);
+            State.AIImageSizeList.Value = new StringList
             {
-                Value = new StringList(){Value = { sizeList }}
+                Value =  { sizeList.Value }
             };
             return new Empty();
         }
@@ -196,6 +206,7 @@ namespace Forest
                     Amount = serviceFee
                 });
             }
+            
             State.CreateArtInfoMap[Context.Sender][Context.OriginTransactionId.ToHex()] = new CreateArtInfo()
             {
                 Promt = input.Promt,
@@ -209,10 +220,27 @@ namespace Forest
                 {
                     Symbol = aiServiceFeeConfig.Symbol,
                     Amount = serviceFee
-                }
+                },
+                PaintingStyle = input.PaintingStyle
             };
+            
+            Context.Fire(new ArtCreated()
+            {
+                Promt = input.Promt,
+                NegativePrompt = input.NegativePrompt,
+                Model = input.Model,
+                Quality = input.Quality,
+                Style = input.Style,
+                Size = input.Size,
+                Number = input.Number,
+                CostPrice = new Price()
+                {
+                    Symbol = aiServiceFeeConfig.Symbol,
+                    Amount = serviceFee
+                },
+                PaintingStyle = input.PaintingStyle
+            });
             return new Empty();
         }
-        
     }
 }

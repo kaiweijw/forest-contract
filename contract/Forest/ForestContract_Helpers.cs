@@ -302,7 +302,7 @@ public partial class ForestContract
 
     private void CheckCreateArtPermission()
     {
-        if (State.AIServiceFeeConfig == null)
+        if (State.AIServiceFeeConfig?.Value == null)
         {
             State.AIServiceFeeConfig.Value = new Price
             {
@@ -311,21 +311,22 @@ public partial class ForestContract
             };
         }
 
-        if (State.AIServiceFeeReceiver == null)
+        if (State.AIServiceFeeReceiver == null || State.AIServiceFeeReceiver.Value == null)
         {
             State.AIServiceFeeReceiver.Value = State.ServiceFeeReceiver.Value ?? State.Admin.Value;
         }
 
         State.AIImageSizeList.Value ??= new StringList()
         {
-            Value = { DefaultAIImageSizeList }
+            Value = { DefaultAIImageSize1024, DefaultAIImageSize512, DefaultAIImageSize256 }
         };
     }
     
     private void CheckCreateArtParams(CreateArtInput input)
     {
         Assert(input != null, $"Invalid input");
-        Assert(input.Number >= 0, $"Invalid input number");
+        Assert(input.Number > 0, $"Invalid input number");
+        var size = State.AIImageSizeList.Value.Value;
         Assert(State.AIImageSizeList.Value.Value.Contains(input.Size), $"Invalid input size");
     }
 }
