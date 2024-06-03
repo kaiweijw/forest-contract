@@ -15,7 +15,7 @@ public class ForestContractTests_CreateArt : ForestContractTestBase
     private const string NftSymbol2 = "TESTNFT-2";
     private const string ElfSymbol = "ELF";
     private const int ServiceFeeRate = 1000; // 10%
-    private const int AIServiceFee = 1000000; 
+    private const int AIServiceFee = 10000000; 
     private const string DefaultAIImageSize1024 = "1024x1024";
     private const string DefaultAIImageSize512 = "512x512";
     private const string DefaultAIImageSize256 = "256x256";
