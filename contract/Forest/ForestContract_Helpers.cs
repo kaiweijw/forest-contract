@@ -299,8 +299,8 @@ public partial class ForestContract
         });
         return allowance?.Allowance ?? 0;
     }
-
-    private void CheckCreateArtPermission()
+    
+    private void RequireContractAIServiceFeeConfigSet()
     {
         if (State.AIServiceFeeConfig?.Value == null)
         {
@@ -315,13 +315,16 @@ public partial class ForestContract
         {
             State.AIServiceFeeReceiver.Value = State.ServiceFeeReceiver.Value ?? State.Admin.Value;
         }
-
+    }
+    
+    private void RequireContractAIImageSizeListSet()
+    {
         State.AIImageSizeList.Value ??= new StringList()
         {
             Value = { DefaultAIImageSize1024, DefaultAIImageSize512, DefaultAIImageSize256 }
         };
     }
-    
+
     private void CheckCreateArtParams(CreateArtInput input)
     {
         Assert(input != null, $"Invalid input");

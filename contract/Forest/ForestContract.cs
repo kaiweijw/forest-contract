@@ -185,7 +185,8 @@ namespace Forest
         public override Empty CreateArt(CreateArtInput input)
         {
             AssertContractInitialized();
-            CheckCreateArtPermission();
+            RequireContractAIServiceFeeConfigSet();
+            RequireContractAIImageSizeListSet();
             CheckCreateArtParams(input);
             var aiServiceFeeConfig = State.AIServiceFeeConfig.Value;
             var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
