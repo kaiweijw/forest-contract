@@ -1,6 +1,3 @@
-using AElf.Contracts.MultiToken;
-using AElf.CSharp.Core;
-using AElf.CSharp.Core.Extension;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 

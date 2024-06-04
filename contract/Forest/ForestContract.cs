@@ -1,11 +1,8 @@
-using System.Collections.Specialized;
 using AElf.Contracts.MultiToken;
 using AElf.Sdk.CSharp;
-using AElf.Sdk.CSharp.State;
 using AElf.CSharp.Core;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
-using Microsoft.VisualBasic;
 
 namespace Forest
 {
@@ -57,7 +54,6 @@ namespace Forest
             State.ServiceFeeReceiver.Value = input.ServiceFeeReceiver ?? State.Admin.Value;
             return new Empty();
         }
-        
         public override Empty SetGlobalTokenWhiteList(StringList input)
         {
             AssertSenderIsAdmin();
