@@ -1,6 +1,3 @@
-using AElf.Contracts.MultiToken;
-using AElf.CSharp.Core;
-using AElf.CSharp.Core.Extension;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
@@ -130,5 +127,24 @@ public partial class ForestContract
         
         return getTotalEffectiveListedNftAmountOutput;
     }
+    public override AIServiceFeeInfo GetAIServiceFee(Empty input)
+    {
+        return new AIServiceFeeInfo
+        {
+            Price = State.AIServiceFeeConfig.Value,
+            ServiceFeeReceiver = State.AIServiceFeeReceiver.Value
+        };
+    }
     
+    public override StringList GetAIImageSizes(Empty input)
+    {
+        return State.AIImageSizeList?.Value;
+    }
+
+        
+    public override CreateArtInfo GetCreateArtInfo(GetCreateArtInfoInput input)
+    {
+        Assert(input != null, "Invalid TransactionId");
+        return State.CreateArtInfoMap[input.Address ?? Context.Sender][input.TransactionId];
+    }
 }

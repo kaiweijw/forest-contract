@@ -1,5 +1,6 @@
 using AElf.Contracts.MultiToken;
 using AElf.Sdk.CSharp;
+using AElf.CSharp.Core;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
@@ -53,7 +54,6 @@ namespace Forest
             State.ServiceFeeReceiver.Value = input.ServiceFeeReceiver ?? State.Admin.Value;
             return new Empty();
         }
-
         public override Empty SetGlobalTokenWhiteList(StringList input)
         {
             AssertSenderIsAdmin();
@@ -124,6 +124,119 @@ namespace Forest
             Assert(input.TotalAmount >= 0, "Invalid param TotalAmount");
             
             State.OfferTotalAmountMap[input.Address][input.PriceSymbol] = input.TotalAmount;
+            return new Empty();
+        }
+        
+        public override Empty SetAIServiceFee(SetAIServiceFeeInput input)
+        {
+            AssertSenderIsAdmin();
+            Assert(input is { Price: { Amount: >= 0, Symbol: AIServiceFeeToken } } && input.ServiceFeeReceiver != null, "Invalid AIServiceFeeRate");
+            State.AIServiceFeeConfig.Value = input.Price; 
+            State.AIServiceFeeReceiver.Value = input.ServiceFeeReceiver;
+            return new Empty();
+        }
+        
+        public override Empty AddAIImageSize(StringValue input)
+        {
+            AssertSenderIsAdmin();
+            Assert(input is { Value: { } } && input.Value != "", "Invalid input");
+            var sizeList = State.AIImageSizeList.Value;
+            if (sizeList == null)
+            {
+                State.AIImageSizeList.Value = new StringList()
+                {
+                    Value  = { input.Value }
+                };
+                return new Empty();
+            }
+
+            Assert(!sizeList.Value.Contains(input.Value), "input size Already exists");
+            
+            sizeList.Value.Add(input.Value);
+            State.AIImageSizeList.Value = new StringList
+            {
+                Value =  { sizeList.Value }
+            };
+            return new Empty();
+        }
+        
+        public override Empty RemoveAIImageSize(StringValue input)
+        {
+            AssertSenderIsAdmin();
+            Assert(input is { Value: { } } && input.Value != "", "Invalid input");
+            var sizeList = State.AIImageSizeList.Value;
+            if (sizeList?.Value == null)
+            {
+                return new Empty();
+            }
+            Assert(sizeList.Value.Contains(input.Value), "input size not exists");
+            sizeList.Value.Remove(input.Value);
+            State.AIImageSizeList.Value = new StringList
+            {
+                Value =  { sizeList.Value }
+            };
+            return new Empty();
+        }
+        
+        public override Empty CreateArt(CreateArtInput input)
+        {
+            AssertContractInitialized();
+            RequireContractAIServiceFeeConfigSet();
+            RequireContractAIImageSizeListSet();
+            CheckCreateArtParams(input);
+            var aiServiceFeeConfig = State.AIServiceFeeConfig.Value;
+            var balance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+            {
+                Symbol = aiServiceFeeConfig.Symbol,
+                Owner = Context.Sender
+            });
+            var serviceFee = aiServiceFeeConfig.Amount.Mul(input.Number);
+            Assert(balance.Balance >= serviceFee, "Check sender balance not enough.");
+            AssertAllowanceInsufficient(aiServiceFeeConfig.Symbol, Context.Sender, serviceFee);
+            if (serviceFee > 0)
+            {
+                State.TokenContract.TransferFrom.Send(new TransferFromInput
+                {
+                    From = Context.Sender,
+                    To = State.AIServiceFeeReceiver.Value,
+                    Symbol = aiServiceFeeConfig.Symbol,
+                    Amount = serviceFee
+                });
+            }
+            
+            State.CreateArtInfoMap[Context.Sender][Context.OriginTransactionId.ToHex()] = new CreateArtInfo()
+            {
+                Promt = input.Promt,
+                NegativePrompt = input.NegativePrompt,
+                Model = input.Model,
+                Quality = input.Quality,
+                Style = input.Style,
+                Size = input.Size,
+                Number = input.Number,
+                CostPrice = new Price()
+                {
+                    Symbol = aiServiceFeeConfig.Symbol,
+                    Amount = serviceFee
+                },
+                PaintingStyle = input.PaintingStyle
+            };
+            
+            Context.Fire(new ArtCreated()
+            {
+                Promt = input.Promt,
+                NegativePrompt = input.NegativePrompt,
+                Model = input.Model,
+                Quality = input.Quality,
+                Style = input.Style,
+                Size = input.Size,
+                Number = input.Number,
+                CostPrice = new Price()
+                {
+                    Symbol = aiServiceFeeConfig.Symbol,
+                    Amount = serviceFee
+                },
+                PaintingStyle = input.PaintingStyle
+            });
             return new Empty();
         }
     }

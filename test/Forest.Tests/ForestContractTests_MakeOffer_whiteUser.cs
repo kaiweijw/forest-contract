@@ -1892,7 +1892,6 @@ public partial class ForestContractTests_MakeOffer : ForestContractTestBase
         #endregion
       
     }
-    
     //buy: elf allowance greatter enough
    [Fact]
     public async void Buy_Case47_Allowance()
