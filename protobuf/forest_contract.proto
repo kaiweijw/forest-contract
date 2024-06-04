@@ -101,7 +101,6 @@ service ForestContract {
   rpc GetServiceFeeInfo (google.protobuf.Empty) returns (ServiceFeeInfo) {
     option (aelf.is_view) = true;
   }
-  
   rpc GetAdministrator(google.protobuf.Empty) returns (aelf.Address) {
     option (aelf.is_view) = true;
   }
@@ -584,5 +583,4 @@ message ArtCreated {
   Price cost_price = 8;
   string painting_style = 9;
 }
-
 
