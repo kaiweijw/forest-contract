@@ -53,5 +53,14 @@ namespace Forest
         /// </summary>
         public MappedState<Address, string, long> OfferTotalAmountMap { get; set; }
 
+        public SingletonState<Price> AIServiceFeeConfig { get; set; }
+        public SingletonState<Address> AIServiceFeeReceiver { get; set; }
+        
+        public SingletonState<StringList> AIImageSizeList { get; set; }
+        /// <summary>
+        /// Symbol -> Address TxId ->  CreateArtInfo
+        /// </summary>
+        public MappedState<Address, string, CreateArtInfo> CreateArtInfoMap { get; set; }
+
     }
 }

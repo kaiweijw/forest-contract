@@ -61,7 +61,18 @@ service ForestContract {
   }
 
   rpc SetOfferTotalAmount(SetOfferTotalAmountInput) returns (google.protobuf.Empty){
-    
+  }
+
+  rpc SetAIServiceFee (SetAIServiceFeeInput) returns (google.protobuf.Empty) {
+  }
+
+  rpc CreateArt (CreateArtInput) returns (google.protobuf.Empty){
+  }
+
+  rpc AddAIImageSize (google.protobuf.StringValue) returns (google.protobuf.Empty){
+  }
+
+  rpc RemoveAIImageSize (google.protobuf.StringValue) returns (google.protobuf.Empty){
   }
 
   // Views.
@@ -90,6 +101,7 @@ service ForestContract {
   rpc GetServiceFeeInfo (google.protobuf.Empty) returns (ServiceFeeInfo) {
     option (aelf.is_view) = true;
   }
+  
   rpc GetAdministrator(google.protobuf.Empty) returns (aelf.Address) {
     option (aelf.is_view) = true;
   }
@@ -102,7 +114,17 @@ service ForestContract {
   rpc GetTotalEffectiveListedNFTAmount (GetTotalEffectiveListedNFTAmountInput) returns (GetTotalEffectiveListedNFTAmountOutput) {
     option (aelf.is_view) = true;
   }
-  
+
+  rpc GetAIServiceFee (google.protobuf.Empty) returns (AIServiceFeeInfo) {
+    option (aelf.is_view) = true;
+  }
+  rpc GetAIImageSizes (google.protobuf.Empty) returns (StringList){
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetCreateArtInfo (GetCreateArtInfoInput) returns (CreateArtInfo){
+    option (aelf.is_view) = true;
+  }
 }
 
 // Structs.
@@ -355,6 +377,44 @@ message BizConfig
   int32 maxOfferDealCount = 4;
 }
 
+message SetAIServiceFeeInput {
+  Price price = 1;
+  aelf.Address service_fee_receiver = 2;
+}
+
+message CreateArtInput {
+  string promt = 1;
+  string negative_prompt = 2;
+  string model = 3;
+  string quality = 4;
+  string style = 5;
+  string size = 6;
+  int32 number = 7;
+  string painting_style = 8;
+}
+
+message GetCreateArtInfoInput {
+  aelf.Address address = 1;
+  string transaction_id = 2;
+}
+
+message AIServiceFeeInfo {
+  Price price = 1;
+  aelf.Address service_fee_receiver = 2;
+}
+
+message CreateArtInfo {
+  string promt = 1;
+  string negative_prompt = 2;
+  string model = 3;
+  string quality = 4;
+  string style = 5;
+  string size = 6;
+  int32 number = 7;
+  Price cost_price = 8;
+  string painting_style = 9;
+}
+
 // Events
 
 message FixedPriceNFTListed {
@@ -510,6 +570,19 @@ message SetOfferTotalAmountInput{
   aelf.Address address = 1;
   string price_symbol = 2;
   int64 total_amount = 3;
+}
+
+message ArtCreated {
+  option (aelf.is_event) = true;
+  string promt = 1;
+  string negative_prompt = 2;
+  string model = 3;
+  string quality = 4;
+  string style = 5;
+  string size = 6;
+  int32 number = 7;
+  Price cost_price = 8;
+  string painting_style = 9;
 }
 
 
