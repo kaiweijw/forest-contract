@@ -37,7 +37,7 @@ jobs:
 
         with:
 
-          version: "23.x
+          version: "3.20.3"
 
       - name: Set up JDK 17
 
