@@ -31,8 +31,8 @@ jobs:
 
           dotnet-version: '7.0'
 
-      - name: Install Protoc
-        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+      - name: 'Install protobuf'
+        run: bash scripts/install.sh
 
       - name: Set up JDK 17
 
