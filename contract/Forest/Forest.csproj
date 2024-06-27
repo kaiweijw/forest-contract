@@ -20,7 +20,6 @@
             <Link>Protobuf\Proto\authority_info.proto</Link>
         </CommonMessage>
     </ItemGroup>
-
     <ItemGroup>
         <ContractReference Include="..\..\protobuf\acs12.proto">
             <Link>Protobuf\Proto\reference\acs12.proto</Link>
